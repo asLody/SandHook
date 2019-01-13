@@ -38,7 +38,10 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
         try {
-            tv.setText(stringFromJNI(MainActivity.class.getDeclaredMethod("onCreateOptionsMenu", Menu.class)));
+            Method method1 = ArtMethodSizeTest.class.getDeclaredMethod("method1");
+            Method method2 = ArtMethodSizeTest.class.getDeclaredMethod("method2");
+            tv.setText("" + calArtSize(method1, method2));
+            initHook();
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
@@ -71,4 +74,8 @@ public class MainActivity extends AppCompatActivity {
      * which is packaged with this application.
      */
     public native String stringFromJNI(Method method);
+
+    public native int calArtSize(Method method1, Method method2);
+
+    public native void initHook();
 }

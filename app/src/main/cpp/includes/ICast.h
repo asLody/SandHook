@@ -21,6 +21,8 @@ namespace SandHook {
             this->origin = t;
         };
 
+        virtual Size getSize() { return sizeof(T); };
+
     private:
         T origin;
     };
@@ -29,43 +31,32 @@ namespace SandHook {
     class IMember {
     public:
 
-        IMember(PType p) {
-            this->parent = p;
-        }
-
-        IMember(PType p, Size size) {
-            this->parent = p;
+        virtual void init(PType p, Size size) {
             this->parentSize = size;
+            offset = calOffset(p);
         }
 
-        Size getOffset() {
-            if (offset < 0) {
-                offset = calOffset();
-            }
+        virtual Size getOffset() {
             return offset;
         }
 
-        Size getParentSize() {
-            if (parentSize < 0) {
-                offset = sizeof(PType);
-            }
-            return offset;
+        virtual Size getParentSize() {
+            return parentSize;
         }
 
-        MType get() {
-            return reinterpret_cast<MType>(&parent + getOffset());
+        virtual MType get(PType p) {
+            return reinterpret_cast<MType>(&p + getOffset());
         };
 
-        void set(MType t) {
-            memcpy(&parent + getOffset(), &t, sizeof(MType));
+        virtual void set(PType p, MType t) {
+            memcpy(&p + getOffset(), &t, sizeof(MType));
         };
 
     private:
-        PType parent;
-        Size offset = -1;
+        Size offset = 0;
     protected:
-        virtual Size calOffset();
-        Size parentSize = - 1;
+        Size parentSize = 0;
+        virtual Size calOffset(PType p) = 0;
 
     };
 
