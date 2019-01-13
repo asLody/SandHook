@@ -5,12 +5,10 @@
 #include <stdint.h>
 #include <string.h>
 #include "arch.h"
+#include "utils.h"
 
 #ifndef SANDHOOK_ICAST_H
 #define SANDHOOK_ICAST_H
-
-#endif //SANDHOOK_ICAST_H
-
 
 namespace SandHook {
 
@@ -61,3 +59,5 @@ namespace SandHook {
     };
 
 }
+
+#endif //SANDHOOK_ICAST_H

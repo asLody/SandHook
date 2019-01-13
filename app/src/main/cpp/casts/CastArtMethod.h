@@ -15,10 +15,25 @@ namespace SandHook {
     };
 
 
+    class CastAccessFlag : public IMember<art::mirror::ArtMethod, uint32_t> {
+    protected:
+        Size calOffset(art::mirror::ArtMethod p) override {
+            int offset = findOffset(&p, getParentSize(), sizeof(uint32_t), 524313);
+            if (offset < 0)
+                throw 0;
+            else
+                return static_cast<size_t>(offset);
+        }
+    };
+
+
+
+
     class CastArtMethod {
     public:
         static Size size;
         static IMember<art::mirror::ArtMethod, void*>* entryPointQuickCompiled;
+        static IMember<art::mirror::ArtMethod, uint32_t>* accessFlag;
 
         static void init(JNIEnv *env) {
             //init ArtMethodSize
@@ -33,11 +48,15 @@ namespace SandHook {
             entryPointQuickCompiled = new CastEntryPointQuickCompiled();
             entryPointQuickCompiled->init(m, size);
 
+            accessFlag = new CastAccessFlag();
+            accessFlag->init(m, size);
+
         }
     };
 
     Size CastArtMethod::size = 0;
     IMember<art::mirror::ArtMethod, void*>* CastArtMethod::entryPointQuickCompiled = nullptr;
+    IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::accessFlag = nullptr;
 
 }
 
