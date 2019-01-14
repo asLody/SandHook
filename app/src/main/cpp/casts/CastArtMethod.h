@@ -91,8 +91,8 @@ namespace SandHook {
             //test
             art::mirror::ArtMethod** mArray = reinterpret_cast<art::mirror::ArtMethod**>(m1.dex_cache_resolved_methods_);
 
-            art::mirror::ArtMethod m1B = *(mArray + 8)[m1.dex_method_index_];
-            art::mirror::ArtMethod m1C = *(mArray + 8)[m2.dex_method_index_];
+            art::mirror::ArtMethod m1B = *mArray[m1.dex_method_index_];
+            art::mirror::ArtMethod m1C = *mArray[m2.dex_method_index_];
 
         }
 

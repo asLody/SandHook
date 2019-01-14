@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
             artMethodField.setAccessible(true);
             long artMethod = (long) artMethodField.get(method1);
 
-//            methods[dexMethodIndex] = artMethod;
+            methods[dexMethodIndex] = artMethod;
 
             initHook();
 //            SandHook.init();

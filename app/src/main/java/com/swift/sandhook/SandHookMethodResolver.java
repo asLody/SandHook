@@ -46,11 +46,11 @@ public class SandHookMethodResolver {
         }
     }
 
-    public static void resolveMethod(Method method) {
+    public static void resolveMethod(Method hook, Method backup) {
         if (canResolvedInJava && artMethodField != null) {
             // in java
             try {
-                resolveInJava(method);
+                resolveInJava(hook, backup);
             } catch (Exception e) {
                 // in native
             }
@@ -59,17 +59,16 @@ public class SandHookMethodResolver {
         }
     }
 
-    private static void resolveInJava(Method method) throws Exception {
-        Object dexCache = dexCacheField.get(method.getDeclaringClass());
-        resolvedMethodsField.setAccessible(true);
-        int dexMethodIndex = (int) dexMethodIndexField.get(method);
+    private static void resolveInJava(Method hook, Method backup) throws Exception {
+        Object dexCache = dexCacheField.get(hook.getDeclaringClass());
+        int dexMethodIndex = (int) dexMethodIndexField.get(backup);
         Object resolvedMethods = resolvedMethodsField.get(dexCache);
 
         if (resolvedMethods instanceof long[]) {
-            long artMethod = (long) artMethodField.get(method);
+            long artMethod = (long) artMethodField.get(backup);
             ((long[])resolvedMethods)[dexMethodIndex] = artMethod;
         } else if (resolvedMethods instanceof Object[]) {
-            Object artMethod = artMethodField.get(method);
+            Object artMethod = artMethodField.get(backup);
             ((Object[])resolvedMethods)[dexMethodIndex] = artMethod;
         } else {
             throw new UnsupportedOperationException("unsupport");
