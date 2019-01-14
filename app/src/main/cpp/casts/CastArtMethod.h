@@ -12,15 +12,16 @@ namespace SandHook {
             if (SDK_INT >= ANDROID_P)
                 return getParentSize() + 1;
             auto filter = [](int offset, void *ptr) -> bool {
-                if (isBadReadPtr(ptr, BYTE_POINT))
-                    return false;
-                Size addr = ADDR(ptr);
-                if (isBadReadPtr(reinterpret_cast<void *>(addr + offset), BYTE_POINT))
-                    return false;
-                Size subAddr = ADDR(addr + offset);
-                return addr == subAddr;
+//                if (isBadReadPtr(ptr, BYTE_POINT))
+//                    return false;
+//                Size addr = ADDR(ptr);
+//                if (isBadReadPtr(reinterpret_cast<void *>(addr + offset), BYTE_POINT))
+//                    return false;
+//                Size subAddr = ADDR(addr + offset);
+//                return addr == subAddr;
             };
             int offset = findOffsetWithCB1(&p, getParentSize(), 4, *filter);
+            return offset;
         }
     };
 
@@ -85,7 +86,13 @@ namespace SandHook {
             entryPointFormInterpreter->init(m1, size);
 
             dexCacheResolvedMethods = new CastDexCacheResolvedMethods();
-            dexCacheResolvedMethods->init(m1, size);
+//            dexCacheResolvedMethods->init(m1, size);
+
+            //test
+            art::mirror::ArtMethod** mArray = reinterpret_cast<art::mirror::ArtMethod**>(m1.dex_cache_resolved_methods_);
+
+            art::mirror::ArtMethod m1B = *(mArray + 8)[m1.dex_method_index_];
+            art::mirror::ArtMethod m1C = *(mArray + 8)[m2.dex_method_index_];
 
         }
 
