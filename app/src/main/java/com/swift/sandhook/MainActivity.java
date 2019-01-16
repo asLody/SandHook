@@ -10,6 +10,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.swift.sandhook.wrapper.HookErrorException;
+import com.swift.sandhook.wrapper.HookWrapper;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -36,6 +39,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        try {
+            HookWrapper.addHookClass(ActivityHooker.class);
+        } catch (HookErrorException e) {
+            e.printStackTrace();
+        }
+
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
         try {
@@ -46,18 +55,18 @@ public class MainActivity extends AppCompatActivity {
             Object dexCache = field.get(ArtMethodSizeTest.class);
             Field resolvedMethodsField = dexCache.getClass().getDeclaredField("resolvedMethods");
             resolvedMethodsField.setAccessible(true);
-            long[] methods = (long[]) resolvedMethodsField.get(dexCache);
-
-
-            Field dexMethodIndexField = getField(Method.class, "dexMethodIndex");
-            dexMethodIndexField.setAccessible(true);
-            int dexMethodIndex = (int) dexMethodIndexField.get(method1);
-
-            Field artMethodField = getField(Method.class, "artMethod");
-            artMethodField.setAccessible(true);
-            long artMethod = (long) artMethodField.get(method1);
-
-            methods[dexMethodIndex] = artMethod;
+//            long[] methods = (long[]) resolvedMethodsField.get(dexCache);
+//
+//
+//            Field dexMethodIndexField = getField(Method.class, "dexMethodIndex");
+//            dexMethodIndexField.setAccessible(true);
+//            int dexMethodIndex = (int) dexMethodIndexField.get(method1);
+//
+//            Field artMethodField = getField(Method.class, "artMethod");
+//            artMethodField.setAccessible(true);
+//            long artMethod = (long) artMethodField.get(method1);
+//
+//            methods[dexMethodIndex] = artMethod;
 
             initHook();
 //            SandHook.init();

@@ -20,7 +20,7 @@ namespace SandHook {
                 }
             }
             switch (SDK_INT) {
-                
+
             }
             return getParentSize() + 1;
         }

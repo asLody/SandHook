@@ -128,7 +128,7 @@ Size getAddressFromJava(JNIEnv* env, char* className, char* fieldName) {
         printf("find class error !");
         return 0;
     }
-    jfieldID id = env -> GetStaticFieldID(clazz, fieldName, "Ljava/lang/Long;");
+    jfieldID id = env -> GetStaticFieldID(clazz, fieldName, "J");
     if (id == NULL){
         printf("find field error !");
         return 0;
