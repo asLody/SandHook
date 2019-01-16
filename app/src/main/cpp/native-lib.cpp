@@ -1,6 +1,6 @@
 #include <jni.h>
 #include <string>
-#include "casts/CastArtMethod.h"
+#include "casts/cast_art_method.h"
 
 extern "C" JNIEXPORT jstring
 
@@ -34,6 +34,6 @@ JNIEXPORT void JNICALL
 Java_com_swift_sandhook_MainActivity_initHook(JNIEnv *env, jobject instance) {
 
 
-    SandHook::CastArtMethod::init(env);
+    SandHook::cast_art_method::init(env);
 
 }

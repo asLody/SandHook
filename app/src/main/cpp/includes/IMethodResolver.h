@@ -1,8 +1,0 @@
-//
-// Created by SwiftGan on 2019/1/14.
-//
-
-#ifndef SANDHOOK_IMETHODRESOLVER_H
-#define SANDHOOK_IMETHODRESOLVER_H
-
-#endif //SANDHOOK_IMETHODRESOLVER_H
