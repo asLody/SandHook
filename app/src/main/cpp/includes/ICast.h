@@ -40,9 +40,9 @@ namespace SandHook {
     class IMember {
     public:
 
-        virtual void init(PType p, Size size) {
+        virtual void init(JNIEnv *jniEnv, PType p, Size size) {
             this->parentSize = size;
-            offset = calOffset(p);
+            offset = calOffset(jniEnv, p);
         }
 
         virtual Size getOffset() {
@@ -69,7 +69,7 @@ namespace SandHook {
         Size offset = 0;
     protected:
         Size parentSize = 0;
-        virtual Size calOffset(PType p) = 0;
+        virtual Size calOffset(JNIEnv *jniEnv, PType p) = 0;
 
     };
 

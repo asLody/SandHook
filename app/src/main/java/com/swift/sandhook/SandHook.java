@@ -13,11 +13,11 @@ public class SandHook {
     public static Object testOffsetArtMethod2;
 
     public static int testAccessFlag;
-    public static int methodOffset;
 
 
     public static boolean init() {
         initTestOffset();
+        SandHookMethodResolver.init();
         return true;
     }
 
@@ -33,7 +33,6 @@ public class SandHook {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("SandHook init error", e);
         }
-        //
         initTestAccessFlag();
     }
 
@@ -42,14 +41,12 @@ public class SandHook {
             try {
                 loadArtMethod();
                 Field fieldAccessFlags = getField(artMethodClass, "accessFlags");
-                fieldAccessFlags.setAccessible(true);
                 testAccessFlag = (int) fieldAccessFlags.get(testOffsetArtMethod1);
             } catch (Exception e) {
             }
         } else {
             try {
                 Field fieldAccessFlags = getField(Method.class, "accessFlags");
-                fieldAccessFlags.setAccessible(true);
                 testAccessFlag = (int) fieldAccessFlags.get(testOffsetMethod1);
             } catch (Exception e) {
             }
@@ -59,7 +56,6 @@ public class SandHook {
     private static void loadArtMethod() {
         try {
             Field fieldArtMethod = getField(Method.class, "artMethod");
-            fieldArtMethod.setAccessible(true);
             testOffsetArtMethod1 = fieldArtMethod.get(testOffsetMethod1);
             testOffsetArtMethod2 = fieldArtMethod.get(testOffsetMethod2);
         } catch (IllegalAccessException e) {

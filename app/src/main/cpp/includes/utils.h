@@ -122,5 +122,20 @@ bool isBadReadPtr(void *ptr, int length)
 }
 
 
+Size getAddressFromJava(JNIEnv* env, char* className, char* fieldName) {
+    jclass clazz = env -> FindClass(className);
+    if (clazz == NULL){
+        printf("find class error !");
+        return 0;
+    }
+    jfieldID id = env -> GetStaticFieldID(clazz, fieldName, "Ljava/lang/Long;");
+    if (id == NULL){
+        printf("find field error !");
+        return 0;
+    }
+    return env -> GetStaticLongField(clazz, id);
+}
+
+
 
 #endif //SANDHOOK_UTILS_H
