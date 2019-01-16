@@ -68,8 +68,9 @@ public class MainActivity extends AppCompatActivity {
 //
 //            methods[dexMethodIndex] = artMethod;
 
+            SandHook.init();
             initHook();
-//            SandHook.init();
+
             tv.setText("" + calArtSize(method1, method2));
         } catch (NoSuchMethodException e) {
             e.printStackTrace();

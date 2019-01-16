@@ -24,7 +24,7 @@ public class HookWrapper {
         Map<Member,HookEntity> hookEntityMap = getHookMethods(targetHookClass, clazz);
         for (HookEntity entity:hookEntityMap.values()) {
             if (entity.target != null && entity.hook != null) {
-                
+
             }
         }
     }

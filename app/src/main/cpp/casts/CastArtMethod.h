@@ -19,9 +19,6 @@ namespace SandHook {
                     return static_cast<Size>(offset);
                 }
             }
-            switch (SDK_INT) {
-
-            }
             return getParentSize() + 1;
         }
     };
@@ -39,7 +36,22 @@ namespace SandHook {
     class CastEntryPointQuickCompiled : public IMember<art::mirror::ArtMethod, void*> {
     protected:
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod p) override {
-            return getParentSize() - BYTE_POINT;
+            if (SDK_INT >= ANDROID_L2) {
+                return getParentSize() - BYTE_POINT;
+            } else {
+                return getParentSize() - 8 * 2 - 4 * 4;
+            }
+        }
+    };
+
+    class CastEntryPointFromJni : public IMember<art::mirror::ArtMethod, void*> {
+    protected:
+        Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod p) override {
+            if (SDK_INT >= ANDROID_L2 && SDK_INT <= ANDROID_N) {
+                return getParentSize() - 2 * BYTE_POINT;
+            } else {
+                return getParentSize() - 8 * 2 - 4 * 4;
+            }
         }
     };
 
@@ -56,6 +68,24 @@ namespace SandHook {
     };
 
 
+    class CastDexMethodIndex : public IMember<art::mirror::ArtMethod, uint32_t> {
+    protected:
+        Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod p) override {
+            if (SDK_INT >= ANDROID_P)
+                return getParentSize() + 1;
+            int offset = 0;
+            jint index = getIntFromJava(jniEnv, "com/swift/sandhook/SandHookMethodResolver", "dexMethodIndex");
+            if (index != 0) {
+                offset = findOffset(&p, getParentSize(), 2, static_cast<uint32_t>(index));
+                if (offset >= 0) {
+                    return static_cast<Size>(offset);
+                }
+            }
+            return getParentSize() + 1;
+        }
+    };
+
+
 
 
     class CastArtMethod {
@@ -64,6 +94,7 @@ namespace SandHook {
         static IMember<art::mirror::ArtMethod, void*>* entryPointQuickCompiled;
         static IMember<art::mirror::ArtMethod, void*>* entryPointFormInterpreter;
         static IMember<art::mirror::ArtMethod, void*>* dexCacheResolvedMethods;
+        static IMember<art::mirror::ArtMethod, uint32_t>* dexMethodIndex;
         static IMember<art::mirror::ArtMethod, uint32_t>* accessFlag;
 
         static void init(JNIEnv *env) {
@@ -89,6 +120,9 @@ namespace SandHook {
             dexCacheResolvedMethods = new CastDexCacheResolvedMethods();
             dexCacheResolvedMethods->init(env, m1, size);
 
+            dexMethodIndex = new CastDexMethodIndex();
+            dexMethodIndex->init(env, m1, size);
+
 //            //test
 //            art::mirror::ArtMethod** mArray = reinterpret_cast<art::mirror::ArtMethod**>(m1.dex_cache_resolved_methods_);
 //
@@ -107,6 +141,7 @@ namespace SandHook {
     IMember<art::mirror::ArtMethod, void*>* CastArtMethod::entryPointQuickCompiled = nullptr;
     IMember<art::mirror::ArtMethod, void*>* CastArtMethod::entryPointFormInterpreter = nullptr;
     IMember<art::mirror::ArtMethod, void*>* CastArtMethod::dexCacheResolvedMethods = nullptr;
+    IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::dexMethodIndex = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::accessFlag = nullptr;
 
 
