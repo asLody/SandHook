@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <jni.h>
 #include "arch.h"
 #include "utils.h"
 
@@ -74,10 +75,11 @@ namespace SandHook {
     };
 
     template<typename PType>
-    class ArrayMember : IMember<PType, void*> {
+    class ArrayMember : public IMember<PType, void*> {
     public:
 
-        virtual void init(JNIEnv *jniEnv, PType p, Size parentSize) override : IMember::init(jniEnv, p, parentSize) {
+        virtual void init(JNIEnv *jniEnv, PType p, Size parentSize) override {
+            IMember<PType,void*>::init(jniEnv, p, parentSize);
             elementSize = calElementSize(jniEnv, p);
         }
 
@@ -85,17 +87,15 @@ namespace SandHook {
             return elementSize;
         }
 
-        virtual void* arrayStart(PType parent) {
-            return get(parent);
+        virtual Size arrayStart(PType parent) {
+            return reinterpret_cast<Size>(IMember<PType,void*>::get(parent));
         }
 
-        Size getParentSize() : IMember::getParentSize() = default;
-
-    public:
+        using IMember<PType,void*>::getParentSize;
 
         virtual void setElement(PType parent, int position, void* elementPoint) {
-            void* array = arrayStart(parent);
-            memcpy(array + position * getElementSize(), elementPoint, getElementSize());
+            Size array = arrayStart(parent);
+            memcpy(reinterpret_cast<void*>(array + position * getElementSize()), elementPoint, getElementSize());
         }
 
     private:
