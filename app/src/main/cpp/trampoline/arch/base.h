@@ -5,15 +5,12 @@
 #ifndef SANDHOOK_BASE_H
 #define SANDHOOK_BASE_H
 
-#if defined(__WIN32__) || defined(__APPLE__)
-#define cdecl(s) s
-#else
-#define cdecl(s) s
-#endif
+#define FUNCTION_START(x) \
+.text; \
+.align 4; \
+.global x; \
+x: \
 
-#define FUNCTION_START(x) .globl cdecl(x) \
-cdecl(x):
-
-#define FUNCTION_END(x) .x:
+#define FUNCTION_END(x) .size x, .-x
 
 #endif //SANDHOOK_BASE_H

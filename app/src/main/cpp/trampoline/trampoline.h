@@ -5,7 +5,6 @@
 #ifndef SANDHOOK_TRAMPOLINE_H
 #define SANDHOOK_TRAMPOLINE_H
 
-extern void hook_trampoline();
 
 #if defined(__i386__)
 #define SIZE_TRAMPOLINE = 4 * 7

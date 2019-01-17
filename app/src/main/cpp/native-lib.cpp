@@ -32,13 +32,13 @@ Java_com_swift_sandhook_MainActivity_calArtSize(JNIEnv *env, jobject instance, j
     return 0;
 }
 
-extern void hook_trampoline();
+extern "C" void hook_trampoline();
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_MainActivity_initHook(JNIEnv *env, jobject instance) {
 
-    void(*fp)() = hook_trampoline;
+    hook_trampoline();
 
     SandHook::cast_art_method::init(env);
 
