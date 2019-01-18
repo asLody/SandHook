@@ -1,6 +1,7 @@
 package com.swift.sandhook;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -68,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
 //
 //            methods[dexMethodIndex] = artMethod;
 
-            SandHook.init();
-            initHook();
+            //SandHook.init();
+            //initHook();
 
             tv.setText("" + calArtSize(method1, method2));
         } catch (NoSuchMethodException e) {
@@ -79,6 +80,16 @@ public class MainActivity extends AppCompatActivity {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+
+        for (int i= 0;i < 10;i++) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.e("Thread_Local", "thread_local_i = " + calArtSize(null, null));
+                }
+            }).start();
+        }
+
     }
 
     public static Field getField(Class topClass, String fieldName) throws NoSuchFieldException {
