@@ -11,7 +11,6 @@ namespace SandHook {
 
 #define BYTE_POINT sizeof(void*)
 
-
 //32bit
 #if defined(__i386__) || defined(__arm__)
 #define ADDR(addr) *((uint32_t *) addr)
