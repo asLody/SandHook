@@ -13,4 +13,8 @@ x: \
 
 #define FUNCTION_END(x) .size x, .-x
 
+#define REPLACEMENT_HOOK_TRAMPOLINE replacement_hook_trampoline
+#define INLINE_HOOK_TRAMPOLINE inline_hook_trampoline
+#define DIRECT_JUMP_TRAMPOLINE direct_jump_trampoline
+
 #endif //SANDHOOK_BASE_H

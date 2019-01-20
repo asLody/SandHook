@@ -1,7 +1,7 @@
 #include <jni.h>
 #include <string>
 #include "casts/cast_art_method.h"
-#include "./trampoline/trampoline.h"
+#include "./trampoline/arch/base.h"
 
 extern "C" JNIEXPORT jstring
 
@@ -32,13 +32,13 @@ Java_com_swift_sandhook_MainActivity_calArtSize(JNIEnv *env, jobject instance, j
     return 0;
 }
 
-extern "C" void hook_trampoline();
+extern "C" void INLINE_HOOK_TRAMPOLINE();
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_MainActivity_initHook(JNIEnv *env, jobject instance) {
 
-    hook_trampoline();
+    INLINE_HOOK_TRAMPOLINE();
 
     SandHook::cast_art_method::init(env);
 
