@@ -110,7 +110,7 @@ namespace SandHook {
         static ArrayMember<art::mirror::ArtMethod>* dexCacheResolvedMethods;
         static IMember<art::mirror::ArtMethod, uint32_t>* dexMethodIndex;
         static IMember<art::mirror::ArtMethod, uint32_t>* accessFlag;
-        static Code quickToInterpreterBridge;
+        static void* quickToInterpreterBridge;
 
 
         static void init(JNIEnv *env, int sdk) {
@@ -142,7 +142,7 @@ namespace SandHook {
 
             jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
             art::mirror::ArtMethod* neverCall = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(neverCallTestClass, "neverCall", "()V"));
-            quickToInterpreterBridge = reinterpret_cast<Code>(entryPointQuickCompiled->get(*neverCall));
+            quickToInterpreterBridge = entryPointQuickCompiled->get(*neverCall);
 
 //            //test
 //            art::mirror::ArtMethod** mArray = reinterpret_cast<art::mirror::ArtMethod**>(m1.dex_cache_resolved_methods_);
@@ -164,7 +164,7 @@ namespace SandHook {
     ArrayMember<art::mirror::ArtMethod>* CastArtMethod::dexCacheResolvedMethods = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::dexMethodIndex = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::accessFlag = nullptr;
-    Code CastArtMethod::quickToInterpreterBridge = nullptr;
+    void* CastArtMethod::quickToInterpreterBridge = nullptr;
 
 }
 

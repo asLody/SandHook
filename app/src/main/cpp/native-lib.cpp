@@ -25,6 +25,10 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     art::mirror::ArtMethod* hook = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(hookMethod));
     art::mirror::ArtMethod* backup = backupMethod == NULL ? nullptr : reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backupMethod));
 
+    if (SandHook::CastArtMethod::entryPointQuickCompiled->get(*origin) == SandHook::CastArtMethod::quickToInterpreterBridge) {
+        return JNI_FALSE;
+    }
+
     trampolineManager.installInlineTrampoline(origin, hook, backup);
 
     return JNI_TRUE;
