@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -40,13 +40,13 @@ public class MainActivity extends AppCompatActivity {
 
         methodBeHooked(savedInstanceState);
 
-        try {
-            HookWrapper.addHookClass(ActivityHooker.class);
-        } catch (HookErrorException e) {
-            e.printStackTrace();
-        }
 
-        methodBeHooked(savedInstanceState);
+        toolbar.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                methodBeHooked(savedInstanceState);
+            }
+        }, 3000);
 
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);

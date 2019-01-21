@@ -70,11 +70,11 @@ namespace SandHook {
 
     protected:
         Size codeLength() override {
-            return SIZE_REPLACEMENT_HOOK_TRAMPOLINE;
+            return SIZE_INLINE_HOOK_TRAMPOLINE;
         }
 
         Code templateCode() override {
-            return reinterpret_cast<Code>(REPLACEMENT_HOOK_TRAMPOLINE);
+            return reinterpret_cast<Code>(INLINE_HOOK_TRAMPOLINE);
         }
     };
 

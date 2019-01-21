@@ -89,7 +89,22 @@ namespace SandHook {
         }
         void codeCopy(Code src, Size targetOffset, Size len) {
             memcpy(reinterpret_cast<void*>((Size)code + targetOffset), src, len);
+            flushCache((Size)code + targetOffset, len);
         }
+
+        bool flushCache(Size addr, Size len) {
+            #if defined(__arm__)
+            int i = cacheflush(addr, addr + len, 0);
+            if (i == -1) {
+                return false;
+            }
+            #elif defined(__aarch64__)
+            char *begin = reinterpret_cast<char *>(addr);
+            __builtin___clear_cache(begin, begin + len);
+            #endif
+            return true;
+        }
+
         void clone(Code dest) {
             memcpy(dest, code, codeLen);
         }

@@ -59,13 +59,13 @@ namespace SandHook {
         virtual MType get(PType p) {
             if (offset > parentSize)
                 return NULL;
-            return *reinterpret_cast<MType*>(&p + getOffset());
+            return *reinterpret_cast<MType*>((Size)&p + getOffset());
         };
 
-        virtual void set(PType p, MType t) {
+        virtual void set(PType* p, MType t) {
             if (offset > parentSize)
                 return;
-            memcpy(&p + getOffset(), &t, sizeof(MType));
+            memcpy(reinterpret_cast<void *>((Size)p + getOffset()), &t, sizeof(MType));
         };
 
     private:
