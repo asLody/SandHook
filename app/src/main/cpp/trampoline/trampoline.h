@@ -83,20 +83,20 @@ namespace SandHook {
             codeLen = codeLength();
             tempCode = templateCode();
         }
-        const void setExecuteSpace(Code start) {
+        void setExecuteSpace(Code start) {
             code = start;
             memcpy(code, tempCode, codeLen);
         }
-        const void codeCopy(Code src, Size targetOffset, Size len) {
+        void codeCopy(Code src, Size targetOffset, Size len) {
             memcpy(code + targetOffset, src, len);
         }
-        const void clone(Code dest) {
+        void clone(Code dest) {
             memcpy(dest, code, codeLen);
         }
-        const Code getCode() {
+        Code getCode() {
             return code;
         }
-        const Size getCodeLen() {
+        Size getCodeLen() {
             return codeLen;
         }
     protected:

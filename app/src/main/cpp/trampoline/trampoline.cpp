@@ -1,6 +1,10 @@
 //
 // Created by SwiftGan on 2019/1/17.
 //
+
+#ifndef SANDHOOK_TRAMPOLINE_CPP
+#define SANDHOOK_TRAMPOLINE_CPP
+
 #include "trampoline.h"
 
 namespace SandHook {
@@ -76,3 +80,4 @@ namespace SandHook {
 
 }
 
+#endif //SANDHOOK_TRAMPOLINE_CPP

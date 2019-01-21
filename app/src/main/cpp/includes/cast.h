@@ -2,11 +2,16 @@
 // Created by 甘尧 on 2019/1/12.
 //
 
+
+#ifndef SANDHOOK_ICAST_H
+#define SANDHOOK_ICAST_H
+
 #include <stdint.h>
 #include <string.h>
 #include <jni.h>
 #include "arch.h"
 #include "utils.h"
+#include "../casts/art/art.h"
 
 #define ANDROID_L 21
 #define ANDROID_L2 22
@@ -16,9 +21,6 @@
 #define ANDROID_O 26
 #define ANDROID_O2 27
 #define ANDROID_P 28
-
-#ifndef SANDHOOK_ICAST_H
-#define SANDHOOK_ICAST_H
 
 namespace SandHook {
 

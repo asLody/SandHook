@@ -5,8 +5,6 @@
 #ifndef SANDHOOK_ARCH_H
 #define SANDHOOK_ARCH_H
 
-#endif //SANDHOOK_ARCH_H
-
 namespace SandHook {
 
 #define BYTE_POINT sizeof(void*)
@@ -24,4 +22,7 @@ namespace SandHook {
 #else
 #endif
 
+
 }
+
+#endif //SANDHOOK_ARCH_H

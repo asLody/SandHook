@@ -1,8 +1,11 @@
 //
 // Created by 甘尧 on 2019/1/12.
 //
+
+#ifndef SANDHOOK_CAST_ART_METHOD_H
+#define SANDHOOK_CAST_ART_METHOD_H
+
 #include "../includes/cast.h"
-#include "art/art_6_0.h"
 
 namespace SandHook {
 
@@ -94,7 +97,7 @@ namespace SandHook {
 
 
 
-    class cast_art_method {
+    class CastArtMethod {
     public:
         static Size size;
         static IMember<art::mirror::ArtMethod, void*>* entryPointQuickCompiled;
@@ -143,15 +146,15 @@ namespace SandHook {
 
     };
 
-    Size cast_art_method::size = 0;
-    IMember<art::mirror::ArtMethod, void*>* cast_art_method::entryPointQuickCompiled = nullptr;
-    IMember<art::mirror::ArtMethod, void*>* cast_art_method::entryPointFormInterpreter = nullptr;
-    ArrayMember<art::mirror::ArtMethod>* cast_art_method::dexCacheResolvedMethods = nullptr;
-    IMember<art::mirror::ArtMethod, uint32_t>* cast_art_method::dexMethodIndex = nullptr;
-    IMember<art::mirror::ArtMethod, uint32_t>* cast_art_method::accessFlag = nullptr;
-
-
+    Size CastArtMethod::size = 0;
+    IMember<art::mirror::ArtMethod, void*>* CastArtMethod::entryPointQuickCompiled = nullptr;
+    IMember<art::mirror::ArtMethod, void*>* CastArtMethod::entryPointFormInterpreter = nullptr;
+    ArrayMember<art::mirror::ArtMethod>* CastArtMethod::dexCacheResolvedMethods = nullptr;
+    IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::dexMethodIndex = nullptr;
+    IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::accessFlag = nullptr;
 
 }
+
+#endif //SANDHOOK_CAST_ART_METHOD_H
 
 
