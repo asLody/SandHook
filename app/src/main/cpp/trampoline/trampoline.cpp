@@ -2,8 +2,6 @@
 // Created by SwiftGan on 2019/1/17.
 //
 #include "trampoline.h"
-#include "stdlib.h"
-#include "map"
 
 namespace SandHook {
 
@@ -13,7 +11,7 @@ namespace SandHook {
         DirectJumpTrampoline() : Trampoline::Trampoline() {}
 
         void setJumpTarget(Code target) {
-            codeCopy(reinterpret_cast<char *>(&target), OFFSET_JUMP_ADDR_TARGET, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&target), OFFSET_JUMP_ADDR_TARGET, BYTE_POINT);
         }
 
     protected:
@@ -22,7 +20,7 @@ namespace SandHook {
         }
 
         Code templateCode() override {
-            return reinterpret_cast<char*>(DIRECT_JUMP_TRAMPOLINE);
+            return reinterpret_cast<Code>(DIRECT_JUMP_TRAMPOLINE);
         }
     };
 
@@ -30,11 +28,11 @@ namespace SandHook {
     public:
 
         void setHookMethod(Code hookMethod) {
-            codeCopy(reinterpret_cast<char*>(&hookMethod), OFFSET_REPLACEMENT_ADDR_ART_METHOD, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&hookMethod), OFFSET_REPLACEMENT_ADDR_ART_METHOD, BYTE_POINT);
         }
 
         void setEntryCodeOffset(Size offSet) {
-            codeCopy(reinterpret_cast<char*>(&offSet), OFFSET_REPLACEMENT_OFFSET_ENTRY_CODE, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&offSet), OFFSET_REPLACEMENT_OFFSET_ENTRY_CODE, BYTE_POINT);
         }
 
     protected:
@@ -43,7 +41,7 @@ namespace SandHook {
         }
 
         Code templateCode() override {
-            return reinterpret_cast<char*>(REPLACEMENT_HOOK_TRAMPOLINE);
+            return reinterpret_cast<Code>(REPLACEMENT_HOOK_TRAMPOLINE);
         }
     };
 
@@ -51,15 +49,15 @@ namespace SandHook {
     public:
 
         void setOriginMethod(Code originMethod) {
-            codeCopy(reinterpret_cast<char*>(&originMethod), OFFSET_INLINE_ADDR_ORIGIN_METHOD, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&originMethod), OFFSET_INLINE_ADDR_ORIGIN_METHOD, BYTE_POINT);
         }
 
         void setHookMethod(Code hookMethod) {
-            codeCopy(reinterpret_cast<char*>(&hookMethod), OFFSET_INLINE_ADDR_HOOK_METHOD, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&hookMethod), OFFSET_INLINE_ADDR_HOOK_METHOD, BYTE_POINT);
         }
 
         void setEntryCodeOffset(Size offSet) {
-            codeCopy(reinterpret_cast<char*>(&offSet), OFFSET_INLINE_OFFSET_ENTRY_CODE, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&offSet), OFFSET_INLINE_OFFSET_ENTRY_CODE, BYTE_POINT);
         }
 
         void setOriginCode(Code originCode) {
@@ -72,7 +70,7 @@ namespace SandHook {
         }
 
         Code templateCode() override {
-            return reinterpret_cast<char*>(REPLACEMENT_HOOK_TRAMPOLINE);
+            return reinterpret_cast<Code>(REPLACEMENT_HOOK_TRAMPOLINE);
         }
     };
 

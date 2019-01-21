@@ -9,8 +9,9 @@
 #include <string.h>
 #include "../includes/arch.h"
 #include "./arch/base.h"
+#include "stdlib.h"
 
-#define Code char*
+#define Code unsigned char *
 
 #if defined(__i386__)
 #define SIZE_REPLACEMENT_HOOK_TRAMPOLINE 4 * 9
@@ -67,9 +68,9 @@
 #else
 #endif
 
-extern void DIRECT_JUMP_TRAMPOLINE();
-extern void INLINE_HOOK_TRAMPOLINE();
-extern void REPLACEMENT_HOOK_TRAMPOLINE();
+extern "C" void DIRECT_JUMP_TRAMPOLINE();
+extern "C" void INLINE_HOOK_TRAMPOLINE();
+extern "C" void REPLACEMENT_HOOK_TRAMPOLINE();
 
 namespace SandHook {
 
@@ -82,7 +83,7 @@ namespace SandHook {
             codeLen = codeLength();
             tempCode = templateCode();
         }
-        const void setExcuteSpace(Code start) {
+        const void setExecuteSpace(Code start) {
             code = start;
             memcpy(code, tempCode, codeLen);
         }
