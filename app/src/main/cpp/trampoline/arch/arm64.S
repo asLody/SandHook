@@ -33,9 +33,9 @@ FUNCTION_START(INLINE_HOOK_TRAMPOLINE)
     ldr Reg1, addr_origin_art_method
     cmp RegMethod, Reg1
     bne go_to_origin_code
-    ldr Reg0, addr_hook_art_method
+    ldr RegMethod, addr_hook_art_method
     ldr Reg1, offset_entry_code2
-    add Reg1, Reg0, Reg1
+    add Reg1, RegMethod, Reg1
     ldr Reg1, [Reg1]
     br Reg1
 go_to_origin_code:

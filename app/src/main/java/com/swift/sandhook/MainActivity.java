@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public void methodBeHooked(Bundle bundle) {
+    public static void methodBeHooked(Bundle bundle) {
         int a = 1 + 2;
         int b = a + 3;
         Log.e("gy", "not hooked" + b + bundle);

@@ -22,6 +22,23 @@ namespace SandHook {
 #else
 #endif
 
+#if defined(__arm__)
+static void clearCacheArm32(char* begin, char *end)
+{
+    const int syscall = 0xf0002;
+    __asm __volatile (
+        "mov     r0, %0\n"
+        "mov     r1, %1\n"
+        "mov     r3, %2\n"
+        "mov     r2, #0x0\n"
+        "svc     0x00000000\n"
+        :
+        :    "r" (begin), "r" (end), "r" (syscall)
+        :    "r0", "r1", "r3"
+        );
+}
+#endif
+
 
 }
 

@@ -15,6 +15,7 @@ public class SandHook {
 
     public static Class artMethodClass;
 
+    public static Field nativePeerField;
     public static Method testOffsetMethod1;
     public static Method testOffsetMethod2;
     public static Object testOffsetArtMethod1;
@@ -29,8 +30,17 @@ public class SandHook {
 
     private static boolean init() {
         initTestOffset();
+        initThreadPeer();
         SandHookMethodResolver.init();
         return initNative(Build.VERSION.SDK_INT);
+    }
+
+    private static void initThreadPeer() {
+        try {
+            nativePeerField = getField(Thread.class, "nativePeer");
+        } catch (NoSuchFieldException e) {
+
+        }
     }
 
     public static void addHookClass(Class... hookWrapperClass) throws HookErrorException {
@@ -38,6 +48,7 @@ public class SandHook {
     }
 
     public static void hook(@NonNull Member target, @NonNull Method hook, @Nullable Method backup) {
+        hook.setAccessible(true);
         hookMethod(target, hook, backup);
     }
 
@@ -108,6 +119,16 @@ public class SandHook {
             topClass = topClass.getSuperclass();
         }
         throw new NoSuchFieldException(fieldName);
+    }
+
+    public static long getThreadId() {
+        if (nativePeerField == null)
+            return 0;
+        try {
+            return (long) nativePeerField.get(Thread.currentThread());
+        } catch (IllegalAccessException e) {
+            return 0;
+        }
     }
 
     private static native boolean initNative(int sdk);

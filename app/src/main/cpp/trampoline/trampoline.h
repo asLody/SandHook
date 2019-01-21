@@ -10,6 +10,7 @@
 #include "../includes/arch.h"
 #include "./arch/base.h"
 #include "stdlib.h"
+#include <sys/mman.h>
 
 #define Code unsigned char *
 
@@ -86,6 +87,7 @@ namespace SandHook {
         void setExecuteSpace(Code start) {
             code = start;
             memcpy(code, tempCode, codeLen);
+            flushCache(reinterpret_cast<Size>(code), codeLen);
         }
         void codeCopy(Code src, Size targetOffset, Size len) {
             memcpy(reinterpret_cast<void*>((Size)code + targetOffset), src, len);
@@ -94,10 +96,12 @@ namespace SandHook {
 
         bool flushCache(Size addr, Size len) {
             #if defined(__arm__)
+            //clearCacheArm32(reinterpret_cast<char*>(addr), reinterpret_cast<char*>(addr + len));
             int i = cacheflush(addr, addr + len, 0);
             if (i == -1) {
                 return false;
             }
+            return true;
             #elif defined(__aarch64__)
             char *begin = reinterpret_cast<char *>(addr);
             __builtin___clear_cache(begin, begin + len);

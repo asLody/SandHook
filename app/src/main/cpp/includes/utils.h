@@ -75,6 +75,20 @@ Size getAddressFromJava(JNIEnv* env, char* className, char* fieldName) {
     return env -> GetStaticLongField(clazz, id);
 }
 
+Size getAddressFromJavaByCallMethod(JNIEnv* env, char* className, char* methodName) {
+    jclass clazz = env -> FindClass(className);
+    if (clazz == NULL){
+        printf("find class error !");
+        return 0;
+    }
+    jmethodID id = env -> GetStaticMethodID(clazz, methodName, "()J");
+    if (id == NULL){
+        printf("find field error !");
+        return 0;
+    }
+    return env -> CallStaticLongMethodA(clazz, id, nullptr);
+}
+
 jint getIntFromJava(JNIEnv* env, char* className, char* fieldName) {
     jclass clazz = env -> FindClass(className);
     if (clazz == NULL){
