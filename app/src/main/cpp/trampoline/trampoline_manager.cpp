@@ -77,6 +77,7 @@ namespace SandHook {
         ReplacementHookTrampoline* callOriginTrampoline = nullptr;
         Code inlineHookTrampolineSpace;
         Code callOriginTrampolineSpace;
+        Code originEntry;
 
         //生成二段跳板
         inlineHookTrampoline = new InlineHookTrampoline;
@@ -94,12 +95,16 @@ namespace SandHook {
         //注入 EntryCode
         directJumpTrampoline = new DirectJumpTrampoline();
         directJumpTrampoline->init();
-        directJumpTrampoline->setExecuteSpace(getEntryCode(originMethod));
+        originEntry = getEntryCode(originMethod);
+        if (!memUnprotect(reinterpret_cast<Size>(originEntry), directJumpTrampoline->getCodeLen())) {
+            goto label_error;
+        }
+        directJumpTrampoline->setExecuteSpace(originEntry);
         directJumpTrampoline->setJumpTarget(inlineHookTrampoline->getCode());
         hookTrampoline->inlineJump = directJumpTrampoline;
 
         //备份原始方法
-        if (backupMethod) {
+        if (backupMethod != nullptr) {
             callOriginTrampoline = new ReplacementHookTrampoline();
             callOriginTrampoline->init();
             callOriginTrampolineSpace = allocExecuteSpace(callOriginTrampoline->getCodeLen());

@@ -11,10 +11,11 @@
 #include "../utils/lock.h"
 #include <sys/mman.h>
 #include "../casts/art/art.h"
+#include <unistd.h>
 
 namespace SandHook {
 
-    #define MMAP_PAGE_SIZE 4 * 1024
+    #define MMAP_PAGE_SIZE sysconf(_SC_PAGESIZE)
 
     using namespace art;
 
@@ -46,9 +47,20 @@ namespace SandHook {
             return trampolines[method];
         }
 
-        Code getEntryCode(mirror::ArtMethod* method) {
-            Size* pEntryAddress = reinterpret_cast<Size*>(method + quickCompileOffset);
-            Code entryCode = reinterpret_cast<Code>(*pEntryAddress);
+        bool memUnprotect(Size addr, Size len) {
+            long pagesize = sysconf(_SC_PAGESIZE);
+            unsigned alignment = (unsigned)((unsigned long long)addr % pagesize);
+            int i = mprotect((void *) (addr - alignment), (size_t) (alignment + len),
+                             PROT_READ | PROT_WRITE | PROT_EXEC);
+            if (i == -1) {
+                return false;
+            }
+            return true;
+        }
+
+        Code getEntryCode(void* method) {
+            Code entryCode = *reinterpret_cast<Code*>((Size)method + quickCompileOffset);
+            return entryCode;
         }
 
 
@@ -56,7 +68,7 @@ namespace SandHook {
 
         Size quickCompileOffset;
 
-        std::map<mirror::ArtMethod*,HookTrampoline*> trampolines = {};
+        std::map<mirror::ArtMethod*,HookTrampoline*> trampolines;
         std::list<Code> executeSpaceList = std::list<Code>();
         std::mutex allocSpaceLock;
         std::mutex installLock;

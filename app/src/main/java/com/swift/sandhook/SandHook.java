@@ -4,7 +4,11 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.swift.sandhook.wrapper.HookErrorException;
+import com.swift.sandhook.wrapper.HookWrapper;
+
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 public class SandHook {
@@ -20,17 +24,21 @@ public class SandHook {
 
     static {
         System.loadLibrary("native-lib");
+        init();
     }
 
-
-    public static boolean init() {
+    private static boolean init() {
         initTestOffset();
         SandHookMethodResolver.init();
         return initNative(Build.VERSION.SDK_INT);
     }
 
-    public static void hook(@NonNull Method target, @NonNull Method hook, @Nullable Method backup) {
+    public static void addHookClass(Class... hookWrapperClass) throws HookErrorException {
+        HookWrapper.addHookClass(hookWrapperClass);
+    }
 
+    public static void hook(@NonNull Member target, @NonNull Method hook, @Nullable Method backup) {
+        hookMethod(target, hook, backup);
     }
 
 
@@ -103,5 +111,7 @@ public class SandHook {
     }
 
     private static native boolean initNative(int sdk);
+
+    private static native boolean hookMethod(Member originMethod, Method hookMethod, Method backupMethod);
 
 }

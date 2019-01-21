@@ -69,7 +69,11 @@ namespace SandHook {
     class CastAccessFlag : public IMember<art::mirror::ArtMethod, uint32_t> {
     protected:
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod p) override {
-            int offset = findOffset(&p, getParentSize(), 2, (uint32_t)524313);
+            uint32_t accessFlag = getIntFromJava(jniEnv, "com/swift/sandhook/SandHook", "testAccessFlag");
+            if (accessFlag == 0) {
+                accessFlag = 524313;
+            }
+            int offset = findOffset(&p, getParentSize(), 2, accessFlag);
             if (offset < 0)
                 return getParentSize() + 1;
             else

@@ -88,7 +88,7 @@ namespace SandHook {
             memcpy(code, tempCode, codeLen);
         }
         void codeCopy(Code src, Size targetOffset, Size len) {
-            memcpy(code + targetOffset, src, len);
+            memcpy(reinterpret_cast<void*>((Size)code + targetOffset), src, len);
         }
         void clone(Code dest) {
             memcpy(dest, code, codeLen);

@@ -6,7 +6,9 @@
 #define SANDHOOK_UTILS_H
 
 #include <stdlib.h>
+#include <sys/mman.h>
 #include "jni.h"
+#include <unistd.h>
 
 template<typename T>
 int findOffset(void *start, size_t len,size_t step,T value) {
@@ -85,6 +87,17 @@ jint getIntFromJava(JNIEnv* env, char* className, char* fieldName) {
         return 0;
     }
     return env -> GetStaticIntField(clazz, id);
+}
+
+bool munprotect(size_t addr, size_t len) {
+    long pagesize = sysconf(_SC_PAGESIZE);
+    unsigned alignment = (unsigned)((unsigned long long)addr % pagesize);
+    int i = mprotect((void *) (addr - alignment), (size_t) (alignment + len),
+                     PROT_READ | PROT_WRITE | PROT_EXEC);
+    if (i == -1) {
+        return false;
+    }
+    return true;
 }
 
 

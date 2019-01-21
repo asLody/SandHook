@@ -38,13 +38,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        SandHook.init();
+        methodBeHooked(savedInstanceState);
 
         try {
             HookWrapper.addHookClass(ActivityHooker.class);
         } catch (HookErrorException e) {
             e.printStackTrace();
         }
+
+        methodBeHooked(savedInstanceState);
 
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
@@ -67,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    public void methodBeHooked(Bundle bundle) {
+        int a = 1 + 2;
+        int b = a + 3;
+        Log.e("gy", "not hooked" + b + bundle);
     }
 
     @Override
