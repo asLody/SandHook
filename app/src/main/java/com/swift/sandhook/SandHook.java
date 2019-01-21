@@ -1,5 +1,6 @@
 package com.swift.sandhook;
 
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -17,11 +18,15 @@ public class SandHook {
 
     public static int testAccessFlag;
 
+    static {
+        System.loadLibrary("native-lib");
+    }
+
 
     public static boolean init() {
         initTestOffset();
         SandHookMethodResolver.init();
-        return true;
+        return initNative(Build.VERSION.SDK_INT);
     }
 
     public static void hook(@NonNull Method target, @NonNull Method hook, @Nullable Method backup) {
@@ -97,5 +102,6 @@ public class SandHook {
         throw new NoSuchFieldException(fieldName);
     }
 
+    private static native boolean initNative(int sdk);
 
 }

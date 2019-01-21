@@ -20,9 +20,7 @@ import java.lang.reflect.Method;
 public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        SandHook.init();
+
         try {
             HookWrapper.addHookClass(ActivityHooker.class);
         } catch (HookErrorException e) {
@@ -48,47 +48,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
-        try {
-            Method method1 = ArtMethodSizeTest.class.getDeclaredMethod("method1");
-            Method method2 = ArtMethodSizeTest.class.getDeclaredMethod("method2");
-            Field field = Class.class.getDeclaredField("dexCache");
-            field.setAccessible(true);
-            Object dexCache = field.get(ArtMethodSizeTest.class);
-            Field resolvedMethodsField = dexCache.getClass().getDeclaredField("resolvedMethods");
-            resolvedMethodsField.setAccessible(true);
-//            long[] methods = (long[]) resolvedMethodsField.get(dexCache);
-//
-//
-//            Field dexMethodIndexField = getField(Method.class, "dexMethodIndex");
-//            dexMethodIndexField.setAccessible(true);
-//            int dexMethodIndex = (int) dexMethodIndexField.get(method1);
-//
-//            Field artMethodField = getField(Method.class, "artMethod");
-//            artMethodField.setAccessible(true);
-//            long artMethod = (long) artMethodField.get(method1);
-//
-//            methods[dexMethodIndex] = artMethod;
-
-            //SandHook.init();
-            //initHook();
-
-            tv.setText("" + calArtSize(method1, method2));
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        for (int i= 0;i < 10;i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.e("Thread_Local", "thread_local_i = " + calArtSize(null, null));
-                }
-            }).start();
-        }
 
     }
 
@@ -124,14 +83,5 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
-
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI(Method method);
-
-    public native int calArtSize(Method method1, Method method2);
-
-    public native void initHook();
 }
+

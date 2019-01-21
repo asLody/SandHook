@@ -41,6 +41,7 @@ public:
 
 class ArtMethod {
 public:
+    uint16_t palceholder[32];
 };
 
 }
