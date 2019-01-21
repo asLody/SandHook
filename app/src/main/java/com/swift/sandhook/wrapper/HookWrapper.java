@@ -8,8 +8,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HookWrapper {
+
+    Map<Member,HookEntity> hookEntityMap = new ConcurrentHashMap<>();
 
     public static void addHookClass(Class<?>... classes) throws HookErrorException {
         for (Class clazz:classes) {
@@ -25,6 +28,7 @@ public class HookWrapper {
         for (HookEntity entity:hookEntityMap.values()) {
             if (entity.target != null && entity.hook != null) {
                 SandHook.hook(entity.target, entity.hook, entity.backup);
+                hookEntityMap.put(entity.target, entity);
             }
         }
     }
