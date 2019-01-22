@@ -1,6 +1,11 @@
-package com.swift.sandhook.wrapper;
+package com.swift.sandhook;
 
 import android.util.Log;
+
+import com.swift.sandhook.wrapper.HookClass;
+import com.swift.sandhook.wrapper.HookMethod;
+import com.swift.sandhook.wrapper.HookMethodBackup;
+import com.swift.sandhook.wrapper.MethodParams;
 
 @HookClass(Log.class)
 public class LogHooker {
