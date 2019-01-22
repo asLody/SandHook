@@ -9,6 +9,7 @@ public class MyApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        ActivityHooker.onCreate(null, null);
         try {
             HookWrapper.addHookClass(ActivityHooker.class);
         } catch (HookErrorException e) {

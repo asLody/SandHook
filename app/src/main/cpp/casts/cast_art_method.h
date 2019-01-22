@@ -27,7 +27,7 @@ namespace SandHook {
         }
 
         Size calElementSize(JNIEnv *jniEnv, art::mirror::ArtMethod p) override {
-            return getParentSize();
+            return BYTE_POINT;
         }
     };
 
@@ -143,12 +143,6 @@ namespace SandHook {
             jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
             art::mirror::ArtMethod* neverCall = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(neverCallTestClass, "neverCall", "()V"));
             quickToInterpreterBridge = entryPointQuickCompiled->get(*neverCall);
-
-//            //test
-//            art::mirror::ArtMethod** mArray = reinterpret_cast<art::mirror::ArtMethod**>(m1.dex_cache_resolved_methods_);
-//
-//            art::mirror::ArtMethod m1B = *mArray[m1.dex_method_index_];
-//            art::mirror::ArtMethod m1C = *mArray[m2.dex_method_index_];
 
         }
 

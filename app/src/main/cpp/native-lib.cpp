@@ -32,6 +32,30 @@ void disableInterpreterForO(art::mirror::ArtMethod* method) {
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
+void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMethod *backupMethod) {
+    if (SDK_INT >= ANDROID_P)
+        return;
+    uint32_t index = SandHook::CastArtMethod::dexMethodIndex->get(*backupMethod);
+    if (SDK_INT < ANDROID_O2) {
+        SandHook::CastArtMethod::dexCacheResolvedMethods->setElement(*hookMethod, index, backupMethod);
+    } else {
+        int cacheSize = 1024;
+        Size slotIndex = index % cacheSize;
+        void *newCachedMethodsArray = calloc(cacheSize, BYTE_POINT * 2);
+        unsigned int one = 1;
+        memcpy(newCachedMethodsArray + BYTE_POINT, &one, 4);
+        memcpy(newCachedMethodsArray + BYTE_POINT * 2 * slotIndex,
+               (&backupMethod),
+               BYTE_POINT
+        );
+        memcpy(newCachedMethodsArray + BYTE_POINT * 2 * slotIndex + BYTE_POINT,
+               &index,
+               4
+        );
+        SandHook::CastArtMethod::dexCacheResolvedMethods->set(hookMethod, &newCachedMethodsArray);
+    }
+}
+
 bool doHookWithReplacement(art::mirror::ArtMethod *originMethod,
                            art::mirror::ArtMethod *hookMethod,
                            art::mirror::ArtMethod *backupMethod) {
@@ -42,10 +66,13 @@ bool doHookWithReplacement(art::mirror::ArtMethod *originMethod,
     if (SDK_INT >= ANDROID_O) {
         disableInterpreterForO(originMethod);
     }
+    if (backupMethod != nullptr) {
+        memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
+    }
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline != nullptr) {
         SandHook::CastArtMethod::entryPointQuickCompiled->set(originMethod, hookTrampoline->replacement->getCode());
-        hookTrampoline->replacement->flushCache(reinterpret_cast<Size>(originMethod), 100);
+        hookTrampoline->replacement->flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
     }
 }
 
@@ -53,10 +80,6 @@ bool doHookWithInline(JNIEnv* env,
                       art::mirror::ArtMethod *originMethod,
                       art::mirror::ArtMethod *hookMethod,
                       art::mirror::ArtMethod *backupMethod) {
-
-//    uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(*originMethod);
-//    SandHook::CastArtMethod::accessFlag->set(hookMethod, accessFlag);
-
     bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(*hookMethod) == SandHook::CastArtMethod::quickToInterpreterBridge;
 
     if (isInterpreter) {
@@ -64,8 +87,27 @@ bool doHookWithInline(JNIEnv* env,
         compileMethod(hookMethod, reinterpret_cast<void*>(threadId));
     }
 
+    isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(*backupMethod) == SandHook::CastArtMethod::quickToInterpreterBridge;
+
+    if (isInterpreter) {
+        Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
+        compileMethod(backupMethod, reinterpret_cast<void*>(threadId));
+    }
+
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
-    hookTrampoline->inlineSecondory->flushCache(reinterpret_cast<Size>(hookMethod), 100);
+    hookTrampoline->inlineSecondory->flushCache(reinterpret_cast<Size>(hookMethod), SandHook::CastArtMethod::size);
+    if (hookTrampoline->callOrigin != nullptr) {
+        //backup
+        memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
+        SandHook::CastArtMethod::entryPointQuickCompiled->set(backupMethod, hookTrampoline->callOrigin->getCode());
+        if (SDK_INT >= ANDROID_N) {
+            disableCompilable(backupMethod);
+        }
+        if (SDK_INT >= ANDROID_O) {
+            disableInterpreterForO(backupMethod);
+        }
+        hookTrampoline->callOrigin->flushCache(reinterpret_cast<Size>(backupMethod), SandHook::CastArtMethod::size);
+    }
 }
 
 extern "C"
@@ -77,6 +119,10 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     art::mirror::ArtMethod* origin = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(originMethod));
     art::mirror::ArtMethod* hook = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(hookMethod));
     art::mirror::ArtMethod* backup = backupMethod == NULL ? nullptr : reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backupMethod));
+
+//    if (backup != nullptr) {
+//        memcpy(backup, origin, SandHook::CastArtMethod::size);
+//    }
 
     bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(*origin) == SandHook::CastArtMethod::quickToInterpreterBridge;
 
@@ -99,3 +145,11 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
 }
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_ensureMethodCached(JNIEnv *env, jclass type, jobject hook,
+                                                    jobject backup) {
+    art::mirror::ArtMethod* hookeMethod = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(hook));
+    art::mirror::ArtMethod* backupMethod = backup == NULL ? nullptr : reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backup));
+//    ensureMethodCached(hookeMethod, backupMethod);
+}

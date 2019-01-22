@@ -107,7 +107,7 @@ public class SandHookMethodResolver {
     }
 
     private static void resolveInNative(Method hook, Method backup) {
-//        HookMain.ensureMethodCached(hook, backup);
+        SandHook.ensureMethodCached(hook, backup);
     }
 
 }

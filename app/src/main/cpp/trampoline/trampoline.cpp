@@ -68,6 +68,10 @@ namespace SandHook {
             codeCopy(originCode, OFFSET_INLINE_ORIGIN_CODE, SIZE_DIRECT_JUMP_TRAMPOLINE);
         }
 
+        Code getCallOriginCode() {
+            return reinterpret_cast<Code>((Size)getCode() + OFFSET_INLINE_ORIGIN_CODE);
+        }
+
     protected:
         Size codeLength() override {
             return SIZE_INLINE_HOOK_TRAMPOLINE;

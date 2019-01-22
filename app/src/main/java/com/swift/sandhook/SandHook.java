@@ -49,6 +49,9 @@ public class SandHook {
 
     public static void hook(@NonNull Member target, @NonNull Method hook, @Nullable Method backup) {
         hook.setAccessible(true);
+        if (backup != null) {
+            SandHookMethodResolver.resolveMethod(hook, backup);
+        }
         hookMethod(target, hook, backup);
     }
 
@@ -134,5 +137,7 @@ public class SandHook {
     private static native boolean initNative(int sdk);
 
     private static native boolean hookMethod(Member originMethod, Method hookMethod, Method backupMethod);
+
+    public static native void ensureMethodCached(Method hook, Method backup);
 
 }
