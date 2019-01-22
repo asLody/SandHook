@@ -82,6 +82,27 @@ namespace SandHook {
         }
     };
 
+    class CallOriginTrampoline : public Trampoline {
+    public:
+
+        void setOriginMethod(Code originMethod) {
+            codeCopy(reinterpret_cast<Code>(&originMethod), OFFSET_CALL_ORIGIN_ART_METHOD, BYTE_POINT);
+        }
+
+        void setOriginCode(Code originCode) {
+            codeCopy(reinterpret_cast<Code>(&originCode), OFFSET_CALL_ORIGIN_JUMP_ADDR, BYTE_POINT);
+        }
+
+    protected:
+        Size codeLength() override {
+            return SIZE_CALL_ORIGIN_TRAMPOLINE;
+        }
+
+        Code templateCode() override {
+            return reinterpret_cast<Code>(CALL_ORIGIN_TRAMPOLINE);
+        }
+    };
+
 }
 
 #endif //SANDHOOK_TRAMPOLINE_CPP

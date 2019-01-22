@@ -63,7 +63,7 @@ FUNCTION_END(INLINE_HOOK_TRAMPOLINE)
 
 FUNCTION_START(CALL_ORIGIN_TRAMPOLINE)
     ldr RegMethod, origin_art_method
-    ldr Reg0, addr_target
+    ldr Reg0, addr_origin
     br Reg0
 origin_art_method:
     .long 0
