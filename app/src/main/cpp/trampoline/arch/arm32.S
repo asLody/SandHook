@@ -2,7 +2,7 @@
 
 #if defined(__arm__)
 
-#define Reg0 r12
+#define Reg0 ip
 //need restore
 #define Reg1 r11
 #define RegMethod r0
@@ -40,10 +40,9 @@ origin_code:
     .long 0
     .long 0
     ldr Reg0, addr_origin_art_method
-    ldr Reg1, offset_entry_code2
-    add Reg1, Reg0, Reg1
-    ldr Reg1, [Reg1]
-    add pc, Reg1, SIZE_JUMP
+    add Reg0, Reg0, #8
+    ldr Reg0, [Reg0]
+    add pc, Reg0, SIZE_JUMP
 addr_origin_art_method:
     .long 0
 offset_entry_code2:

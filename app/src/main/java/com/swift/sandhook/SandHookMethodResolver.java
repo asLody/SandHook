@@ -72,7 +72,11 @@ public class SandHookMethodResolver {
             canResolvedInJava = false;
             resolvedMethodsAddress = (long) resolvedMethods;
         } else if (resolvedMethods instanceof long[]) {
+            //64bit
             canResolvedInJava = true;
+        } else if (resolvedMethods instanceof int[]) {
+            //32bit
+            canResolvedInJava = false;
         }
     }
 
@@ -101,8 +105,15 @@ public class SandHookMethodResolver {
         } else {
             int dexMethodIndex = (int) dexMethodIndexField.get(backup);
             Object resolvedMethods = resolvedMethodsField.get(dexCache);
-            long artMethod = (long) artMethodField.get(backup);
-            ((long[])resolvedMethods)[dexMethodIndex] = artMethod;
+            if (resolvedMethods instanceof long[]) {
+                long artMethod = (long) artMethodField.get(backup);
+                ((long[])resolvedMethods)[dexMethodIndex] = artMethod;
+            } else if (resolvedMethods instanceof int[]) {
+                int artMethod = Long.valueOf((long)artMethodField.get(backup)).intValue();
+                ((int[])resolvedMethods)[dexMethodIndex] = artMethod;
+            } else {
+                throw new UnsupportedOperationException("un support");
+            }
         }
     }
 

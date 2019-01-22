@@ -41,18 +41,19 @@
 #define OFFSET_INLINE_OFFSET_ENTRY_CODE 4 * 20
 #define OFFSET_INLINE_ADDR_HOOK_METHOD 4 * 22
 #elif defined(__arm__)
-#define SIZE_REPLACEMENT_HOOK_TRAMPOLINE 4 * 9
-#define OFFSET_REPLACEMENT_ADDR_ART_METHOD 4 * 5
-#define OFFSET_REPLACEMENT_OFFSET_ENTRY_CODE 4 * 7
+#define SIZE_REPLACEMENT_HOOK_TRAMPOLINE 4 * 6
+#define OFFSET_REPLACEMENT_ADDR_ART_METHOD 4 * 4
+#define OFFSET_REPLACEMENT_OFFSET_ENTRY_CODE 4 * 5
 
-#define SIZE_DIRECT_JUMP_TRAMPOLINE 4 * 4
-#define OFFSET_JUMP_ADDR_TARGET 4 * 2
+#define SIZE_DIRECT_JUMP_TRAMPOLINE 4 * 2
+#define OFFSET_JUMP_ADDR_TARGET 4 * 1
 
-#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 24
-#define OFFSET_INLINE_ADDR_ORIGIN_METHOD 4 * 10
-#define OFFSET_INLINE_ORIGIN_CODE 4 * 12
-#define OFFSET_INLINE_OFFSET_ENTRY_CODE 4 * 20
-#define OFFSET_INLINE_ADDR_HOOK_METHOD 4 * 22
+#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 16
+#define OFFSET_INLINE_ADDR_ORIGIN_METHOD 4 * 13
+#define OFFSET_INLINE_ORIGIN_CODE 4 * 7
+#define OFFSET_INLINE_OFFSET_ENTRY_CODE 4 * 14
+#define OFFSET_INLINE_ADDR_HOOK_METHOD 4 * 15
+#define OFFSET_INLINE_OP_OFFSET_CODE 4 * 10
 
 #define SIZE_CALL_ORIGIN_TRAMPOLINE 4 * 7
 #define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 3
@@ -71,9 +72,9 @@
 #define OFFSET_INLINE_OFFSET_ENTRY_CODE 4 * 20
 #define OFFSET_INLINE_ADDR_HOOK_METHOD 4 * 22
 
-#define SIZE_CALL_ORIGIN_TRAMPOLINE 4 * 7
-#define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 3
-#define OFFSET_CALL_ORIGIN_JUMP_ADDR 4 * 5
+#define SIZE_CALL_ORIGIN_TRAMPOLINE 4 * 4
+#define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 2
+#define OFFSET_CALL_ORIGIN_JUMP_ADDR 4 * 3
 #else
 #endif
 
@@ -127,6 +128,14 @@ namespace SandHook {
         Size getCodeLen() {
             return codeLen;
         }
+
+        bool isBigEnd(void) {
+            int i = 1;
+            unsigned char *pointer;
+            pointer = (unsigned char *) &i;
+            return *pointer == 0;
+        }
+
     protected:
         virtual Size codeLength() = 0;
         virtual Code templateCode() = 0;
@@ -134,6 +143,17 @@ namespace SandHook {
         Code code;
         Code tempCode;
         Size codeLen;
+    };
+
+
+    union Code32Bit {
+        uint32_t code;
+        struct {
+            unsigned char op1;
+            unsigned char op2;
+            unsigned char op3;
+            unsigned char op4;
+        } op;
     };
 
 }

@@ -23,7 +23,22 @@ namespace SandHook {
                     return static_cast<Size>(offset);
                 }
             }
+            if (SDK_INT == ANDROID_M) {
+                return 4;
+            } else if (SDK_INT >= ANDROID_L && SDK_INT <= ANDROID_L2) {
+                return 4 * 3;
+            }
             return getParentSize() + 1;
+        }
+
+    public:
+        Size arrayStart(mirror::ArtMethod *parent) override {
+            void* p = IMember<mirror::ArtMethod,void*>::get(parent);
+            if (SDK_INT <= ANDROID_M) {
+                return reinterpret_cast<Size>(p) + 4 * 3;
+            } else {
+                reinterpret_cast<Size>(p);
+            }
         }
 
     };
