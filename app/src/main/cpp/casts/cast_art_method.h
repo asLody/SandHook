@@ -37,7 +37,7 @@ namespace SandHook {
             if (SDK_INT <= ANDROID_M) {
                 return reinterpret_cast<Size>(p) + 4 * 3;
             } else {
-                reinterpret_cast<Size>(p);
+                return reinterpret_cast<Size>(p);
             }
         }
 
