@@ -125,6 +125,11 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
     bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::quickToInterpreterBridge;
 
+    #if defined(__arm__)
+        doHookWithReplacement(origin, hook, backup);
+        return JNI_TRUE;
+    #endif
+
     if (isInterpreter) {
         if (SDK_INT >= ANDROID_N) {
             Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");

@@ -76,7 +76,7 @@ public class SandHookMethodResolver {
             canResolvedInJava = true;
         } else if (resolvedMethods instanceof int[]) {
             //32bit
-            canResolvedInJava = false;
+            canResolvedInJava = true;
         }
     }
 
