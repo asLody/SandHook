@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 methodBeHooked(savedInstanceState);
+                Log.w("gy", "dadadad");
             }
         }, 3000);
 

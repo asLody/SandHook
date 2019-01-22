@@ -16,5 +16,6 @@ x: \
 #define REPLACEMENT_HOOK_TRAMPOLINE replacement_hook_trampoline
 #define INLINE_HOOK_TRAMPOLINE inline_hook_trampoline
 #define DIRECT_JUMP_TRAMPOLINE direct_jump_trampoline
+#define CALL_ORIGIN_TRAMPOLINE call_origin_trampoline
 
 #endif //SANDHOOK_BASE_H

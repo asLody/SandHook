@@ -48,13 +48,20 @@ public class SandHook {
     }
 
     public static void hook(@NonNull Member target, @NonNull Method hook, @Nullable Method backup) {
-        hook.setAccessible(true);
         if (backup != null) {
+            resolveBackupMethod(backup);
             SandHookMethodResolver.resolveMethod(hook, backup);
         }
         hookMethod(target, hook, backup);
     }
 
+    private static void resolveBackupMethod(Method method) {
+        try {
+            method.invoke(null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     private static void initTestOffset() {
         // make test methods sure resolved!

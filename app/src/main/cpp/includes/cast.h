@@ -43,7 +43,7 @@ namespace SandHook {
     class IMember {
     public:
 
-        virtual void init(JNIEnv *jniEnv, PType p, Size size) {
+        virtual void init(JNIEnv *jniEnv, PType* p, Size size) {
             this->parentSize = size;
             offset = calOffset(jniEnv, p);
         }
@@ -56,10 +56,10 @@ namespace SandHook {
             return parentSize;
         }
 
-        virtual MType get(PType p) {
+        virtual MType get(PType* p) {
             if (offset > parentSize)
                 return NULL;
-            return *reinterpret_cast<MType*>((Size)&p + getOffset());
+            return *reinterpret_cast<MType*>((Size)p + getOffset());
         };
 
         virtual void set(PType* p, MType t) {
@@ -72,15 +72,15 @@ namespace SandHook {
         Size offset = 0;
     protected:
         Size parentSize = 0;
-        virtual Size calOffset(JNIEnv *jniEnv, PType p) = 0;
+        virtual Size calOffset(JNIEnv *jniEnv, PType* p) = 0;
 
     };
 
-    template<typename PType>
+    template<typename PType, typename ElementType>
     class ArrayMember : public IMember<PType, void*> {
     public:
 
-        virtual void init(JNIEnv *jniEnv, PType p, Size parentSize) override {
+        virtual void init(JNIEnv *jniEnv, PType* p, Size parentSize) override {
             IMember<PType,void*>::init(jniEnv, p, parentSize);
             elementSize = calElementSize(jniEnv, p);
         }
@@ -89,21 +89,24 @@ namespace SandHook {
             return elementSize;
         }
 
-        virtual Size arrayStart(PType parent) {
-            return reinterpret_cast<Size>(IMember<PType,void*>::get(parent));
+        virtual Size arrayStart(PType* parent) {
+            void* p = IMember<PType,void*>::get(parent);
+            return reinterpret_cast<Size>(p);
         }
 
         using IMember<PType,void*>::getParentSize;
 
-        virtual void setElement(PType parent, int position, void* elementPoint) {
+        virtual void setElement(PType* parent, int position, ElementType elementPoint) {
             Size array = arrayStart(parent);
-            memcpy(reinterpret_cast<void*>(array + position * getElementSize()), elementPoint, getElementSize());
+            memcpy(reinterpret_cast<void*>(array + position * getElementSize()), &elementPoint, getElementSize());
         }
 
     private:
         Size elementSize = 0;
     protected:
-        virtual Size calElementSize(JNIEnv *jniEnv, PType p) = 0;
+        virtual Size calElementSize(JNIEnv *jniEnv, PType* p) {
+            return sizeof(ElementType);
+        };
     };
 
 }

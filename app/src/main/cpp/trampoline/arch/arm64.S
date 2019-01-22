@@ -61,4 +61,16 @@ addr_hook_art_method:
     .long 0
 FUNCTION_END(INLINE_HOOK_TRAMPOLINE)
 
+FUNCTION_START(CALL_ORIGIN_TRAMPOLINE)
+    ldr RegMethod, origin_art_method
+    ldr Reg0, addr_target
+    br Reg0
+origin_art_method:
+    .long 0
+    .long 0
+addr_origin:
+    .long 0
+    .long 0
+FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
+
 #endif
