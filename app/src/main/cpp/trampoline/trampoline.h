@@ -48,12 +48,12 @@
 #define SIZE_DIRECT_JUMP_TRAMPOLINE 4 * 2
 #define OFFSET_JUMP_ADDR_TARGET 4 * 1
 
-#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 16
-#define OFFSET_INLINE_ADDR_ORIGIN_METHOD 4 * 13
+#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 17
 #define OFFSET_INLINE_ORIGIN_CODE 4 * 7
-#define OFFSET_INLINE_OFFSET_ENTRY_CODE 4 * 14
-#define OFFSET_INLINE_ADDR_HOOK_METHOD 4 * 15
 #define OFFSET_INLINE_OP_OFFSET_CODE 4 * 10
+#define OFFSET_INLINE_ADDR_ORIGIN_METHOD 4 * 14
+#define OFFSET_INLINE_OFFSET_ENTRY_CODE 4 * 15
+#define OFFSET_INLINE_ADDR_HOOK_METHOD 4 * 16
 
 #define SIZE_CALL_ORIGIN_TRAMPOLINE 4 * 4
 #define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 2
@@ -175,6 +175,17 @@ namespace SandHook {
                 code32Bit.op.op1 = imm;
             }
             codeCopy(reinterpret_cast<Code>(&code32Bit.code), codeOffset, 4);
+        }
+
+        //work for thumb
+        Code getThumbCodeAddress(Code code) {
+            Size addr = reinterpret_cast<Size>(code) & (~0x00000001);
+            return reinterpret_cast<Code>(addr);
+        }
+
+        Code getThumbCodePcAddress(Code code) {
+            Size addr = reinterpret_cast<Size>(code) & (~0x00000001);
+            return reinterpret_cast<Code>(addr + 1);
         }
 
     protected:

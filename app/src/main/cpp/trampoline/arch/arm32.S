@@ -71,21 +71,39 @@ FUNCTION_END(DIRECT_JUMP_TRAMPOLINE_T)
 
 
 FUNCTION_START_T(INLINE_HOOK_TRAMPOLINE_T)
+    //4 byte
     ldr RegT, addr_origin_art_method_t
+    //2 byte
     cmp RegMethod, RegT
+    nop
+    //2 byte
     bne origin_code_t
+    nop
+    //4 byte
     ldr RegMethod, addr_hook_art_method_t
+    //4 byte
     ldr RegT, offset_entry_code2_t
+    //2 byte
     add RegT, RegMethod, RegT
+    nop
+    //4 byte
     ldr pc, [RegT]
 origin_code_t:
+    //4 byte
     .long 0
+    //4 byte
     .long 0
+    //4 byte
     ldr RegT, addr_origin_art_method_t
+    //4 byte
     add RegT, RegT, #8
+    //4 byte
     ldr RegT, [RegT]
+    //4 byte
     add RegT, RegT, SIZE_JUMP
+    //2 byte
     mov pc, RegT
+    nop
 addr_origin_art_method_t:
     .long 0
 offset_entry_code2_t:

@@ -16,7 +16,7 @@ public class ActivityHooker {
     @MethodParams(Bundle.class)
     public static void onCreate(Activity thiz, Bundle bundle) {
         Log.e("ActivityHooker", "hooked success " + thiz);
-        onCreateBackup(thiz, bundle);
+        //onCreateBackup(thiz, bundle);
     }
 
     @HookMethodBackup("onCreate")

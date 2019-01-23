@@ -26,7 +26,7 @@ namespace SandHook {
         Code templateCode() override {
             #if defined(__arm__)
             if (isThumCode()) {
-                return reinterpret_cast<Code>(DIRECT_JUMP_TRAMPOLINE_T);
+                return getThumbCodeAddress(reinterpret_cast<Code>(DIRECT_JUMP_TRAMPOLINE_T));
             } else {
                 return reinterpret_cast<Code>(DIRECT_JUMP_TRAMPOLINE);
             }
@@ -94,7 +94,7 @@ namespace SandHook {
         Code templateCode() override {
             #if defined(__arm__)
             if (isThumCode()) {
-                return reinterpret_cast<Code>(INLINE_HOOK_TRAMPOLINE_T);
+                return getThumbCodeAddress(reinterpret_cast<Code>(INLINE_HOOK_TRAMPOLINE_T));
             } else {
                 return reinterpret_cast<Code>(INLINE_HOOK_TRAMPOLINE);
             }
@@ -123,7 +123,7 @@ namespace SandHook {
         Code templateCode() override {
             #if defined(__arm__)
             if (isThumCode()) {
-                return reinterpret_cast<Code>(CALL_ORIGIN_TRAMPOLINE_T);
+                return getThumbCodeAddress(reinterpret_cast<Code>(CALL_ORIGIN_TRAMPOLINE_T));
             } else {
                 return reinterpret_cast<Code>(CALL_ORIGIN_TRAMPOLINE);
             }

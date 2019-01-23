@@ -9,7 +9,7 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         try {
-            SandHook.addHookClass(LogHooker.class, ActivityHooker.class, ObjectHooker.class);
+            SandHook.addHookClass(ActivityHooker.class);
         } catch (HookErrorException e) {
             e.printStackTrace();
         }
