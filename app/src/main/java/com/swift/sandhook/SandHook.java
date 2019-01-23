@@ -59,15 +59,21 @@ public class SandHook {
         if (target instanceof Method) {
             ((Method)target).setAccessible(true);
         }
-        return hookMethod(target, hook, backup);
+        boolean res = hookMethod(target, hook, backup);
+        if (res && backup != null) {
+            backup.setAccessible(true);
+        }
+        return res;
     }
 
     private static void resolveStaticMethod(Member method) {
         //ignore result, just call to trigger resolve
         try {
             if (method instanceof Method) {
+                ((Method)method).setAccessible(true);
                 ((Method)method).invoke(null);
             } else if (method instanceof Constructor){
+                ((Constructor)method).setAccessible(true);
                 ((Constructor)method).newInstance(null);
             }
         } catch (Exception e) {

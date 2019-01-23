@@ -10,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
@@ -76,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
     public static int methodBeHooked(int a, int b) {
         a = a + 1 + 2;
         b = b + a + 3;
-        Log.e("MainActivity", "methodBeHooked called");
+        //Toast.makeText(MyApp.context, "call origin!", Toast.LENGTH_SHORT).show();
         return a + b;
     }
 

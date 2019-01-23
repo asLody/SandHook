@@ -8,8 +8,14 @@ import com.swift.sandhook.wrapper.HookMethod;
 import com.swift.sandhook.wrapper.HookMethodBackup;
 import com.swift.sandhook.wrapper.MethodParams;
 
+import java.lang.reflect.Method;
+
 @HookClass(MainActivity.class)
 public class CustmizeHooker {
+
+    @HookMethodBackup("methodBeHooked")
+    @MethodParams({int.class, int.class})
+    static Method backup;
 
     @HookMethod("methodBeHooked")
     @MethodParams({int.class, int.class})

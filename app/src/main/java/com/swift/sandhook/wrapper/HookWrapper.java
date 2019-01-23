@@ -1,8 +1,11 @@
 package com.swift.sandhook.wrapper;
 
+import android.text.TextUtils;
+
 import com.swift.sandhook.SandHook;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -25,10 +28,38 @@ public class HookWrapper {
         if (targetHookClass == null)
             throw new HookErrorException("error hook wrapper class :" + clazz.getName());
         Map<Member,HookEntity> hookEntityMap = getHookMethods(targetHookClass, clazz);
+        fillBackupMethod(clazz, hookEntityMap);
         for (HookEntity entity:hookEntityMap.values()) {
             if (entity.target != null && entity.hook != null) {
                 SandHook.hook(entity.target, entity.hook, entity.backup);
                 globalHookEntityMap.put(entity.target, entity);
+            }
+        }
+    }
+
+    private static void fillBackupMethod(Class<?> clazz, Map<Member, HookEntity> hookEntityMap) {
+        Field[] fields = clazz.getDeclaredFields();
+        if (fields == null || fields.length == 0)
+            return;
+        if (hookEntityMap.isEmpty())
+            return;
+        for (Field field:fields) {
+            if (!field.getType().equals(Method.class))
+                continue;
+            if (!Modifier.isStatic(field.getModifiers()))
+                continue;
+            HookMethodBackup hookMethodBackup = field.getAnnotation(HookMethodBackup.class);
+            if (hookMethodBackup == null)
+                continue;
+            for (HookEntity hookEntity:hookEntityMap.values()) {
+                if (TextUtils.equals(hookEntity.target.getName(), hookMethodBackup.value()) && hookEntity.backup != null && samePars(field, hookEntity.pars)) {
+                    field.setAccessible(true);
+                    try {
+                        field.set(null, hookEntity.backup);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
     }
@@ -81,6 +112,7 @@ public class HookWrapper {
                     entity = new HookEntity(foundMethod);
                     hookEntityMap.put(foundMethod, entity);
                 }
+                entity.pars = pars;
                 entity.backup = method;
             } else {
                 continue;
@@ -108,6 +140,48 @@ public class HookWrapper {
             return pars;
         } else {
             return null;
+        }
+    }
+
+    private static Class[] parseMethodPars(Field field) throws HookErrorException {
+        MethodParams methodParams = field.getAnnotation(MethodParams.class);
+        MethodReflectParams methodReflectParams = field.getAnnotation(MethodReflectParams.class);
+        if (methodParams != null) {
+            return methodParams.value();
+        } else if (methodReflectParams != null) {
+            if (methodReflectParams.value().length == 0)
+                return null;
+            Class[] pars = new Class[methodReflectParams.value().length];
+            for (int i = 0;i < methodReflectParams.value().length; i++) {
+                try {
+                    pars[i] = Class.forName(methodReflectParams.value()[i]);
+                } catch (ClassNotFoundException e) {
+                    throw new HookErrorException("hook method pars error: " + field.getName(), e);
+                }
+            }
+            return pars;
+        } else {
+            return null;
+        }
+    }
+
+
+    private static boolean samePars(Field field, Class[] par) {
+        try {
+            Class[] parsOnField = parseMethodPars(field);
+            if (par == null)
+                par = new Class[0];
+            if (parsOnField == null)
+                parsOnField = new Class[0];
+            if (par.length != parsOnField.length)
+                return false;
+            for (int i = 0;i < par.length;i++) {
+                if (par[i] != parsOnField[i])
+                    return false;
+            }
+            return true;
+        } catch (HookErrorException e) {
+            return false;
         }
     }
 
@@ -172,6 +246,8 @@ public class HookWrapper {
         public Member target;
         public Method hook;
         public Method backup;
+
+        public Class[] pars;
 
         public HookEntity(Member target) {
             this.target = target;

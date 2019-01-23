@@ -32,6 +32,13 @@ void disableInterpreterForO(art::mirror::ArtMethod* method) {
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
+void setPrivate(art::mirror::ArtMethod* method) {
+    uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
+    accessFlag &= ~ 0x1;
+    accessFlag |= 0x2;
+    SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
+}
+
 void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMethod *backupMethod) {
     if (SDK_INT >= ANDROID_P)
         return;
@@ -120,7 +127,7 @@ bool doHookWithInline(JNIEnv* env,
         if (SDK_INT >= ANDROID_O) {
             disableInterpreterForO(backupMethod);
         }
-
+        //setPrivate(backupMethod);
         hookTrampoline->callOrigin->flushCache(reinterpret_cast<Size>(backupMethod), SandHook::CastArtMethod::size);
     }
     return true;
