@@ -21,7 +21,12 @@ public class CustmizeHooker {
     @MethodParams({int.class, int.class})
     public static int staticMethodHooked(int a, int b) {
         Log.e("CustmizeHooker", "methodBeHooked be hooked");
-        return staticMethodHookedBackup(a, b);
+        try {
+            return (int) backup.invoke(null, a, b);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     @HookMethodBackup("methodBeHooked")
