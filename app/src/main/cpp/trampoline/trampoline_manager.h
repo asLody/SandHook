@@ -64,7 +64,7 @@ namespace SandHook {
         }
 
         bool isThumbCode(Size codeAddr) {
-            return (codeAddr & (Size)1) == (Size)1;
+            return (codeAddr & 0x1) == 0x1;
         }
 
         void checkThumbCode(Trampoline* trampoline, Code code) {

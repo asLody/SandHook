@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     public static int methodBeHooked(int a, int b) {
         a = a + 1 + 2;
         b = b + a + 3;
+        Log.e("MainActivity", "methodBeHooked called");
         return a + b;
     }
 

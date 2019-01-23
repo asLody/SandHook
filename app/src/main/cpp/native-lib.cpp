@@ -99,10 +99,10 @@ bool doHookWithInline(JNIEnv* env,
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline == nullptr)
         return false;
-    void* entryPointFormInterpreter = SandHook::CastArtMethod::entryPointFormInterpreter->get(hookMethod);
-    if (entryPointFormInterpreter != NULL) {
-        SandHook::CastArtMethod::entryPointFormInterpreter->set(originMethod, entryPointFormInterpreter);
-    }
+//    void* entryPointFormInterpreter = SandHook::CastArtMethod::entryPointFormInterpreter->get(hookMethod);
+//    if (entryPointFormInterpreter != NULL) {
+//        SandHook::CastArtMethod::entryPointFormInterpreter->set(originMethod, entryPointFormInterpreter);
+//    }
     hookTrampoline->inlineSecondory->flushCache(reinterpret_cast<Size>(hookMethod), SandHook::CastArtMethod::size);
     if (hookTrampoline->callOrigin != nullptr) {
         //backup
