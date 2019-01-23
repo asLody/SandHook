@@ -106,6 +106,7 @@ namespace SandHook {
 
     class Trampoline {
     public:
+        Code code;
 
         Trampoline() = default;
 
@@ -152,7 +153,11 @@ namespace SandHook {
         }
 
         Code getCode() {
-            return code;
+            if (isThumbCode()) {
+                return getThumbCodePcAddress(code);
+            } else {
+                return code;
+            }
         }
 
         Size getCodeLen() {
@@ -169,7 +174,7 @@ namespace SandHook {
         //tweak imm of a 32bit asm code
         void tweakOpImm(Size codeOffset, unsigned char imm) {
             Code32Bit code32Bit;
-            code32Bit.code = *reinterpret_cast<uint32_t*>(((Size)getCode() + codeOffset));
+            code32Bit.code = *reinterpret_cast<uint32_t*>(((Size)code + codeOffset));
             if (isBigEnd()) {
                 code32Bit.op.op4 = imm;
             } else {
@@ -193,7 +198,6 @@ namespace SandHook {
         virtual Size codeLength() = 0;
         virtual Code templateCode() = 0;
     private:
-        Code code;
         Code tempCode;
         Size codeLen;
         bool isThumb = false;

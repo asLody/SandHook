@@ -74,10 +74,15 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
     public static int methodBeHooked(int a, int b) {
         a = a + 1 + 2;
         b = b + a + 3;
-        //Toast.makeText(MyApp.context, "call origin!", Toast.LENGTH_SHORT).show();
+        Log.e("MainActivity", "call methodBeHooked origin");
         return a + b;
     }
 

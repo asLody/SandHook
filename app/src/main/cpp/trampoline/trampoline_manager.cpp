@@ -91,7 +91,11 @@ namespace SandHook {
         inlineHookTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
         inlineHookTrampoline->setHookMethod(reinterpret_cast<Code>(hookMethod));
         inlineHookTrampoline->setEntryCodeOffset(quickCompileOffset);
-        inlineHookTrampoline->setOriginCode(getEntryCode(originMethod));
+        if (inlineHookTrampoline->isThumbCode()) {
+            inlineHookTrampoline->setOriginCode(inlineHookTrampoline->getThumbCodeAddress(getEntryCode(originMethod)));
+        } else {
+            inlineHookTrampoline->setOriginCode(getEntryCode(originMethod));
+        }
         hookTrampoline->inlineSecondory = inlineHookTrampoline;
 
         //注入 EntryCode
@@ -105,12 +109,10 @@ namespace SandHook {
 
         if (directJumpTrampoline->isThumbCode()) {
             originEntry = directJumpTrampoline->getThumbCodeAddress(originEntry);
-            directJumpTrampoline->setExecuteSpace(originEntry);
-            directJumpTrampoline->setJumpTarget(directJumpTrampoline->getThumbCodePcAddress(inlineHookTrampoline->getCode()));
-        } else {
-            directJumpTrampoline->setExecuteSpace(originEntry);
-            directJumpTrampoline->setJumpTarget(inlineHookTrampoline->getCode());
         }
+
+        directJumpTrampoline->setExecuteSpace(originEntry);
+        directJumpTrampoline->setJumpTarget(inlineHookTrampoline->getCode());
         hookTrampoline->inlineJump = directJumpTrampoline;
 
         //备份原始方法

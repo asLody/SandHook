@@ -115,11 +115,7 @@ bool doHookWithInline(JNIEnv* env,
         //backup
         memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
 
-        Code callOriginCode = hookTrampoline->callOrigin->getCode();
-        if (hookTrampoline->callOrigin->isThumbCode()) {
-            callOriginCode = hookTrampoline->callOrigin->getThumbCodePcAddress(callOriginCode);
-        }
-        SandHook::CastArtMethod::entryPointQuickCompiled->set(backupMethod, callOriginCode);
+        SandHook::CastArtMethod::entryPointQuickCompiled->set(backupMethod, hookTrampoline->callOrigin->getCode());
 
         if (SDK_INT >= ANDROID_N) {
             disableCompilable(backupMethod);
