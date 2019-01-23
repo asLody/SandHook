@@ -131,7 +131,14 @@ namespace SandHook {
             jclass sizeTestClass = env->FindClass("com/swift/sandhook/ArtMethodSizeTest");
             Size artMethod1 = (Size) env->GetStaticMethodID(sizeTestClass, "method1", "()V");
             Size artMethod2 = (Size) env->GetStaticMethodID(sizeTestClass, "method2", "()V");
-            size = artMethod2 - artMethod1;
+
+            if (sdk == ANDROID_L2) {
+                size = 64;
+            } else if (sdk == ANDROID_L) {
+                size = 72;
+            } else {
+                size = artMethod2 - artMethod1;
+            }
 
             art::mirror::ArtMethod* m1 = reinterpret_cast<art::mirror::ArtMethod *>(artMethod1);
             art::mirror::ArtMethod* m2 = reinterpret_cast<art::mirror::ArtMethod *>(artMethod2);
