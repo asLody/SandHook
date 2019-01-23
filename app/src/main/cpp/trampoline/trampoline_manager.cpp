@@ -2,6 +2,7 @@
 // Created by swift on 2019/1/20.
 //
 #include "trampoline_manager.h"
+#include "trampoline.h"
 
 namespace SandHook {
 
@@ -103,7 +104,8 @@ namespace SandHook {
         }
 
         if (directJumpTrampoline->isThumCode()) {
-            directJumpTrampoline->setExecuteSpace(directJumpTrampoline->getThumbCodeAddress(originEntry));
+            originEntry = directJumpTrampoline->getThumbCodeAddress(originEntry);
+            directJumpTrampoline->setExecuteSpace(originEntry);
             directJumpTrampoline->setJumpTarget(directJumpTrampoline->getThumbCodePcAddress(inlineHookTrampoline->getCode()));
         } else {
             directJumpTrampoline->setExecuteSpace(originEntry);
@@ -124,6 +126,16 @@ namespace SandHook {
             Code originCode = nullptr;
             if (callOriginTrampoline->isThumCode()) {
                 originCode = callOriginTrampoline->getThumbCodePcAddress(inlineHookTrampoline->getCallOriginCode());
+                #if defined(__arm__)
+                Code originRemCode = callOriginTrampoline->getThumbCodePcAddress(originEntry + directJumpTrampoline->getCodeLen());
+                Size offset = originRemCode - getEntryCode(originMethod);
+                if (offset != directJumpTrampoline->getCodeLen()) {
+                    Code32Bit offset32;
+                    offset32.code = offset;
+                    unsigned char offsetOP = callOriginTrampoline->isBigEnd() ? offset32.op.op2 : offset32.op.op1;
+                    callOriginTrampoline->tweakOpImm(OFFSET_INLINE_OP_ORIGIN_OFFSET_CODE, offsetOP);
+                }
+                #endif
             } else {
                 originCode = inlineHookTrampoline->getCallOriginCode();
             }

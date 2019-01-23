@@ -100,7 +100,7 @@ origin_code_t:
     //4 byte
     ldr RegT, [RegT]
     //4 byte
-    add RegT, RegT, #8
+    add RegT, RegT, SIZE_JUMP
     //2 byte
     mov pc, RegT
     nop
