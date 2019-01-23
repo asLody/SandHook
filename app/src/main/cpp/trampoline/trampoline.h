@@ -85,6 +85,17 @@ extern "C" void CALL_ORIGIN_TRAMPOLINE();
 
 namespace SandHook {
 
+    //deal with little or big edn
+    union Code32Bit {
+        uint32_t code;
+        struct {
+            unsigned char op1;
+            unsigned char op2;
+            unsigned char op3;
+            unsigned char op4;
+        } op;
+    };
+
     class Trampoline {
     public:
 
@@ -136,6 +147,18 @@ namespace SandHook {
             return *pointer == 0;
         }
 
+        //tweak imm of a 32bit asm code
+        void tweakOpImm(Size codeOffset, unsigned char imm) {
+            Code32Bit code32Bit;
+            code32Bit.code = *reinterpret_cast<uint32_t*>(((Size)getCode() + codeOffset));
+            if (isBigEnd()) {
+                code32Bit.op.op4 = imm;
+            } else {
+                code32Bit.op.op1 = imm;
+            }
+            codeCopy(reinterpret_cast<Code>(&code32Bit.code), codeOffset, 4);
+        }
+
     protected:
         virtual Size codeLength() = 0;
         virtual Code templateCode() = 0;
@@ -143,17 +166,6 @@ namespace SandHook {
         Code code;
         Code tempCode;
         Size codeLen;
-    };
-
-
-    union Code32Bit {
-        uint32_t code;
-        struct {
-            unsigned char op1;
-            unsigned char op2;
-            unsigned char op3;
-            unsigned char op4;
-        } op;
     };
 
 }

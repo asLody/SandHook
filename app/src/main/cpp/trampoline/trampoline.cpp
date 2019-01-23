@@ -64,15 +64,9 @@ namespace SandHook {
             codeCopy(reinterpret_cast<Code>(&offSet), OFFSET_INLINE_OFFSET_ENTRY_CODE, BYTE_POINT);
             #if defined(__arm__)
             Code32Bit offset32;
-            Code32Bit code32Bit;
             offset32.code = offSet;
             unsigned char offsetOP = isBigEnd() ? offset32.op.op4 : offset32.op.op1;
-            code32Bit.code = *reinterpret_cast<uint32_t*>(((Size)getCode() + OFFSET_INLINE_OP_OFFSET_CODE));
-            if (isBigEnd()) {
-                code32Bit.op.op4 = offsetOP;
-            } else {
-                code32Bit.op.op1 = offsetOP;
-            }
+            tweakOpImm(OFFSET_INLINE_OP_OFFSET_CODE, offsetOP);
             #endif
         }
 
