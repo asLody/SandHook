@@ -15,6 +15,7 @@ import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class MainActivity extends AppCompatActivity {
@@ -38,13 +39,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        methodBeHooked(savedInstanceState);
+        methodBeHooked(hashCode(), 1);
 
 
         toolbar.postDelayed(new Runnable() {
             @Override
             public void run() {
-                methodBeHooked(savedInstanceState);
+                methodBeHooked(hashCode(), 3);
                 Log.w("gy", "dadadad");
             }
         }, 3000);
@@ -72,10 +73,10 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public static void methodBeHooked(Bundle bundle) {
-        int a = 1 + 2;
-        int b = a + 3;
-        Log.e("gy", "not hooked" + b + bundle);
+    public static int methodBeHooked(int a, int b) {
+        a = a + 1 + 2;
+        b = b + a + 3;
+        return a + b;
     }
 
     @Override

@@ -109,7 +109,7 @@ bool doHookWithInline(JNIEnv* env,
         memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
 
         Code callOriginCode = hookTrampoline->callOrigin->getCode();
-        if (hookTrampoline->callOrigin->isThumCode()) {
+        if (hookTrampoline->callOrigin->isThumbCode()) {
             callOriginCode = hookTrampoline->callOrigin->getThumbCodePcAddress(callOriginCode);
         }
         SandHook::CastArtMethod::entryPointQuickCompiled->set(backupMethod, callOriginCode);

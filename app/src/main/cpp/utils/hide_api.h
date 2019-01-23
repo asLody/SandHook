@@ -33,6 +33,9 @@ void initHideApi(JNIEnv* env, int SDK_VERSION) {
 }
 
 bool compileMethod(void* artMethod, void* thread) {
+    if (jitCompileMethod == nullptr) {
+        return false;
+    }
     return jitCompileMethod(jitCompilerHandle, artMethod, thread, false);
 }
 

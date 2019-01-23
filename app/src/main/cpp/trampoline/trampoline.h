@@ -118,7 +118,7 @@ namespace SandHook {
             isThumb = thumb;
         }
 
-        bool isThumCode() {
+        bool isThumbCode() {
             return isThumb;
         }
 

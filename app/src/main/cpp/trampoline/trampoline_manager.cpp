@@ -103,7 +103,7 @@ namespace SandHook {
             goto label_error;
         }
 
-        if (directJumpTrampoline->isThumCode()) {
+        if (directJumpTrampoline->isThumbCode()) {
             originEntry = directJumpTrampoline->getThumbCodeAddress(originEntry);
             directJumpTrampoline->setExecuteSpace(originEntry);
             directJumpTrampoline->setJumpTarget(directJumpTrampoline->getThumbCodePcAddress(inlineHookTrampoline->getCode()));
@@ -124,7 +124,7 @@ namespace SandHook {
             callOriginTrampoline->setExecuteSpace(callOriginTrampolineSpace);
             callOriginTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
             Code originCode = nullptr;
-            if (callOriginTrampoline->isThumCode()) {
+            if (callOriginTrampoline->isThumbCode()) {
                 originCode = callOriginTrampoline->getThumbCodePcAddress(inlineHookTrampoline->getCallOriginCode());
                 #if defined(__arm__)
                 Code originRemCode = callOriginTrampoline->getThumbCodePcAddress(originEntry + directJumpTrampoline->getCodeLen());

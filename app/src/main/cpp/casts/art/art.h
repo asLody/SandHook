@@ -84,7 +84,7 @@ public:
 //        // the interpreter.
 //        void* entry_point_from_quick_compiled_code_;
 //    } ptr_sized_fields_;
-    uint16_t placeholder[40];
+    void * placeHolder;
 };
 
 }

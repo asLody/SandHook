@@ -2,6 +2,10 @@ package com.swift.sandhook;
 
 import android.app.Application;
 
+import com.swift.sandhook.test.ActivityHooker;
+import com.swift.sandhook.test.CustmizeHooker;
+import com.swift.sandhook.test.LogHooker;
+import com.swift.sandhook.test.ObjectHooker;
 import com.swift.sandhook.wrapper.HookErrorException;
 
 public class MyApp extends Application {
@@ -9,9 +13,10 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         try {
-            SandHook.addHookClass(ActivityHooker.class, ObjectHooker.class);
+            SandHook.addHookClass(LogHooker.class, CustmizeHooker.class, ActivityHooker.class, ObjectHooker.class);
         } catch (HookErrorException e) {
             e.printStackTrace();
         }
+
     }
 }

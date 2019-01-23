@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -47,18 +48,28 @@ public class SandHook {
         HookWrapper.addHookClass(hookWrapperClass);
     }
 
-    public static void hook(@NonNull Member target, @NonNull Method hook, @Nullable Method backup) {
+    public static boolean hook(@NonNull Member target, @NonNull Method hook, @Nullable Method backup) {
+        if (target == null || hook == null)
+            return false;
+        resolveStaticMethod(target);
         if (backup != null) {
-            resolveBackupMethod(backup);
+            resolveStaticMethod(backup);
             SandHookMethodResolver.resolveMethod(hook, backup);
         }
-        hookMethod(target, hook, backup);
+        if (target instanceof Method) {
+            ((Method)target).setAccessible(true);
+        }
+        return hookMethod(target, hook, backup);
     }
 
-    private static void resolveBackupMethod(Method method) {
+    private static void resolveStaticMethod(Member method) {
         //ignore result, just call to trigger resolve
         try {
-            method.invoke(null, null);
+            if (method instanceof Method) {
+                ((Method)method).invoke(null);
+            } else if (method instanceof Constructor){
+                ((Constructor)method).newInstance(null);
+            }
         } catch (Exception e) {
         }
     }
