@@ -172,7 +172,7 @@ namespace SandHook {
             if (isBigEnd()) {
                 code32Bit.op.op4 = imm;
             } else {
-                code32Bit.op.op1 = imm;
+                code32Bit.op.op3 = imm;
             }
             codeCopy(reinterpret_cast<Code>(&code32Bit.code), codeOffset, 4);
         }

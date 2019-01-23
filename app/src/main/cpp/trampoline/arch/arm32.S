@@ -96,11 +96,11 @@ origin_code_t:
     //4 byte
     ldr RegT, addr_origin_art_method_t
     //4 byte
-    add RegT, RegT, #8
+    add RegT, RegT, #36
     //4 byte
     ldr RegT, [RegT]
     //4 byte
-    add RegT, RegT, SIZE_JUMP
+    add RegT, RegT, #8
     //2 byte
     mov pc, RegT
     nop

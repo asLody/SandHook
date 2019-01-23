@@ -73,7 +73,7 @@ namespace SandHook {
             #if defined(__arm__)
             Code32Bit offset32;
             offset32.code = offSet;
-            unsigned char offsetOP = isBigEnd() ? offset32.op.op4 : offset32.op.op1;
+            unsigned char offsetOP = isBigEnd() ? offset32.op.op2 : offset32.op.op1;
             tweakOpImm(OFFSET_INLINE_OP_OFFSET_CODE, offsetOP);
             #endif
         }

@@ -120,8 +120,14 @@ namespace SandHook {
             if (callOriginTrampolineSpace == 0)
                 goto label_error;
             callOriginTrampoline->setExecuteSpace(callOriginTrampolineSpace);
-            callOriginTrampoline->setOriginMethod(reinterpret_cast<unsigned char *>(originMethod));
-            callOriginTrampoline->setOriginCode(inlineHookTrampoline->getCallOriginCode());
+            callOriginTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
+            Code originCode = nullptr;
+            if (callOriginTrampoline->isThumCode()) {
+                originCode = callOriginTrampoline->getThumbCodePcAddress(inlineHookTrampoline->getCallOriginCode());
+            } else {
+                originCode = inlineHookTrampoline->getCallOriginCode();
+            }
+            callOriginTrampoline->setOriginCode(originCode);
             hookTrampoline->callOrigin = callOriginTrampoline;
         }
 

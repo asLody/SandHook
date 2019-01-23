@@ -77,6 +77,9 @@ bool doHookWithReplacement(art::mirror::ArtMethod *originMethod,
             SandHook::CastArtMethod::entryPointFormInterpreter->set(originMethod, entryPointFormInterpreter);
         }
         hookTrampoline->replacement->flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -94,19 +97,33 @@ bool doHookWithInline(JNIEnv* env,
     }
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
+    if (hookTrampoline == nullptr)
+        return false;
+    void* entryPointFormInterpreter = SandHook::CastArtMethod::entryPointFormInterpreter->get(hookMethod);
+    if (entryPointFormInterpreter != NULL) {
+        SandHook::CastArtMethod::entryPointFormInterpreter->set(originMethod, entryPointFormInterpreter);
+    }
     hookTrampoline->inlineSecondory->flushCache(reinterpret_cast<Size>(hookMethod), SandHook::CastArtMethod::size);
     if (hookTrampoline->callOrigin != nullptr) {
         //backup
         memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
-        SandHook::CastArtMethod::entryPointQuickCompiled->set(backupMethod, hookTrampoline->callOrigin->getCode());
+
+        Code callOriginCode = hookTrampoline->callOrigin->getCode();
+        if (hookTrampoline->callOrigin->isThumCode()) {
+            callOriginCode = hookTrampoline->callOrigin->getThumbCodePcAddress(callOriginCode);
+        }
+        SandHook::CastArtMethod::entryPointQuickCompiled->set(backupMethod, callOriginCode);
+
         if (SDK_INT >= ANDROID_N) {
             disableCompilable(backupMethod);
         }
         if (SDK_INT >= ANDROID_O) {
             disableInterpreterForO(backupMethod);
         }
+
         hookTrampoline->callOrigin->flushCache(reinterpret_cast<Size>(backupMethod), SandHook::CastArtMethod::size);
     }
+    return true;
 }
 
 extern "C"
@@ -134,18 +151,16 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
         if (SDK_INT >= ANDROID_N) {
             Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
             if (compileMethod(origin, reinterpret_cast<void *>(threadId)) && SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) != SandHook::CastArtMethod::quickToInterpreterBridge) {
-                doHookWithInline(env, origin, hook, backup);
+                return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
             } else {
-                doHookWithReplacement(origin, hook, backup);
+                return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
             }
         } else {
-            doHookWithReplacement(origin, hook, backup);
+            return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
         }
     } else {
-        doHookWithInline(env, origin, hook, backup);
+        return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
     }
-
-    return JNI_TRUE;
 
 }
 
