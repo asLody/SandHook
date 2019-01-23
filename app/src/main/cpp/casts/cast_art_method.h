@@ -58,10 +58,10 @@ namespace SandHook {
     class CastEntryPointQuickCompiled : public IMember<art::mirror::ArtMethod, void*> {
     protected:
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod* p) override {
-            if (SDK_INT >= ANDROID_L2) {
+            if (SDK_INT >= ANDROID_M) {
                 return getParentSize() - BYTE_POINT;
             } else {
-                return getParentSize() - 8 * 2 - 4 * 4;
+                return getParentSize() - 4 - 2 * BYTE_POINT;
             }
         }
     };
@@ -86,10 +86,17 @@ namespace SandHook {
                 accessFlag = 524313;
             }
             int offset = findOffset(p, getParentSize(), 2, accessFlag);
-            if (offset < 0)
-                return getParentSize() + 1;
-            else
+            if (offset < 0) {
+                if (SDK_INT == ANDROID_L2) {
+                    return 20;
+                } else if (SDK_INT == ANDROID_L) {
+                    return 56;
+                } else {
+                    return getParentSize() + 1;
+                }
+            } else {
                 return static_cast<size_t>(offset);
+            }
         }
     };
 
@@ -132,13 +139,7 @@ namespace SandHook {
             Size artMethod1 = (Size) env->GetStaticMethodID(sizeTestClass, "method1", "()V");
             Size artMethod2 = (Size) env->GetStaticMethodID(sizeTestClass, "method2", "()V");
 
-            if (sdk == ANDROID_L2) {
-                size = 64;
-            } else if (sdk == ANDROID_L) {
-                size = 72;
-            } else {
-                size = artMethod2 - artMethod1;
-            }
+            size = artMethod2 - artMethod1;
 
             art::mirror::ArtMethod* m1 = reinterpret_cast<art::mirror::ArtMethod *>(artMethod1);
             art::mirror::ArtMethod* m2 = reinterpret_cast<art::mirror::ArtMethod *>(artMethod2);

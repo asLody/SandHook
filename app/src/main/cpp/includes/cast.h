@@ -11,8 +11,8 @@
 #include <jni.h>
 #include "arch.h"
 #include "utils.h"
-#include "../casts/art/art.h"
 
+#define ANDROID_K 19
 #define ANDROID_L 21
 #define ANDROID_L2 22
 #define ANDROID_M 23
