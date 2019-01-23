@@ -63,6 +63,16 @@ namespace SandHook {
             return entryCode;
         }
 
+        bool isThumbCode(Size codeAddr) {
+            return (codeAddr & (Size)1) == (Size)1;
+        }
+
+        void checkThumbCode(Trampoline* trampoline, Code code) {
+            #if defined(__arm__)
+            trampoline->setThumb(isThumbCode(reinterpret_cast<Size>(code)));
+            #endif
+        }
+
 
     private:
 

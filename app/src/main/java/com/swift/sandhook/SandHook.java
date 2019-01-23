@@ -56,10 +56,10 @@ public class SandHook {
     }
 
     private static void resolveBackupMethod(Method method) {
+        //ignore result, just call to trigger resolve
         try {
             method.invoke(null, null);
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

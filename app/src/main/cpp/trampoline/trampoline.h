@@ -83,6 +83,13 @@ extern "C" void INLINE_HOOK_TRAMPOLINE();
 extern "C" void REPLACEMENT_HOOK_TRAMPOLINE();
 extern "C" void CALL_ORIGIN_TRAMPOLINE();
 
+#if defined(__arm__)
+extern "C" void DIRECT_JUMP_TRAMPOLINE_T();
+extern "C" void INLINE_HOOK_TRAMPOLINE_T();
+extern "C" void CALL_ORIGIN_TRAMPOLINE_T();
+#endif
+
+
 namespace SandHook {
 
     //deal with little or big edn
@@ -105,6 +112,15 @@ namespace SandHook {
             codeLen = codeLength();
             tempCode = templateCode();
         }
+
+        void setThumb(bool thumb) {
+            isThumb = thumb;
+        }
+
+        bool isThumCode() {
+            return isThumb;
+        }
+
         void setExecuteSpace(Code start) {
             code = start;
             memcpy(code, tempCode, codeLen);
@@ -133,9 +149,11 @@ namespace SandHook {
         void clone(Code dest) {
             memcpy(dest, code, codeLen);
         }
+
         Code getCode() {
             return code;
         }
+
         Size getCodeLen() {
             return codeLen;
         }
@@ -166,6 +184,7 @@ namespace SandHook {
         Code code;
         Code tempCode;
         Size codeLen;
+        bool isThumb = false;
     };
 
 }

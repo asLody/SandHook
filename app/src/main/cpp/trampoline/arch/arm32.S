@@ -4,7 +4,7 @@
 
 #define Reg0 ip
 //need restore
-#define Reg1 r11
+#define RegT ip
 #define RegMethod r0
 
 FUNCTION_START(REPLACEMENT_HOOK_TRAMPOLINE)
@@ -42,7 +42,8 @@ origin_code:
     ldr Reg0, addr_origin_art_method
     add Reg0, Reg0, #8
     ldr Reg0, [Reg0]
-    add pc, Reg0, SIZE_JUMP
+    add Reg0, Reg0, SIZE_JUMP
+    mov pc, Reg0
 addr_origin_art_method:
     .long 0
 offset_entry_code2:
@@ -50,7 +51,6 @@ offset_entry_code2:
 addr_hook_art_method:
     .long 0
 FUNCTION_END(INLINE_HOOK_TRAMPOLINE)
-
 
 
 FUNCTION_START(CALL_ORIGIN_TRAMPOLINE)
@@ -61,5 +61,46 @@ origin_art_method:
 addr_origin:
     .long 0
 FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
+
+//thumb-2
+FUNCTION_START_T(DIRECT_JUMP_TRAMPOLINE_T)
+    ldr pc, addr_target_t
+addr_target_t:
+    .long 0
+FUNCTION_END(DIRECT_JUMP_TRAMPOLINE_T)
+
+
+FUNCTION_START_T(INLINE_HOOK_TRAMPOLINE_T)
+    ldr RegT, addr_origin_art_method_t
+    cmp RegMethod, RegT
+    bne origin_code_t
+    ldr RegMethod, addr_hook_art_method_t
+    ldr RegT, offset_entry_code2_t
+    add RegT, RegMethod, RegT
+    ldr pc, [RegT]
+origin_code_t:
+    .long 0
+    .long 0
+    ldr RegT, addr_origin_art_method_t
+    add RegT, RegT, #8
+    ldr RegT, [RegT]
+    add RegT, RegT, SIZE_JUMP
+    mov pc, RegT
+addr_origin_art_method_t:
+    .long 0
+offset_entry_code2_t:
+    .long 0
+addr_hook_art_method_t:
+    .long 0
+FUNCTION_END(INLINE_HOOK_TRAMPOLINE_T)
+
+FUNCTION_START_T(CALL_ORIGIN_TRAMPOLINE_T)
+    ldr RegMethod, origin_art_method_t
+    ldr pc, addr_origin_t
+origin_art_method_t:
+    .long 0
+addr_origin_t:
+    .long 0
+FUNCTION_END(CALL_ORIGIN_TRAMPOLINE_T)
 
 #endif
