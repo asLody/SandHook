@@ -11,6 +11,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class SandHook {
 
@@ -70,8 +71,10 @@ public class SandHook {
         //ignore result, just call to trigger resolve
         try {
             if (method instanceof Method) {
-                ((Method)method).setAccessible(true);
-                ((Method)method).invoke(null);
+                if (Modifier.isStatic(method.getModifiers())) {
+                    ((Method) method).setAccessible(true);
+                    ((Method) method).invoke(null);
+                }
             } else if (method instanceof Constructor){
                 ((Constructor)method).setAccessible(true);
                 ((Constructor)method).newInstance(null);
