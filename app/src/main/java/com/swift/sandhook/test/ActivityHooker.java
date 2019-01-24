@@ -24,7 +24,7 @@ public class ActivityHooker {
     @HookMethod("onCreate")
     @MethodParams(Bundle.class)
     public static void onCreate(Activity thiz, Bundle bundle) {
-        Log.e("ActivityHooker", "hooked onCreate success " + thiz.hashCode());
+        Log.e("ActivityHooker", "hooked onCreate success " + thiz);
         onCreateBackup(thiz, bundle);
     }
 
@@ -37,7 +37,7 @@ public class ActivityHooker {
 
     @HookMethod("onPause")
     public static void onPause(Activity thiz) {
-        Log.e("ActivityHooker", "hooked onPause success " + thiz.hashCode());
+        Log.e("ActivityHooker", "hooked onPause success " + thiz);
         onPauseBackup(thiz);
     }
 

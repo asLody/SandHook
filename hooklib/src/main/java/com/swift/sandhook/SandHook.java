@@ -1,8 +1,6 @@
 package com.swift.sandhook;
 
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
@@ -49,7 +47,7 @@ public class SandHook {
         HookWrapper.addHookClass(hookWrapperClass);
     }
 
-    public static boolean hook(@NonNull Member target, @NonNull Method hook, @Nullable Method backup) {
+    public static boolean hook(Member target, Method hook, Method backup) {
         if (target == null || hook == null)
             return false;
         resolveStaticMethod(target);

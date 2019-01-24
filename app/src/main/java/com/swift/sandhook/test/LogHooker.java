@@ -20,7 +20,7 @@ public class LogHooker {
     @HookMethodBackup("w")
     @MethodParams({String.class, String.class})
     public static int onCreateBackup(String tag, String msg) {
-        return 0;
+        return onCreateBackup(tag, msg);
     }
 
 }

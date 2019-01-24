@@ -17,7 +17,7 @@ public class ObjectHooker {
 
     @HookMethodBackup("toString")
     public static String toStrBackup(Object thiz) {
-        return null;
+        return toStrBackup(thiz);
     }
 
 }
