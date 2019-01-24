@@ -45,7 +45,6 @@ public class SandHookMethodResolver {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 

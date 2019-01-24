@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
@@ -53,6 +54,14 @@ public class MainActivity extends AppCompatActivity {
 
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
+
+        TestClass str = new TestClass(1);
+
+        str.add1();
+        str.add2();
+
+        Log.e("dd", str.a + "");
+
 
     }
 

@@ -64,8 +64,8 @@ x22 - x28 貌似可以使用
 
 #if defined(__aarch64__)
 
-#define Reg0 x24
-#define Reg1 x25
+#define Reg0 x23
+#define Reg1 x24
 #define RegMethod x0
 
 FUNCTION_START(REPLACEMENT_HOOK_TRAMPOLINE)
