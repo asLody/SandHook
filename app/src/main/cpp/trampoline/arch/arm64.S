@@ -1,10 +1,71 @@
 #include "base.h"
 
+/**
+*
+//aarch64 ART 寄存器使用策略
+
+
+// Method register on invoke.
+// 储存正在调用的代码
+static const vixl::aarch64::Register kArtMethodRegister = vixl::aarch64::x0;
+
+//参数传递
+static const vixl::aarch64::Register kParameterCoreRegisters[] = {
+  vixl::aarch64::x1,
+  vixl::aarch64::x2,
+  vixl::aarch64::x3,
+  vixl::aarch64::x4,
+  vixl::aarch64::x5,
+  vixl::aarch64::x6,
+  vixl::aarch64::x7
+};
+
+//
+const vixl::aarch64::CPURegList vixl_reserved_core_registers(vixl::aarch64::ip0,
+                                                             vixl::aarch64::ip1);
+
+//浮点计算
+static const vixl::aarch64::FPRegister kParameterFPRegisters[] = {
+  vixl::aarch64::d0,
+  vixl::aarch64::d1,
+  vixl::aarch64::d2,
+  vixl::aarch64::d3,
+  vixl::aarch64::d4,
+  vixl::aarch64::d5,
+  vixl::aarch64::d6,
+  vixl::aarch64::d7
+};
+
+// Thread Register.
+// 线程
+const vixl::aarch64::Register tr = vixl::aarch64::x19;
+
+// Marking Register.
+// GC 标记
+const vixl::aarch64::Register mr = vixl::aarch64::x20;
+
+// Callee-save registers AAPCS64, without x19 (Thread Register) (nor
+// x20 (Marking Register) when emitting Baker read barriers).
+const vixl::aarch64::CPURegList callee_saved_core_registers(
+    vixl::aarch64::CPURegister::kRegister,
+    vixl::aarch64::kXRegSize,
+    ((kEmitCompilerReadBarrier && kUseBakerReadBarrier)
+         ? vixl::aarch64::x21.GetCode()
+         : vixl::aarch64::x20.GetCode()),
+     vixl::aarch64::x30.GetCode());
+
+
+结论，x16/x17
+x22 - x28 貌似可以使用
+
+*
+*/
+
 
 #if defined(__aarch64__)
 
-#define Reg0 x16
-#define Reg1 x17
+#define Reg0 x24
+#define Reg1 x25
 #define RegMethod x0
 
 FUNCTION_START(REPLACEMENT_HOOK_TRAMPOLINE)
