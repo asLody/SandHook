@@ -71,7 +71,7 @@ public class SandHook {
             if (method instanceof Method) {
                 if (Modifier.isStatic(method.getModifiers())) {
                     ((Method) method).setAccessible(true);
-                    ((Method) method).invoke(null);
+                    ((Method) method).invoke(new Object());
                 }
             } else if (method instanceof Constructor){
                 ((Constructor)method).setAccessible(true);
