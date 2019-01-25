@@ -39,6 +39,11 @@ void setPrivate(art::mirror::ArtMethod* method) {
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
+bool isAbsMethod(art::mirror::ArtMethod* method) {
+    uint32_t accessFlags = SandHook::CastArtMethod::accessFlag->get(method);
+    return ((accessFlags & 0x0400) != 0);
+}
+
 void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMethod *backupMethod) {
     if (SDK_INT >= ANDROID_P)
         return;
@@ -153,7 +158,7 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     if (isInterpreter) {
         if (SDK_INT >= ANDROID_N) {
             Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
-            if (compileMethod(origin, reinterpret_cast<void *>(threadId)) && SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) != SandHook::CastArtMethod::quickToInterpreterBridge) {
+            if (!isAbsMethod(origin) && compileMethod(origin, reinterpret_cast<void *>(threadId)) && SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) != SandHook::CastArtMethod::quickToInterpreterBridge) {
                 return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
             } else {
                 return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
