@@ -68,14 +68,9 @@ public class SandHook {
     private static void resolveStaticMethod(Member method) {
         //ignore result, just call to trigger resolve
         try {
-            if (method instanceof Method) {
-                if (Modifier.isStatic(method.getModifiers())) {
-                    ((Method) method).setAccessible(true);
-                    ((Method) method).invoke(new Object());
-                }
-            } else if (method instanceof Constructor){
-                ((Constructor)method).setAccessible(true);
-                ((Constructor)method).newInstance(null);
+            if (method instanceof Method && Modifier.isStatic(method.getModifiers())) {
+                ((Method) method).setAccessible(true);
+                ((Method) method).invoke(new Object());
             }
         } catch (Exception e) {
         }
