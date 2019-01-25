@@ -13,7 +13,7 @@ Android ART Hook
 
 # Scope
 
-- Object Methods/Virtual Methods
+- Object Methods
 - Static Methods
 - Constructors
 - System Methods
