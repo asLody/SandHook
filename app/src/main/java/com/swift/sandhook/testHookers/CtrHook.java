@@ -27,7 +27,12 @@ public class CtrHook {
     @HookMethod("add1")
     public static void onAdd1(TestClass thiz) {
         Log.e("TestClassHook", "add1 been hooked");
-        onAdd1Backup(thiz);
+        try {
+            onAdd1Backup(thiz);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @HookMethodBackup("add1")

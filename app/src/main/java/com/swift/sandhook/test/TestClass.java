@@ -12,6 +12,7 @@ public class TestClass {
     public void add1 () {
         a++;
         b++;
+        throw new RuntimeException("test exception");
     }
 
     public void add2 () {
