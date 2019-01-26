@@ -2,9 +2,9 @@ package com.swift.sandhook.testHookers;
 
 import android.util.Log;
 
-import com.swift.sandhook.wrapper.HookClass;
-import com.swift.sandhook.wrapper.HookMethod;
-import com.swift.sandhook.wrapper.HookMethodBackup;
+import com.swift.sandhook.annotation.HookClass;
+import com.swift.sandhook.annotation.HookMethod;
+import com.swift.sandhook.annotation.HookMethodBackup;
 
 @HookClass(Object.class)
 public class ObjectHooker {

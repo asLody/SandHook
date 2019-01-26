@@ -3,6 +3,12 @@ package com.swift.sandhook.wrapper;
 import android.text.TextUtils;
 
 import com.swift.sandhook.SandHook;
+import com.swift.sandhook.annotation.HookClass;
+import com.swift.sandhook.annotation.HookMethod;
+import com.swift.sandhook.annotation.HookMethodBackup;
+import com.swift.sandhook.annotation.HookReflectClass;
+import com.swift.sandhook.annotation.MethodParams;
+import com.swift.sandhook.annotation.MethodReflectParams;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
