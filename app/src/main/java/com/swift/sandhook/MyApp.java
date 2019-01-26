@@ -2,6 +2,7 @@ package com.swift.sandhook;
 
 import android.app.Application;
 
+import com.swift.sandhook.testHookers.AbsHooker;
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
 import com.swift.sandhook.testHookers.CustmizeHooker;
@@ -15,11 +16,13 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         try {
-            SandHook.addHookClass(JniHooker.class,CtrHook.class,
+            SandHook.addHookClass(JniHooker.class,
+                    CtrHook.class,
                     LogHooker.class,
                     CustmizeHooker.class,
                     ActivityHooker.class,
-                    ObjectHooker.class);
+                    ObjectHooker.class,
+                    AbsHooker.class);
         } catch (HookErrorException e) {
             e.printStackTrace();
         }
