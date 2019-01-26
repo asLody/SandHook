@@ -40,11 +40,9 @@ namespace SandHook {
     public:
 
         void setHookMethod(Code hookMethod) {
-            codeCopy(reinterpret_cast<Code>(&hookMethod), OFFSET_REPLACEMENT_ADDR_ART_METHOD, BYTE_POINT);
-        }
-
-        void setEntryCodeOffset(Size offSet) {
-            codeCopy(reinterpret_cast<Code>(&offSet), OFFSET_REPLACEMENT_OFFSET_ENTRY_CODE, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&hookMethod), OFFSET_REPLACEMENT_ART_METHOD, BYTE_POINT);
+            void* codeEntry = getEntryCodeAddr(hookMethod);
+            codeCopy(reinterpret_cast<Code>(&codeEntry), OFFSET_REPLACEMENT_OFFSET_CODE_ENTRY, BYTE_POINT);
         }
 
     protected:
@@ -61,22 +59,26 @@ namespace SandHook {
     public:
 
         void setOriginMethod(Code originMethod) {
-            codeCopy(reinterpret_cast<Code>(&originMethod), OFFSET_INLINE_ADDR_ORIGIN_METHOD, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&originMethod), OFFSET_INLINE_ORIGIN_ART_METHOD, BYTE_POINT);
+            void* codeEntry = getEntryCodeAddr(originMethod);
+            codeCopy(reinterpret_cast<Code>(&codeEntry), OFFSET_INLINE_ADDR_ORIGIN_CODE_ENTRY, BYTE_POINT);
         }
 
         void setHookMethod(Code hookMethod) {
-            codeCopy(reinterpret_cast<Code>(&hookMethod), OFFSET_INLINE_ADDR_HOOK_METHOD, BYTE_POINT);
+            codeCopy(reinterpret_cast<Code>(&hookMethod), OFFSET_INLINE_HOOK_ART_METHOD, BYTE_POINT);
+            void* codeEntry = getEntryCodeAddr(hookMethod);
+            codeCopy(reinterpret_cast<Code>(&codeEntry), OFFSET_INLINE_ADDR_HOOK_CODE_ENTRY, BYTE_POINT);
         }
 
-        void setEntryCodeOffset(Size offSet) {
-            codeCopy(reinterpret_cast<Code>(&offSet), OFFSET_INLINE_OFFSET_ENTRY_CODE, BYTE_POINT);
-            #if defined(__arm__)
-            Code32Bit offset32;
-            offset32.code = offSet;
-            unsigned char offsetOP = isBigEnd() ? offset32.op.op2 : offset32.op.op1;
-            tweakOpImm(OFFSET_INLINE_OP_OFFSET_CODE, offsetOP);
-            #endif
-        }
+//        void setEntryCodeOffset(Size offSet) {
+//            codeCopy(reinterpret_cast<Code>(&offSet), OFFSET_INLINE_OFFSET_ENTRY_CODE, BYTE_POINT);
+//            #if defined(__arm__)
+//            Code32Bit offset32;
+//            offset32.code = offSet;
+//            unsigned char offsetOP = isBigEnd() ? offset32.op.op2 : offset32.op.op1;
+//            tweakOpImm(OFFSET_INLINE_OP_OFFSET_CODE, offsetOP);
+//            #endif
+//        }
 
         void setOriginCode(Code originCode) {
             codeCopy(originCode, OFFSET_INLINE_ORIGIN_CODE, SIZE_DIRECT_JUMP_TRAMPOLINE);

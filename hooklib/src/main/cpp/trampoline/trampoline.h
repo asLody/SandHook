@@ -60,18 +60,19 @@
 #define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 2
 #define OFFSET_CALL_ORIGIN_JUMP_ADDR 4 * 3
 #elif defined(__aarch64__)
-#define SIZE_REPLACEMENT_HOOK_TRAMPOLINE 4 * 9
-#define OFFSET_REPLACEMENT_ADDR_ART_METHOD 4 * 5
-#define OFFSET_REPLACEMENT_OFFSET_ENTRY_CODE 4 * 7
+#define SIZE_REPLACEMENT_HOOK_TRAMPOLINE 4 * 8
+#define OFFSET_REPLACEMENT_ART_METHOD 4 * 4
+#define OFFSET_REPLACEMENT_OFFSET_CODE_ENTRY 4 * 6
 
 #define SIZE_DIRECT_JUMP_TRAMPOLINE 4 * 4
 #define OFFSET_JUMP_ADDR_TARGET 4 * 2
 
-#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 24
-#define OFFSET_INLINE_ORIGIN_CODE 4 * 8
-#define OFFSET_INLINE_ADDR_ORIGIN_METHOD 4 * 18
-#define OFFSET_INLINE_OFFSET_ENTRY_CODE 4 * 20
-#define OFFSET_INLINE_ADDR_HOOK_METHOD 4 * 22
+#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 23
+#define OFFSET_INLINE_ORIGIN_CODE 4 * 7
+#define OFFSET_INLINE_ORIGIN_ART_METHOD 4 * 15
+#define OFFSET_INLINE_ADDR_ORIGIN_CODE_ENTRY 4 * 17
+#define OFFSET_INLINE_HOOK_ART_METHOD 4 * 19
+#define OFFSET_INLINE_ADDR_HOOK_CODE_ENTRY 4 * 21
 
 #define SIZE_CALL_ORIGIN_TRAMPOLINE 4 * 7
 #define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 3
@@ -128,6 +129,11 @@ namespace SandHook {
             memcpy(code, tempCode, codeLen);
             flushCache(reinterpret_cast<Size>(code), codeLen);
         }
+
+        void setEntryCodeOffset(Size offSet) {
+            this->codeEntryOffSet = offSet;
+        }
+
         void codeCopy(Code src, Size targetOffset, Size len) {
             memcpy(reinterpret_cast<void*>((Size)code + targetOffset), src, len);
             flushCache((Size)code + targetOffset, len);
@@ -194,12 +200,22 @@ namespace SandHook {
             return reinterpret_cast<Code>(addr + 1);
         }
 
+        void* getEntryCodeAddr(void* method) {
+            return reinterpret_cast<void*>((Size)method + codeEntryOffSet);
+        }
+
+        Code getEntryCode(void* method) {
+            Code entryCode = *reinterpret_cast<Code*>((Size)method + codeEntryOffSet);
+            return entryCode;
+        }
+
     protected:
         virtual Size codeLength() = 0;
         virtual Code templateCode() = 0;
     private:
         Code tempCode;
         Size codeLen;
+        Size codeEntryOffSet;
         bool isThumb = false;
     };
 

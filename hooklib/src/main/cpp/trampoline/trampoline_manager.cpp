@@ -88,9 +88,9 @@ namespace SandHook {
         if (inlineHookTrampolineSpace == 0)
             goto label_error;
         inlineHookTrampoline->setExecuteSpace(inlineHookTrampolineSpace);
+        inlineHookTrampoline->setEntryCodeOffset(quickCompileOffset);
         inlineHookTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
         inlineHookTrampoline->setHookMethod(reinterpret_cast<Code>(hookMethod));
-        inlineHookTrampoline->setEntryCodeOffset(quickCompileOffset);
         if (inlineHookTrampoline->isThumbCode()) {
             inlineHookTrampoline->setOriginCode(inlineHookTrampoline->getThumbCodeAddress(getEntryCode(originMethod)));
         } else {
