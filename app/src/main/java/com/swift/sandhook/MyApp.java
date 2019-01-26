@@ -15,12 +15,11 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
         try {
-            SandHook.addHookClass(CtrHook.class,
+            SandHook.addHookClass(JniHooker.class,CtrHook.class,
                     LogHooker.class,
                     CustmizeHooker.class,
                     ActivityHooker.class,
-                    ObjectHooker.class,
-                    JniHooker.class);
+                    ObjectHooker.class);
         } catch (HookErrorException e) {
             e.printStackTrace();
         }

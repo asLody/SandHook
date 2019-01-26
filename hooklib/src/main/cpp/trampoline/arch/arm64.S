@@ -56,7 +56,10 @@ const vixl::aarch64::CPURegList callee_saved_core_registers(
 
 
 结论，x16/x17
-x22 - x28 貌似可以使用
+
+X16 = IP0
+Stub 中有使用
+尽量使用 X17
 
 *
 */

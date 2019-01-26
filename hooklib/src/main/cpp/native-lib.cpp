@@ -150,6 +150,7 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
     bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::quickToInterpreterBridge;
 
+    bool idJNi = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::genericJniStub;
 //    #if defined(__arm__)
 //        doHookWithReplacement(origin, hook, backup);
 //        return JNI_TRUE;
@@ -188,4 +189,13 @@ JNIEXPORT void JNICALL
 Java_com_swift_sandhook_test_TestClass_jni_1test(JNIEnv *env, jobject instance) {
     int a = 1 + 1;
     int b = a + 1;
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_ClassNeverCall_neverCallNative(JNIEnv *env, jobject instance) {
+
+    // TODO
+    int a = 1 + 1;
+    int b = a + 1;
+
 }
