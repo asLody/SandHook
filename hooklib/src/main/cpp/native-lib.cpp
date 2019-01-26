@@ -155,10 +155,12 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 //        return JNI_TRUE;
 //    #endif
 
-    if (isInterpreter) {
+    if (isAbsMethod(origin)) {
+        return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
+    } else if (isInterpreter) {
         if (SDK_INT >= ANDROID_N) {
             Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
-            if (!isAbsMethod(origin) && compileMethod(origin, reinterpret_cast<void *>(threadId)) && SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) != SandHook::CastArtMethod::quickToInterpreterBridge) {
+            if (compileMethod(origin, reinterpret_cast<void *>(threadId)) && SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) != SandHook::CastArtMethod::quickToInterpreterBridge) {
                 return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
             } else {
                 return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
