@@ -18,8 +18,10 @@ Android ART Hook
 - Constructors
 - System Methods
 
-if you must hook a abstract method:
-you must load hooker class in another dex, so can make(maybe, some times still go direct its impl) art to search dexcache...
+if you must hook an abstract method:  
+
+you must load hooker class in another dex, so can make(maybe, some times still go direct its impl) art to search dexcache...   
+
 but Hook abstract method is still not recommended, you can invoke its impl method.
 
 cant hook if lined
