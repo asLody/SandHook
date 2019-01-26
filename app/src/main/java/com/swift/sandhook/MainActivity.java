@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
         str.add1();
         str.add2();
 
+        str.jni_test();
+
         Log.e("dd", str.a + "");
 
 

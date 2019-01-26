@@ -17,6 +17,7 @@ Android ART Hook
 - Static Methods
 - Constructors
 - System Methods
+- JNI Methods
 
 if you must hook an abstract method:  
 

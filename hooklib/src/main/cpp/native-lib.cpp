@@ -182,3 +182,10 @@ Java_com_swift_sandhook_SandHook_ensureMethodCached(JNIEnv *env, jclass type, jo
     art::mirror::ArtMethod* backupMethod = backup == NULL ? nullptr : reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backup));
     ensureMethodCached(hookeMethod, backupMethod);
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_test_TestClass_jni_1test(JNIEnv *env, jobject instance) {
+    int a = 1 + 1;
+    int b = a + 1;
+}
