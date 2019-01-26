@@ -108,6 +108,11 @@ bool doHookWithInline(JNIEnv* env,
         compileMethod(hookMethod, reinterpret_cast<void*>(threadId));
     }
 
+    if (SDK_INT >= ANDROID_N) {
+        disableCompilable(originMethod);
+        SandHook::Trampoline::flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
+    }
+
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline == nullptr)
         return false;

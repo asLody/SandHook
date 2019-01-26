@@ -139,7 +139,7 @@ namespace SandHook {
             flushCache((Size)code + targetOffset, len);
         }
 
-        bool flushCache(Size addr, Size len) {
+        static bool flushCache(Size addr, Size len) {
             #if defined(__arm__)
             //clearCacheArm32(reinterpret_cast<char*>(addr), reinterpret_cast<char*>(addr + len));
             int i = cacheflush(addr, addr + len, 0);
