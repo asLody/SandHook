@@ -22,7 +22,11 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) 
 
 void disableCompilable(art::mirror::ArtMethod* method) {
     uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
-    accessFlag |= 0x01000000;
+    if (SDK_INT >= ANDROID_O2) {
+        accessFlag |= 0x02000000;
+    } else {
+        accessFlag |= 0x01000000;
+    }
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
