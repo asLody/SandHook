@@ -1,6 +1,10 @@
 # SandHook
 Android ART Hook
 
+[ ![Download](https://api.bintray.com/packages/ganyao114/maven/hooklib/images/download.svg) ](https://bintray.com/ganyao114/maven/hooklib/_latestVersion)
+
+[中文文档以及实现](https://blog.csdn.net/ganyao939543405/article/details/86661040)
+
 # arch support 
 
 - ARM64
