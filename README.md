@@ -29,6 +29,10 @@ cant hook if lined
 
 # how to use
 
+```gradle
+implementation 'com.swift.sandhook:hooklib:0.0.1'
+```
+
 - hook method must be a static method
 - first par must be this if method is not static
 - method description must "same"(can be isAssignableFrom) with origin method
@@ -81,7 +85,16 @@ SandHook.addHookClass(CtrHook.class, LogHooker.class, CustmizeHooker.class, Acti
 
 you can also use:
 SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
+
 ```
+
+if hookers is in plugin(like xposed):  
+
+```groovy
+provided 'com.swift.sandhook:hookannotation:0.0.1'
+```
+  
+in your plugin
 
 if OS <= 5.1 
 backup method can call itself to avoid be inlining
