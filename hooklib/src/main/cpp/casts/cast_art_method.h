@@ -130,6 +130,8 @@ namespace SandHook {
         static IMember<art::mirror::ArtMethod, uint32_t>* dexMethodIndex;
         static IMember<art::mirror::ArtMethod, uint32_t>* accessFlag;
         static void* quickToInterpreterBridge;
+        static void* genericJniStub;
+        static void* staticResolveStub;
 
 
         static void init(JNIEnv *env, int sdk) {
@@ -164,6 +166,12 @@ namespace SandHook {
             art::mirror::ArtMethod* neverCall = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(neverCallTestClass, "neverCall", "()V"));
             quickToInterpreterBridge = entryPointQuickCompiled->get(neverCall);
 
+            art::mirror::ArtMethod* neverCallStatic = reinterpret_cast<art::mirror::ArtMethod *>(env->GetStaticMethodID(neverCallTestClass, "neverCallStatic", "()V"));
+            staticResolveStub = entryPointQuickCompiled->get(neverCallStatic);
+
+            art::mirror::ArtMethod* neverCallNative = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(neverCallTestClass, "neverCallNative", "()V"));
+            genericJniStub = entryPointQuickCompiled->get(neverCallNative);
+
         }
 
         static void copy(art::mirror::ArtMethod* from, art::mirror::ArtMethod* to) {
@@ -179,6 +187,8 @@ namespace SandHook {
     IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::dexMethodIndex = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t>* CastArtMethod::accessFlag = nullptr;
     void* CastArtMethod::quickToInterpreterBridge = nullptr;
+    void* CastArtMethod::genericJniStub = nullptr;
+    void* CastArtMethod::staticResolveStub = nullptr;
 
 }
 

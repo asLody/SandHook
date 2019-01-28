@@ -22,7 +22,11 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) 
 
 void disableCompilable(art::mirror::ArtMethod* method) {
     uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
-    accessFlag |= 0x01000000;
+    if (SDK_INT >= ANDROID_O2) {
+        accessFlag |= 0x02000000;
+    } else {
+        accessFlag |= 0x01000000;
+    }
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
@@ -108,6 +112,11 @@ bool doHookWithInline(JNIEnv* env,
         compileMethod(hookMethod, reinterpret_cast<void*>(threadId));
     }
 
+    if (SDK_INT >= ANDROID_N) {
+        disableCompilable(originMethod);
+        SandHook::Trampoline::flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
+    }
+
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline == nullptr)
         return false;
@@ -150,15 +159,18 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
     bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::quickToInterpreterBridge;
 
+    bool idJNi = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::genericJniStub;
 //    #if defined(__arm__)
 //        doHookWithReplacement(origin, hook, backup);
 //        return JNI_TRUE;
 //    #endif
 
-    if (isInterpreter) {
+    if (isAbsMethod(origin)) {
+        return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
+    } else if (isInterpreter) {
         if (SDK_INT >= ANDROID_N) {
             Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
-            if (!isAbsMethod(origin) && compileMethod(origin, reinterpret_cast<void *>(threadId)) && SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) != SandHook::CastArtMethod::quickToInterpreterBridge) {
+            if (compileMethod(origin, reinterpret_cast<void *>(threadId)) && SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) != SandHook::CastArtMethod::quickToInterpreterBridge) {
                 return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
             } else {
                 return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
@@ -179,4 +191,20 @@ Java_com_swift_sandhook_SandHook_ensureMethodCached(JNIEnv *env, jclass type, jo
     art::mirror::ArtMethod* hookeMethod = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(hook));
     art::mirror::ArtMethod* backupMethod = backup == NULL ? nullptr : reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backup));
     ensureMethodCached(hookeMethod, backupMethod);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_test_TestClass_jni_1test(JNIEnv *env, jobject instance) {
+    int a = 1 + 1;
+    int b = a + 1;
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_ClassNeverCall_neverCallNative(JNIEnv *env, jobject instance) {
+
+    // TODO
+    int a = 1 + 1;
+    int b = a + 1;
+
 }

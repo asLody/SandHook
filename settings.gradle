@@ -1,1 +1,1 @@
-include ':app', ':hooklib'
+include ':app', ':hooklib', ':hookers', ':annotation'

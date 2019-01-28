@@ -20,4 +20,6 @@ public class TestClass {
         b++;
     }
 
+    public native void jni_test();
+
 }

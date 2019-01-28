@@ -12,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.swift.sandhook.test.Inter;
+import com.swift.sandhook.test.InterImpl;
 import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
@@ -23,7 +25,7 @@ import java.lang.reflect.Method;
 public class MainActivity extends AppCompatActivity {
 
     // Used to load the 'native-lib' library on application startup.
-
+    Inter inter;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -60,9 +62,26 @@ public class MainActivity extends AppCompatActivity {
         str.add1();
         str.add2();
 
+        str.jni_test();
+
         Log.e("dd", str.a + "");
 
+        inter = new InterImpl();
 
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                inter.dosth();
+                inter = new Inter() {
+                    @Override
+                    public void dosth() {
+                        Log.e("dosth", hashCode() + "");
+                    }
+                };
+            }
+        }).start();
+
+        inter.dosth();
     }
 
     public static Field getField(Class topClass, String fieldName) throws NoSuchFieldException {
@@ -86,6 +105,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        inter = new Inter() {
+            @Override
+            public void dosth() {
+                Log.e("dosth", hashCode() + "");
+            }
+        };
     }
 
     public static int methodBeHooked(int a, int b) {

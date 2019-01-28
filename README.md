@@ -1,6 +1,10 @@
 # SandHook
 Android ART Hook
 
+[ ![Download](https://api.bintray.com/packages/ganyao114/maven/hooklib/images/download.svg) ](https://bintray.com/ganyao114/maven/hooklib/_latestVersion)
+
+[中文文档以及实现](https://blog.csdn.net/ganyao939543405/article/details/86661040)
+
 # arch support 
 
 - ARM64
@@ -17,10 +21,21 @@ Android ART Hook
 - Static Methods
 - Constructors
 - System Methods
+- JNI Methods
+
+if you must hook an abstract method:  
+
+you must load hooker class in another dex, so can make(maybe, some times still go direct its impl) art to search dexcache...   
+
+but Hook abstract method is still not recommended, you can invoke its impl method.
 
 cant hook if lined
 
 # how to use
+
+```gradle
+implementation 'com.swift.sandhook:hooklib:0.0.1'
+```
 
 - hook method must be a static method
 - first par must be this if method is not static
@@ -74,9 +89,23 @@ SandHook.addHookClass(CtrHook.class, LogHooker.class, CustmizeHooker.class, Acti
 
 you can also use:
 SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
+
 ```
+
+if hookers is in plugin(like xposed):  
+
+```groovy
+provided 'com.swift.sandhook:hookannotation:0.0.1'
+```
+  
+in your plugin
 
 if OS <= 5.1 
 backup method can call itself to avoid be inlining
+
+# References
+
+- Epic:https://github.com/tiann/epic
+- Yahfa:https://github.com/rk700/YAHFA
 
 

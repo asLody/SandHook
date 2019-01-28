@@ -1,4 +1,4 @@
-package com.swift.sandhook.wrapper;
+package com.swift.sandhook.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD,ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface HookMethodBackup {
-    String value() default "<init>";
+public @interface MethodReflectParams {
+    String[] value();
 }
