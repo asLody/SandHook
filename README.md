@@ -23,18 +23,14 @@ Android ART Hook
 - System Methods
 - JNI Methods
 
-if you must hook an abstract method:  
-
-you must load hooker class in another dex, so can make(maybe, some times still go direct its impl) art to search dexcache...   
-
-but Hook abstract method is still not recommended, you can invoke its impl method.
+hook abstract method is not recommended, you can invoke its impl method.
 
 cant hook if lined
 
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:0.0.1'
+implementation 'com.swift.sandhook:hooklib:0.0.2'
 ```
 
 - hook method must be a static method
@@ -95,7 +91,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:0.0.1'
+provided 'com.swift.sandhook:hookannotation:0.0.2'
 ```
   
 in your plugin
