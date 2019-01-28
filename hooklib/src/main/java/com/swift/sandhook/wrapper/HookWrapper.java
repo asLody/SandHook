@@ -37,8 +37,8 @@ public class HookWrapper {
         Class targetHookClass = getTargetHookClass(classLoader, clazz);
         if (targetHookClass == null)
             throw new HookErrorException("error hook wrapper class :" + clazz.getName());
-        Map<Member,HookEntity> hookEntityMap = getHookMethods(targetHookClass, clazz);
-        fillBackupMethod(clazz, hookEntityMap);
+        Map<Member,HookEntity> hookEntityMap = getHookMethods(classLoader, targetHookClass, clazz);
+        fillBackupMethod(classLoader, clazz, hookEntityMap);
         for (HookEntity entity:hookEntityMap.values()) {
             if (entity.target != null && entity.hook != null) {
                 SandHook.hook(entity.target, entity.hook, entity.backup);
@@ -47,7 +47,7 @@ public class HookWrapper {
         }
     }
 
-    private static void fillBackupMethod(Class<?> clazz, Map<Member, HookEntity> hookEntityMap) {
+    private static void fillBackupMethod(ClassLoader classLoader,Class<?> clazz, Map<Member, HookEntity> hookEntityMap) {
         Field[] fields = clazz.getDeclaredFields();
         if (fields == null || fields.length == 0)
             return;
@@ -62,7 +62,7 @@ public class HookWrapper {
             if (hookMethodBackup == null)
                 continue;
             for (HookEntity hookEntity:hookEntityMap.values()) {
-                if (TextUtils.equals(hookEntity.target.getName(), hookMethodBackup.value()) && hookEntity.backup != null && samePars(field, hookEntity.pars)) {
+                if (TextUtils.equals(hookEntity.target.getName(), hookMethodBackup.value()) && hookEntity.backup != null && samePars(classLoader, field, hookEntity.pars)) {
                     field.setAccessible(true);
                     try {
                         field.set(null, hookEntity.backup);
@@ -74,7 +74,7 @@ public class HookWrapper {
         }
     }
 
-    private static Map<Member, HookEntity> getHookMethods(Class targetHookClass, Class<?> hookWrapperClass) throws HookErrorException {
+    private static Map<Member, HookEntity> getHookMethods(ClassLoader classLoader, Class targetHookClass, Class<?> hookWrapperClass) throws HookErrorException {
         Map<Member,HookEntity> hookEntityMap = new HashMap<>();
         Method[] methods = hookWrapperClass.getDeclaredMethods();
         if (methods == null && methods.length == 0)
@@ -87,7 +87,7 @@ public class HookWrapper {
             Class[] pars;
             if (hookMethodAnno != null) {
                 methodName = hookMethodAnno.value();
-                pars = parseMethodPars(method);
+                pars = parseMethodPars(classLoader, method);
                 try {
                     if (methodName.equals("<init>")) {
                         foundMethod = targetHookClass.getConstructor(pars);
@@ -106,7 +106,7 @@ public class HookWrapper {
                 entity.hook = method;
             } else if (hookMethodBackupAnno != null) {
                 methodName = hookMethodBackupAnno.value();
-                pars = parseMethodPars(method);
+                pars = parseMethodPars(classLoader, method);
                 try {
                     if (methodName.equals("<init>")) {
                         foundMethod = targetHookClass.getConstructor(pars);
@@ -131,7 +131,7 @@ public class HookWrapper {
         return hookEntityMap;
     }
 
-    private static Class[] parseMethodPars(Method method) throws HookErrorException {
+    private static Class[] parseMethodPars(ClassLoader classLoader, Method method) throws HookErrorException {
         MethodParams methodParams = method.getAnnotation(MethodParams.class);
         MethodReflectParams methodReflectParams = method.getAnnotation(MethodReflectParams.class);
         if (methodParams != null) {
@@ -142,7 +142,11 @@ public class HookWrapper {
             Class[] pars = new Class[methodReflectParams.value().length];
             for (int i = 0;i < methodReflectParams.value().length; i++) {
                 try {
-                    pars[i] = Class.forName(methodReflectParams.value()[i]);
+                    if (classLoader == null) {
+                        pars[i] = Class.forName(methodReflectParams.value()[i]);
+                    } else {
+                        pars[i] = Class.forName(methodReflectParams.value()[i], true, classLoader);
+                    }
                 } catch (ClassNotFoundException e) {
                     throw new HookErrorException("hook method pars error: " + method.getName(), e);
                 }
@@ -153,7 +157,7 @@ public class HookWrapper {
         }
     }
 
-    private static Class[] parseMethodPars(Field field) throws HookErrorException {
+    private static Class[] parseMethodPars(ClassLoader classLoader, Field field) throws HookErrorException {
         MethodParams methodParams = field.getAnnotation(MethodParams.class);
         MethodReflectParams methodReflectParams = field.getAnnotation(MethodReflectParams.class);
         if (methodParams != null) {
@@ -164,7 +168,11 @@ public class HookWrapper {
             Class[] pars = new Class[methodReflectParams.value().length];
             for (int i = 0;i < methodReflectParams.value().length; i++) {
                 try {
-                    pars[i] = Class.forName(methodReflectParams.value()[i]);
+                    if (classLoader == null) {
+                        pars[i] = Class.forName(methodReflectParams.value()[i]);
+                    } else {
+                        pars[i] = Class.forName(methodReflectParams.value()[i], true, classLoader);
+                    }
                 } catch (ClassNotFoundException e) {
                     throw new HookErrorException("hook method pars error: " + field.getName(), e);
                 }
@@ -176,9 +184,9 @@ public class HookWrapper {
     }
 
 
-    private static boolean samePars(Field field, Class[] par) {
+    private static boolean samePars(ClassLoader classLoader, Field field, Class[] par) {
         try {
-            Class[] parsOnField = parseMethodPars(field);
+            Class[] parsOnField = parseMethodPars(classLoader, field);
             if (par == null)
                 par = new Class[0];
             if (parsOnField == null)

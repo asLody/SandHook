@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
         }).start();
 
         inter.dosth();
+
+        testPluginHook(str);
     }
 
     public static Field getField(Class topClass, String fieldName) throws NoSuchFieldException {
@@ -118,6 +120,11 @@ public class MainActivity extends AppCompatActivity {
         b = b + a + 3;
         Log.e("MainActivity", "call methodBeHooked origin");
         return a + b;
+    }
+
+    public int testPluginHook(TestClass testClass) {
+        Log.e("MainActivity", "call testPluginHook origin");
+        return testClass.a;
     }
 
     @Override

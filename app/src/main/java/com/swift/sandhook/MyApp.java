@@ -32,7 +32,8 @@ public class MyApp extends Application {
             DexClassLoader dexClassLoader = new DexClassLoader("/sdcard/hookers-debug.apk",
                     getCacheDir().getAbsolutePath(), null, classLoader);
             Class absHookerClass = Class.forName("com.swift.sandhook.hookers.AbsHooker", true, dexClassLoader);
-            SandHook.addHookClass(absHookerClass);
+            Class pluginHookerClass = Class.forName("com.swift.sandhook.hookers.PluginHooker", true, dexClassLoader);
+            SandHook.addHookClass(getClassLoader(), absHookerClass, pluginHookerClass);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (HookErrorException e) {
