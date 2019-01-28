@@ -48,7 +48,7 @@ public class SandHook {
     }
 
     public static void addHookClass(ClassLoader classLoader, Class... hookWrapperClass) throws HookErrorException {
-        HookWrapper.addHookClass(hookWrapperClass);
+        HookWrapper.addHookClass(classLoader, hookWrapperClass);
     }
 
     public static boolean hook(Member target, Method hook, Method backup) {
