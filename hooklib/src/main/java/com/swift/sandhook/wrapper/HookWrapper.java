@@ -24,13 +24,17 @@ public class HookWrapper {
     static Map<Member,HookEntity> globalHookEntityMap = new ConcurrentHashMap<>();
 
     public static void addHookClass(Class<?>... classes) throws HookErrorException {
+        addHookClass(null, classes);
+    }
+
+    public static void addHookClass(ClassLoader classLoader, Class<?>... classes) throws HookErrorException {
         for (Class clazz:classes) {
-            addHookClass(clazz);
+            addHookClass(classLoader, clazz);
         }
     }
 
-    public static void addHookClass(Class<?> clazz) throws HookErrorException {
-        Class targetHookClass = getTargetHookClass(clazz);
+    public static void addHookClass(ClassLoader classLoader, Class<?> clazz) throws HookErrorException {
+        Class targetHookClass = getTargetHookClass(classLoader, clazz);
         if (targetHookClass == null)
             throw new HookErrorException("error hook wrapper class :" + clazz.getName());
         Map<Member,HookEntity> hookEntityMap = getHookMethods(targetHookClass, clazz);
@@ -194,14 +198,18 @@ public class HookWrapper {
 
 
 
-    private static Class getTargetHookClass(Class<?> hookWrapperClass) {
+    private static Class getTargetHookClass(ClassLoader classLoader, Class<?> hookWrapperClass) {
         HookClass hookClass = hookWrapperClass.getAnnotation(HookClass.class);
         HookReflectClass hookReflectClass = hookWrapperClass.getAnnotation(HookReflectClass.class);
         if (hookClass != null) {
             return hookClass.value();
         } else if (hookReflectClass != null) {
             try {
-                return Class.forName(hookReflectClass.value());
+                if (classLoader == null) {
+                    return Class.forName(hookReflectClass.value());
+                } else {
+                    return Class.forName(hookReflectClass.value(), true, classLoader);
+                }
             } catch (ClassNotFoundException e) {
                 return null;
             }

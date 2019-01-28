@@ -24,7 +24,7 @@ public class SandHook {
     public static int testAccessFlag;
 
     static {
-        System.loadLibrary("native-lib");
+        System.loadLibrary("lib-sandhook");
         init();
     }
 
@@ -44,6 +44,10 @@ public class SandHook {
     }
 
     public static void addHookClass(Class... hookWrapperClass) throws HookErrorException {
+        HookWrapper.addHookClass(hookWrapperClass);
+    }
+
+    public static void addHookClass(ClassLoader classLoader, Class... hookWrapperClass) throws HookErrorException {
         HookWrapper.addHookClass(hookWrapperClass);
     }
 
