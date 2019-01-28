@@ -24,7 +24,7 @@ public class SandHook {
     public static int testAccessFlag;
 
     static {
-        System.loadLibrary("lib-sandhook");
+        System.loadLibrary("sandhook");
         init();
     }
 

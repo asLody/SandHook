@@ -11,13 +11,13 @@ cmake_minimum_required(VERSION 3.4.1)
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-             lib-sandhook
+             sandhook
 
              # Sets the library as a shared library.
              SHARED
 
              # Provides a relative path to your source file(s).
-             src/main/cpp/sandhooklib.cpp
+             src/main/cpp/sandhook.cpp
              src/main/cpp/trampoline/trampoline.cpp
              src/main/cpp/trampoline/trampoline_manager.cpp
              src/main/cpp/utils/fake_dlfcn.cpp
@@ -43,7 +43,7 @@ find_library( # Sets the name of the path variable.
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-                       lib-sandhook
+                       sandhook
 
                        # Links the target library to the log library
                        # included in the NDK.
