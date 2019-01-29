@@ -79,11 +79,11 @@ bool doHookWithReplacement(art::mirror::ArtMethod *originMethod,
         disableCompilable(originMethod);
         disableCompilable(hookMethod);
     }
-    if (SDK_INT >= ANDROID_O) {
-        disableInterpreterForO(originMethod);
-    }
     if (backupMethod != nullptr) {
         memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
+    }
+    if (SDK_INT >= ANDROID_O) {
+        disableInterpreterForO(originMethod);
     }
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline != nullptr) {
@@ -160,12 +160,14 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::quickToInterpreterBridge;
 
     bool idJNi = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::genericJniStub;
+
 //    #if defined(__arm__)
 //        doHookWithReplacement(origin, hook, backup);
 //        return JNI_TRUE;
 //    #endif
-
-    if (isAbsMethod(origin)) {
+    if (BYTE_POINT == 4 && SDK_INT >= ANDROID_P) {
+        return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
+    } else if (isAbsMethod(origin)) {
         return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
     } else if (isInterpreter) {
         if (SDK_INT >= ANDROID_N) {
