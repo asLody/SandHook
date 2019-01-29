@@ -135,7 +135,7 @@ namespace SandHook {
                     Code32Bit offset32;
                     offset32.code = offset;
                     unsigned char offsetOP = callOriginTrampoline->isBigEnd() ? offset32.op.op2 : offset32.op.op1;
-                    callOriginTrampoline->tweakOpImm(OFFSET_INLINE_OP_ORIGIN_OFFSET_CODE, offsetOP);
+                    inlineHookTrampoline->tweakOpImm(OFFSET_INLINE_OP_ORIGIN_OFFSET_CODE, offsetOP);
                 }
                 #endif
             } else {
