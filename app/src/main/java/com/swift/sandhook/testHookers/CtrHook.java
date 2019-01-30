@@ -2,6 +2,7 @@ package com.swift.sandhook.testHookers;
 
 import android.util.Log;
 
+import com.swift.sandhook.annotation.HookMode;
 import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.annotation.HookClass;
 import com.swift.sandhook.annotation.HookMethod;
@@ -25,6 +26,7 @@ public class CtrHook {
     }
 
     @HookMethod("add1")
+    @HookMode(HookMode.INLINE)
     public static void onAdd1(TestClass thiz) {
         Log.e("TestClassHook", "add1 been hooked");
         try {

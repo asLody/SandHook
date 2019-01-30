@@ -41,7 +41,9 @@ public class HookWrapper {
         fillBackupMethod(classLoader, clazz, hookEntityMap);
         for (HookEntity entity:hookEntityMap.values()) {
             if (entity.target != null && entity.hook != null) {
-                SandHook.hook(entity.target, entity.hook, entity.backup);
+                if (!SandHook.hook(entity.target, entity.hook, entity.backup)) {
+                    throw new HookErrorException("hook method <" + entity.target.getName() + "> error in native!");
+                }
                 globalHookEntityMap.put(entity.target, entity);
             }
         }
