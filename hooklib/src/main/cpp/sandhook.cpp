@@ -30,9 +30,20 @@ void disableCompilable(art::mirror::ArtMethod* method) {
     uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
     if (SDK_INT >= ANDROID_O2) {
         accessFlag |= 0x02000000;
+        accessFlag |= 0x00800000;
     } else {
         accessFlag |= 0x01000000;
     }
+    SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
+}
+
+void tryDisableInline(art::mirror::ArtMethod* method) {
+    if (method == nullptr)
+        return;
+    if (SDK_INT < ANDROID_O)
+        return;
+    uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
+    accessFlag &= ~ 0x08000000;
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
@@ -42,10 +53,22 @@ void disableInterpreterForO(art::mirror::ArtMethod* method) {
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
+void disableAccessCheck(art::mirror::ArtMethod* method) {
+    uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
+    accessFlag |= 0x00080000;
+    SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
+}
+
 void setPrivate(art::mirror::ArtMethod* method) {
     uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
     accessFlag &= ~ 0x1;
     accessFlag |= 0x2;
+    SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
+}
+
+void setStatic(art::mirror::ArtMethod* method) {
+    uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
+    accessFlag |= 0x0008;
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
@@ -92,6 +115,16 @@ bool doHookWithReplacement(art::mirror::ArtMethod *originMethod,
     }
     if (backupMethod != nullptr) {
         memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
+        if (SDK_INT >= ANDROID_N) {
+            disableCompilable(backupMethod);
+        }
+        if (SDK_INT >= ANDROID_O) {
+            disableInterpreterForO(backupMethod);
+        }
+        tryDisableInline(backupMethod);
+        disableAccessCheck(backupMethod);
+        setPrivate(backupMethod);
+        SandHook::Trampoline::flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
     }
     if (SDK_INT >= ANDROID_O) {
         disableInterpreterForO(originMethod);
@@ -128,13 +161,13 @@ bool doHookWithInline(JNIEnv* env,
         SandHook::Trampoline::flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
     }
 
+    tryDisableInline(originMethod);
+    disableAccessCheck(originMethod);
+
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod, isNative(originMethod));
     if (hookTrampoline == nullptr)
         return false;
-//    void* entryPointFormInterpreter = SandHook::CastArtMethod::entryPointFormInterpreter->get(hookMethod);
-//    if (entryPointFormInterpreter != NULL) {
-//        SandHook::CastArtMethod::entryPointFormInterpreter->set(originMethod, entryPointFormInterpreter);
-//    }
+
     hookTrampoline->inlineSecondory->flushCache(reinterpret_cast<Size>(hookMethod), SandHook::CastArtMethod::size);
     if (hookTrampoline->callOrigin != nullptr) {
         //backup
@@ -148,7 +181,9 @@ bool doHookWithInline(JNIEnv* env,
         if (SDK_INT >= ANDROID_O) {
             disableInterpreterForO(backupMethod);
         }
-        //setPrivate(backupMethod);
+        tryDisableInline(backupMethod);
+        disableAccessCheck(backupMethod);
+        setPrivate(backupMethod);
         hookTrampoline->callOrigin->flushCache(reinterpret_cast<Size>(backupMethod), SandHook::CastArtMethod::size);
     }
     return true;
@@ -187,6 +222,11 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     }
 
     if (SDK_INT >= ANDROID_P && BYTE_POINT == 4) {
+        bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(hook) == SandHook::CastArtMethod::quickToInterpreterBridge;
+        if (isInterpreter) {
+            Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
+            compileMethod(hook, reinterpret_cast<void*>(threadId));
+        }
         return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
     } else if (isAbsMethod(origin)) {
         return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
