@@ -2,10 +2,10 @@ package com.swift.sandhook;
 
 import android.os.Build;
 
+import com.swift.sandhook.annotation.HookMode;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -62,7 +62,8 @@ public class SandHook {
         if (target instanceof Method) {
             ((Method)target).setAccessible(true);
         }
-        boolean res = hookMethod(target, hook, backup);
+        HookMode hookMode = hook.getAnnotation(HookMode.class);
+        boolean res = hookMethod(target, hook, backup, hookMode == null ? HookMode.AUTO : hookMode.value());
         if (res && backup != null) {
             backup.setAccessible(true);
         }
@@ -160,7 +161,7 @@ public class SandHook {
 
     private static native boolean initNative(int sdk);
 
-    private static native boolean hookMethod(Member originMethod, Method hookMethod, Method backupMethod);
+    private static native boolean hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
 
     public static native void ensureMethodCached(Method hook, Method backup);
 

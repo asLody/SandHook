@@ -7,6 +7,12 @@ SandHook::TrampolineManager trampolineManager;
 
 int SDK_INT = 0;
 
+enum HookMode {
+    AUTO = 0,
+    INLINE = 1,
+    REPLACE = 2
+};
+
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) {
@@ -151,26 +157,38 @@ bool doHookWithInline(JNIEnv* env,
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject originMethod,
-                                            jobject hookMethod, jobject backupMethod) {
+                                            jobject hookMethod, jobject backupMethod, jint hookMode) {
 
     // TODO
     art::mirror::ArtMethod* origin = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(originMethod));
     art::mirror::ArtMethod* hook = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(hookMethod));
     art::mirror::ArtMethod* backup = backupMethod == NULL ? nullptr : reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backupMethod));
 
-//    if (backup != nullptr) {
-//        memcpy(backup, origin, SandHook::CastArtMethod::size);
-//    }
-
     bool isInterpreter = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::quickToInterpreterBridge;
 
-    bool idJNi = SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) == SandHook::CastArtMethod::genericJniStub;
+    int mode = reinterpret_cast<int>(hookMode);
+    if (mode == INLINE) {
+        if (isInterpreter) {
+            if (SDK_INT >= ANDROID_N) {
+                Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
+                if (compileMethod(origin, reinterpret_cast<void *>(threadId)) &&
+                    SandHook::CastArtMethod::entryPointQuickCompiled->get(origin) !=
+                    SandHook::CastArtMethod::quickToInterpreterBridge) {
+                    return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
+                } else {
+                    return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
+                }
+            }
+        } else {
+            return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
+        }
+    } else if (mode == REPLACE) {
+        return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
+    }
 
-//    #if defined(__arm__)
-//        doHookWithReplacement(origin, hook, backup);
-//        return JNI_TRUE;
-//    #endif
-    if (isAbsMethod(origin)) {
+    if (SDK_INT >= ANDROID_P && BYTE_POINT == 4) {
+        return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
+    } else if (isAbsMethod(origin)) {
         return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
     } else if (isInterpreter) {
         if (SDK_INT >= ANDROID_N) {
