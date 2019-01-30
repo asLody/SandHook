@@ -6,15 +6,27 @@
 
 namespace SandHook {
 
+
+    uint32_t TrampolineManager::sizeOfEntryCode(mirror::ArtMethod *method) {
+        Code codeEntry = getEntryCode(method);
+        #if defined(__arm__)
+        if (isThumbCode(reinterpret_cast<Size>(codeEntry))) {
+            codeEntry = getThumbCodeAddress(codeEntry);
+        }
+        #endif
+        uint32_t size = *reinterpret_cast<uint32_t *>((Size)codeEntry - 4);
+        return size;
+    }
+
     Code TrampolineManager::allocExecuteSpace(Size size) {
-        if (size > MMAP_PAGE_SIZE)
+        if (size > EXE_BLOCK_SIZE)
             return 0;
         AutoLock autoLock(allocSpaceLock);
         void* mmapRes;
         Code exeSpace = 0;
         if (executeSpaceList.size() == 0) {
             goto label_alloc_new_space;
-        } else if (executePageOffset + size > MMAP_PAGE_SIZE) {
+        } else if (executePageOffset + size > EXE_BLOCK_SIZE) {
             goto label_alloc_new_space;
         } else {
             exeSpace = executeSpaceList.back();
@@ -23,7 +35,7 @@ namespace SandHook {
             return retSpace;
         }
     label_alloc_new_space:
-        mmapRes = mmap(NULL, MMAP_PAGE_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC,
+        mmapRes = mmap(NULL, EXE_BLOCK_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC,
                              MAP_ANON | MAP_PRIVATE, -1, 0);
         if (mmapRes == MAP_FAILED) {
             return 0;
@@ -66,7 +78,8 @@ namespace SandHook {
 
     HookTrampoline* TrampolineManager::installInlineTrampoline(mirror::ArtMethod *originMethod,
                                                                mirror::ArtMethod *hookMethod,
-                                                               mirror::ArtMethod *backupMethod) {
+                                                               mirror::ArtMethod *backupMethod,
+                                                               bool isNative) {
 
         AutoLock autoLock(installLock);
 
@@ -79,6 +92,12 @@ namespace SandHook {
         Code inlineHookTrampolineSpace;
         Code callOriginTrampolineSpace;
         Code originEntry;
+
+        if (!isNative) {
+            uint32_t originCodeSize = sizeOfEntryCode(originMethod);
+            if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE)
+                goto label_error;
+        }
 
         //生成二段跳板
         inlineHookTrampoline = new InlineHookTrampoline();
@@ -144,7 +163,6 @@ namespace SandHook {
             callOriginTrampoline->setOriginCode(originCode);
             hookTrampoline->callOrigin = callOriginTrampoline;
         }
-
         trampolines[originMethod] = hookTrampoline;
         return hookTrampoline;
 

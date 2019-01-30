@@ -12,19 +12,10 @@
 #include "arch.h"
 #include "utils.h"
 
-#define ANDROID_K 19
-#define ANDROID_L 21
-#define ANDROID_L2 22
-#define ANDROID_M 23
-#define ANDROID_N 24
-#define ANDROID_N2 25
-#define ANDROID_O 26
-#define ANDROID_O2 27
-#define ANDROID_P 28
 
 namespace SandHook {
 
-    static int SDK_INT = 0;
+    int SDK_INT = 0;
 
     template <typename T>
     class cast {

@@ -16,6 +16,7 @@
 namespace SandHook {
 
     #define MMAP_PAGE_SIZE sysconf(_SC_PAGESIZE)
+    #define EXE_BLOCK_SIZE MMAP_PAGE_SIZE
 
     using namespace art;
 
@@ -29,19 +30,25 @@ namespace SandHook {
         Trampoline* inlineJump = nullptr;
         Trampoline* inlineSecondory = nullptr;
         Trampoline* callOrigin = nullptr;
+        Code originCode = nullptr;
     };
 
     class TrampolineManager {
     public:
         TrampolineManager() = default;
-        void init(Size quickCompileOffset) {
-            this->quickCompileOffset = quickCompileOffset;
 
+        void init(int sdk, Size quickCompileOffset) {
+            this->quickCompileOffset = quickCompileOffset;
+            SDK_INT = sdk;
         }
+
         Code allocExecuteSpace(Size size);
 
         HookTrampoline* installReplacementTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
-        HookTrampoline* installInlineTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
+        HookTrampoline* installInlineTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod,
+                                                bool isNative);
+
+        uint32_t sizeOfEntryCode(mirror::ArtMethod* method);
 
         HookTrampoline* getHookTrampoline(mirror::ArtMethod* method) {
             return trampolines[method];
@@ -63,21 +70,26 @@ namespace SandHook {
             return entryCode;
         }
 
-        bool isThumbCode(Size codeAddr) {
+        static bool isThumbCode(Size codeAddr) {
             return (codeAddr & 0x1) == 0x1;
         }
 
-        void checkThumbCode(Trampoline* trampoline, Code code) {
+        static void checkThumbCode(Trampoline* trampoline, Code code) {
             #if defined(__arm__)
             trampoline->setThumb(isThumbCode(reinterpret_cast<Size>(code)));
             #endif
+        }
+
+        static Code getThumbCodeAddress(Code code) {
+            Size addr = reinterpret_cast<Size>(code) & (~0x00000001);
+            return reinterpret_cast<Code>(addr);
         }
 
 
     private:
 
         Size quickCompileOffset;
-
+        int SDK_INT = 0;
         std::map<mirror::ArtMethod*,HookTrampoline*> trampolines;
         std::list<Code> executeSpaceList = std::list<Code>();
         std::mutex allocSpaceLock;

@@ -14,7 +14,7 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) 
     // TODO
     SDK_INT = sdk;
     SandHook::CastArtMethod::init(env, sdk);
-    trampolineManager.init(SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
+    trampolineManager.init(sdk, SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
     initHideApi(env, sdk);
     return JNI_TRUE;
 
@@ -46,6 +46,11 @@ void setPrivate(art::mirror::ArtMethod* method) {
 bool isAbsMethod(art::mirror::ArtMethod* method) {
     uint32_t accessFlags = SandHook::CastArtMethod::accessFlag->get(method);
     return ((accessFlags & 0x0400) != 0);
+}
+
+bool isNative(art::mirror::ArtMethod* method) {
+    uint32_t accessFlags = SandHook::CastArtMethod::accessFlag->get(method);
+    return ((accessFlags & 0x0100) != 0);
 }
 
 void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMethod *backupMethod) {
@@ -117,7 +122,7 @@ bool doHookWithInline(JNIEnv* env,
         SandHook::Trampoline::flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
     }
 
-    SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
+    SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod, isNative(originMethod));
     if (hookTrampoline == nullptr)
         return false;
 //    void* entryPointFormInterpreter = SandHook::CastArtMethod::entryPointFormInterpreter->get(hookMethod);
@@ -165,9 +170,7 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 //        doHookWithReplacement(origin, hook, backup);
 //        return JNI_TRUE;
 //    #endif
-    if (BYTE_POINT == 4 && SDK_INT >= ANDROID_P) {
-        return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
-    } else if (isAbsMethod(origin)) {
+    if (isAbsMethod(origin)) {
         return static_cast<jboolean>(doHookWithReplacement(origin, hook, backup));
     } else if (isInterpreter) {
         if (SDK_INT >= ANDROID_N) {
