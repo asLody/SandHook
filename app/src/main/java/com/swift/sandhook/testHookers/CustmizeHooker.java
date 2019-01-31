@@ -29,10 +29,4 @@ public class CustmizeHooker {
         return 0;
     }
 
-    @HookMethodBackup("methodBeHooked")
-    @MethodParams({int.class, int.class})
-    public static int staticMethodHookedBackup(int a, int b) {
-        return 0;
-    }
-
 }

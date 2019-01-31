@@ -64,10 +64,15 @@ public class HookWrapper {
             if (hookMethodBackup == null)
                 continue;
             for (HookEntity hookEntity:hookEntityMap.values()) {
-                if (TextUtils.equals(hookEntity.target.getName(), hookMethodBackup.value()) && hookEntity.backup != null && samePars(classLoader, field, hookEntity.pars)) {
+                if (TextUtils.equals(hookEntity.target.getName(), hookMethodBackup.value()) && samePars(classLoader, field, hookEntity.pars)) {
                     field.setAccessible(true);
+                    if (hookEntity.backup == null)
+                        hookEntity.backup = BackupMethodStubs.getStubMethod();
+                    if (hookEntity.backup == null)
+                        continue;
                     try {
                         field.set(null, hookEntity.backup);
+                        hookEntity.hookIsStub = true;
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }
@@ -105,6 +110,7 @@ public class HookWrapper {
                     entity = new HookEntity(foundMethod);
                     hookEntityMap.put(foundMethod, entity);
                 }
+                entity.pars = pars;
                 entity.hook = method;
             } else if (hookMethodBackupAnno != null) {
                 methodName = hookMethodBackupAnno.value();
@@ -270,6 +276,8 @@ public class HookWrapper {
         public Member target;
         public Method hook;
         public Method backup;
+
+        public boolean hookIsStub = false;
 
         public Class[] pars;
 

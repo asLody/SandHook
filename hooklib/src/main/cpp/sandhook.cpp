@@ -53,12 +53,6 @@ void disableInterpreterForO(art::mirror::ArtMethod* method) {
     SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
 }
 
-void disableAccessCheck(art::mirror::ArtMethod* method) {
-    uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
-    accessFlag |= 0x00080000;
-    SandHook::CastArtMethod::accessFlag->set(method, accessFlag);
-}
-
 void setPrivate(art::mirror::ArtMethod* method) {
     uint32_t accessFlag = SandHook::CastArtMethod::accessFlag->get(method);
     accessFlag &= ~ 0x1;
@@ -123,7 +117,6 @@ bool doHookWithReplacement(art::mirror::ArtMethod *originMethod,
             disableInterpreterForO(backupMethod);
         }
         tryDisableInline(backupMethod);
-        disableAccessCheck(backupMethod);
         setPrivate(backupMethod);
         SandHook::Trampoline::flushCache(reinterpret_cast<Size>(originMethod), SandHook::CastArtMethod::size);
     }
@@ -163,7 +156,6 @@ bool doHookWithInline(JNIEnv* env,
     }
 
     tryDisableInline(originMethod);
-    disableAccessCheck(originMethod);
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod, isNative(originMethod));
     if (hookTrampoline == nullptr)
@@ -183,7 +175,6 @@ bool doHookWithInline(JNIEnv* env,
             disableInterpreterForO(backupMethod);
         }
         tryDisableInline(backupMethod);
-        disableAccessCheck(backupMethod);
         setPrivate(backupMethod);
         hookTrampoline->callOrigin->flushCache(reinterpret_cast<Size>(backupMethod), SandHook::CastArtMethod::size);
     }
