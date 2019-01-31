@@ -113,6 +113,7 @@ bool doHookWithReplacement(art::mirror::ArtMethod *originMethod,
         disableCompilable(originMethod);
         disableCompilable(hookMethod);
     }
+    tryDisableInline(originMethod);
     if (backupMethod != nullptr) {
         memcpy(backupMethod, originMethod, SandHook::CastArtMethod::size);
         if (SDK_INT >= ANDROID_N) {
