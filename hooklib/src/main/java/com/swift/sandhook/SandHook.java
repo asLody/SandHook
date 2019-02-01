@@ -24,7 +24,11 @@ public class SandHook {
     public static int testAccessFlag;
 
     static {
-        System.loadLibrary("sandhook");
+        if (SandHookConfig.libSandHookPath == null || SandHookConfig.libSandHookPath.length() == 0) {
+            System.loadLibrary("sandhook");
+        } else {
+            System.load(SandHookConfig.libSandHookPath);
+        }
         init();
     }
 
