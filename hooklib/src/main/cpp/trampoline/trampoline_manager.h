@@ -48,6 +48,8 @@ namespace SandHook {
         HookTrampoline* installInlineTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod,
                                                 bool isNative);
 
+        bool canSafeInline(mirror::ArtMethod* method, char* msg);
+
         uint32_t sizeOfEntryCode(mirror::ArtMethod* method);
 
         HookTrampoline* getHookTrampoline(mirror::ArtMethod* method) {

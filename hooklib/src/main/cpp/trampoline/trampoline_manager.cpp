@@ -18,6 +18,15 @@ namespace SandHook {
         return size;
     }
 
+    bool TrampolineManager::canSafeInline(mirror::ArtMethod *method, char *msg) {
+        //check size
+        if (!isNative) {
+            uint32_t originCodeSize = sizeOfEntryCode(originMethod);
+            if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE)
+                goto label_error;
+        }
+    }
+
     Code TrampolineManager::allocExecuteSpace(Size size) {
         if (size > EXE_BLOCK_SIZE)
             return 0;
@@ -78,8 +87,7 @@ namespace SandHook {
 
     HookTrampoline* TrampolineManager::installInlineTrampoline(mirror::ArtMethod *originMethod,
                                                                mirror::ArtMethod *hookMethod,
-                                                               mirror::ArtMethod *backupMethod,
-                                                               bool isNative) {
+                                                               mirror::ArtMethod *backupMethod) {
 
         AutoLock autoLock(installLock);
 
@@ -92,12 +100,6 @@ namespace SandHook {
         Code inlineHookTrampolineSpace;
         Code callOriginTrampolineSpace;
         Code originEntry;
-
-        if (!isNative) {
-            uint32_t originCodeSize = sizeOfEntryCode(originMethod);
-            if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE)
-                goto label_error;
-        }
 
         //生成二段跳板
         inlineHookTrampoline = new InlineHookTrampoline();
