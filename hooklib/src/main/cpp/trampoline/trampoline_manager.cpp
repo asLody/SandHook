@@ -69,7 +69,9 @@ namespace SandHook {
             return getHookTrampoline(originMethod);
         HookTrampoline* hookTrampoline = new HookTrampoline();
         ReplacementHookTrampoline* replacementHookTrampoline = nullptr;
+        CallOriginTrampoline* callOriginTrampoline = nullptr;
         Code replacementHookTrampolineSpace;
+        Code callOriginTrampolineSpace;
 
         replacementHookTrampoline = new ReplacementHookTrampoline();
         replacementHookTrampoline->init();
@@ -81,12 +83,31 @@ namespace SandHook {
         replacementHookTrampoline->setHookMethod(reinterpret_cast<Code>(hookMethod));
         hookTrampoline->replacement = replacementHookTrampoline;
 
+        if (backupMethod != nullptr) {
+            callOriginTrampoline = new CallOriginTrampoline();
+            checkThumbCode(callOriginTrampoline, getEntryCode(originMethod));
+            callOriginTrampoline->init();
+            callOriginTrampolineSpace = allocExecuteSpace(callOriginTrampoline->getCodeLen());
+            if (callOriginTrampolineSpace == 0)
+                goto label_error;
+            callOriginTrampoline->setExecuteSpace(callOriginTrampolineSpace);
+            callOriginTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
+            Code originCode = getEntryCode(originMethod);
+            if (callOriginTrampoline->isThumbCode()) {
+                originCode = callOriginTrampoline->getThumbCodePcAddress(originCode);
+            }
+            callOriginTrampoline->setOriginCode(originCode);
+            hookTrampoline->callOrigin = callOriginTrampoline;
+        }
+
         trampolines[originMethod] = hookTrampoline;
         return hookTrampoline;
 
     label_error:
         delete hookTrampoline;
         delete replacementHookTrampoline;
+        if (callOriginTrampoline != nullptr)
+            delete callOriginTrampoline;
         return nullptr;
     }
 

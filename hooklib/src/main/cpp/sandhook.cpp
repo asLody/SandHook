@@ -85,6 +85,10 @@ bool doHookWithReplacement(JNIEnv* env,
         if (entryPointFormInterpreter != NULL) {
             originMethod->setInterpreterCodeEntry(entryPointFormInterpreter);
         }
+        if (hookTrampoline->callOrigin != nullptr) {
+            backupMethod->setQuickCodeEntry(hookTrampoline->callOrigin->getCode());
+            backupMethod->flushCache();
+        }
         originMethod->flushCache();
         return true;
     } else {
@@ -144,17 +148,19 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     bool isInlineHook = false;
 
     int mode = reinterpret_cast<int>(hookMode);
+
     if (mode == INLINE) {
         if (!origin->isCompiled()) {
             if (SDK_INT >= ANDROID_N) {
-                Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
-                isInlineHook = compileMethod(origin, reinterpret_cast<void *>(threadId));
+                isInlineHook = origin->compile(env);
             }
         } else {
             isInlineHook = true;
         }
+        goto label_hook;
     } else if (mode == REPLACE) {
         isInlineHook = false;
+        goto label_hook;
     }
 
 
@@ -173,6 +179,9 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     } else {
         isInlineHook = true;
     }
+
+
+label_hook:
 
     char *msg;
 
