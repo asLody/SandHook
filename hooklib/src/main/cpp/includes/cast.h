@@ -15,7 +15,7 @@
 
 namespace SandHook {
 
-    int SDK_INT = 0;
+    static int SDK_INT = 0;
 
     template <typename T>
     class cast {
@@ -58,6 +58,22 @@ namespace SandHook {
                 return;
             memcpy(reinterpret_cast<void *>((Size)p + getOffset()), &t, sizeof(MType));
         };
+
+        template<typename T>
+        int findOffset(void *start, size_t len, size_t step, T value) {
+
+            if (NULL == start) {
+                return -1;
+            }
+
+            for (int i = 0; i <= len; i += step) {
+                T current_value = *reinterpret_cast<T *>((size_t) start + i);
+                if (value == current_value) {
+                    return i;
+                }
+            }
+            return -1;
+        }
 
     private:
         Size offset = 0;

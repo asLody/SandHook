@@ -5,8 +5,6 @@
 #ifndef SANDHOOK_ARCH_H
 #define SANDHOOK_ARCH_H
 
-namespace SandHook {
-
 #define BYTE_POINT sizeof(void*)
 
 //32bit
@@ -44,8 +42,5 @@ static void clearCacheArm32(char* begin, char *end)
 #define ANDROID_O 26
 #define ANDROID_O2 27
 #define ANDROID_P 28
-
-
-}
 
 #endif //SANDHOOK_ARCH_H

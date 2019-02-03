@@ -7,8 +7,8 @@
 
 #include <cstdint>
 #include <string.h>
-#include "../includes/arch.h"
-#include "./arch/base.h"
+#include "arch.h"
+#include "arch_base.h"
 #include "stdlib.h"
 #include <sys/mman.h>
 

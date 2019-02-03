@@ -113,9 +113,9 @@ void *fake_dlopen(const char *libpath, int flags) {
 	if (!ctx) fatal("no memory for %s", libpath);
 
 	ctx->load_addr = (void *) load_addr;
-	shoff = ((void *) elf) + elf->e_shoff;
+	shoff = reinterpret_cast<void *>(((size_t) elf) + elf->e_shoff);
 
-	for (k = 0; k < elf->e_shnum; k++, shoff += elf->e_shentsize) {
+	for (k = 0; k < elf->e_shnum; k++, shoff = reinterpret_cast<void *>((size_t)shoff + elf->e_shentsize)) {
 
 		Elf_Shdr *sh = (Elf_Shdr *) shoff;
 		log_dbg("%s: k=%d shdr=%p type=%x", __func__, k, sh, sh->sh_type);
@@ -126,7 +126,7 @@ void *fake_dlopen(const char *libpath, int flags) {
 				if (ctx->dynsym) fatal("%s: duplicate DYNSYM sections", libpath); /* .dynsym */
 				ctx->dynsym = malloc(sh->sh_size);
 				if (!ctx->dynsym) fatal("%s: no memory for .dynsym", libpath);
-				memcpy(ctx->dynsym, ((void *) elf) + sh->sh_offset, sh->sh_size);
+				memcpy(ctx->dynsym, reinterpret_cast<const void *>(((size_t) elf) + sh->sh_offset), sh->sh_size);
 				ctx->nsyms = (sh->sh_size / sizeof(Elf_Sym));
 				break;
 
@@ -134,7 +134,7 @@ void *fake_dlopen(const char *libpath, int flags) {
 				if (ctx->dynstr) break;    /* .dynstr is guaranteed to be the first STRTAB */
 				ctx->dynstr = malloc(sh->sh_size);
 				if (!ctx->dynstr) fatal("%s: no memory for .dynstr", libpath);
-				memcpy(ctx->dynstr, ((void *) elf) + sh->sh_offset, sh->sh_size);
+				memcpy(ctx->dynstr, reinterpret_cast<const void *>(((size_t) elf) + sh->sh_offset), sh->sh_size);
 				break;
 
 			case SHT_PROGBITS:
@@ -174,7 +174,7 @@ void *fake_dlsym(void *handle, const char *name) {
 		if (strcmp(strings + sym->st_name, name) == 0) {
 			/*  NB: sym->st_value is an offset into the section for relocatables,
             but a VMA for shared libs or exe files, so we have to subtract the bias */
-			void *ret = ctx->load_addr + sym->st_value - ctx->bias;
+			void *ret = reinterpret_cast<void *>((size_t)ctx->load_addr + sym->st_value - ctx->bias);
 			log_info("%s found at %p", name, ret);
 			return ret;
 		}

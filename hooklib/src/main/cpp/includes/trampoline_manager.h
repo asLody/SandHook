@@ -7,10 +7,10 @@
 
 #include "map"
 #include "list"
-#include "trampoline.cpp"
+#include "../trampoline/trampoline.cpp"
 #include "../utils/lock.h"
 #include <sys/mman.h>
-#include "../casts/art/art.h"
+#include "art_method.h"
 #include <unistd.h>
 
 namespace SandHook {
@@ -45,8 +45,7 @@ namespace SandHook {
         Code allocExecuteSpace(Size size);
 
         HookTrampoline* installReplacementTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
-        HookTrampoline* installInlineTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod,
-                                                bool isNative);
+        HookTrampoline* installInlineTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
 
         bool canSafeInline(mirror::ArtMethod* method, char* msg);
 

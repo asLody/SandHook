@@ -1,6 +1,6 @@
 #include <jni.h>
-#include "casts/cast_art_method.h"
-#include "./trampoline/trampoline_manager.h"
+#include "includes/cast_art_method.h"
+#include "includes/trampoline_manager.h"
 #include "./utils/hide_api.h"
 
 SandHook::TrampolineManager trampolineManager;
@@ -85,14 +85,14 @@ void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMeth
     } else {
         int cacheSize = 1024;
         Size slotIndex = index % cacheSize;
-        void *newCachedMethodsArray = calloc(cacheSize, BYTE_POINT * 2);
+        Size newCachedMethodsArray = reinterpret_cast<Size>(calloc(cacheSize, BYTE_POINT * 2));
         unsigned int one = 1;
-        memcpy(newCachedMethodsArray + BYTE_POINT, &one, 4);
-        memcpy(newCachedMethodsArray + BYTE_POINT * 2 * slotIndex,
+        memcpy(reinterpret_cast<void *>(newCachedMethodsArray + BYTE_POINT), &one, 4);
+        memcpy(reinterpret_cast<void *>(newCachedMethodsArray + BYTE_POINT * 2 * slotIndex),
                (&backupMethod),
                BYTE_POINT
         );
-        memcpy(newCachedMethodsArray + BYTE_POINT * 2 * slotIndex + BYTE_POINT,
+        memcpy(reinterpret_cast<void *>(newCachedMethodsArray + BYTE_POINT * 2 * slotIndex + BYTE_POINT),
                &index,
                4
         );
@@ -157,7 +157,7 @@ bool doHookWithInline(JNIEnv* env,
 
     tryDisableInline(originMethod);
 
-    SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod, isNative(originMethod));
+    SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline == nullptr)
         return false;
 

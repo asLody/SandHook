@@ -1,8 +1,8 @@
 //
 // Created by swift on 2019/1/20.
 //
-#include "trampoline_manager.h"
-#include "trampoline.h"
+#include "../includes/trampoline_manager.h"
+#include "../includes/trampoline.h"
 
 namespace SandHook {
 
@@ -20,11 +20,16 @@ namespace SandHook {
 
     bool TrampolineManager::canSafeInline(mirror::ArtMethod *method, char *msg) {
         //check size
-        if (!isNative) {
-            uint32_t originCodeSize = sizeOfEntryCode(originMethod);
-            if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE)
-                goto label_error;
+        if (!method->isNative()) {
+            uint32_t originCodeSize = sizeOfEntryCode(method);
+            if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE) {
+                msg = "code entry size < inject code size";
+                return false;
+            }
         }
+        //TODO
+        //check pc relate inst
+        return true;
     }
 
     Code TrampolineManager::allocExecuteSpace(Size size) {

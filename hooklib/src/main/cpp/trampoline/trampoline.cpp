@@ -5,7 +5,7 @@
 #ifndef SANDHOOK_TRAMPOLINE_CPP
 #define SANDHOOK_TRAMPOLINE_CPP
 
-#include "trampoline.h"
+#include "../includes/trampoline.h"
 
 namespace SandHook {
 
