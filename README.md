@@ -30,7 +30,7 @@ cant hook if lined
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:0.0.2'
+implementation 'com.swift.sandhook:hooklib:1.1.1'
 ```
 
 - hook method must be a static method
@@ -91,7 +91,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:0.0.2'
+provided 'com.swift.sandhook:hookannotation:1.1.1'
 ```
   
 in your plugin
