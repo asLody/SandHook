@@ -26,6 +26,9 @@
 #ifndef ART_H
 #define ART_H
 
+#include <jni.h>
+#include "arch.h"
+
 namespace art {
 namespace mirror {
 class Object {
@@ -41,7 +44,6 @@ public:
 
 class ArtMethod {
 public:
-    void* codeEntry;
 
     bool isAbstract();
     bool isNative();
@@ -57,6 +59,7 @@ public:
     void setQuickCodeEntry(void* entry);
     void setJniCodeEntry(void* entry);
     void setInterpreterCodeEntry(void* entry);
+    void setDexCacheResolveList(void* list);
     void setDexCacheResolveItem(uint32_t index, void* item);
 
     void* getQuickCodeEntry();
@@ -64,9 +67,11 @@ public:
     uint32_t getAccessFlags();
     uint32_t getDexMethodIndex();
 
-    bool compile();
+    bool compile(JNIEnv* env);
     void flushCache();
     void backup(ArtMethod* backup);
+
+    static Size size();
 
 };
 

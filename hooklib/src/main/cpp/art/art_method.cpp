@@ -5,11 +5,11 @@
 #include "../includes/art_method.h"
 #include "../includes/cast_art_method.h"
 #include "../includes/hide_api.h"
+#include "../includes/utils.h"
 
 
 using namespace art::mirror;
 using namespace SandHook;
-
 
 void ArtMethod::tryDisableInline() {
     if (SDK_INT < ANDROID_O)
@@ -47,7 +47,7 @@ bool ArtMethod::isNative() {
 }
 
 bool ArtMethod::isCompiled() {
-    return getQuickCodeEntry() == SandHook::CastArtMethod::quickToInterpreterBridge;
+    return getQuickCodeEntry() != SandHook::CastArtMethod::quickToInterpreterBridge;
 }
 
 void ArtMethod::setAccessFlags(uint32_t flags) {
@@ -94,23 +94,31 @@ void ArtMethod::setInterpreterCodeEntry(void *entry) {
     CastArtMethod::entryPointFormInterpreter->set(this, entry);
 }
 
+void ArtMethod::setDexCacheResolveList(void *list) {
+    CastArtMethod::dexCacheResolvedMethods->set(this, list);
+}
+
 void ArtMethod::setDexCacheResolveItem(uint32_t index, void* item) {
     CastArtMethod::dexCacheResolvedMethods->setElement(this, index, item);
 }
 
-bool ArtMethod::compile() {
-//    if (isCompiled())
-//        return true;
-//    Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
-//    if (threadId == 0)
-//        return false;
-//    return compileMethod(this, ) && isCompiled();
+bool ArtMethod::compile(JNIEnv* env) {
+    if (isCompiled())
+        return true;
+    Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
+    if (threadId == 0)
+        return false;
+    return compileMethod(this, reinterpret_cast<void *>(threadId)) && isCompiled();
 }
 
 void ArtMethod::flushCache() {
-
+    flushCacheExt(reinterpret_cast<Size>(this), size());
 }
 
 void ArtMethod::backup(ArtMethod *backup) {
+    memcpy(backup, this, size());
+}
 
+Size ArtMethod::size() {
+    return CastArtMethod::size;
 }

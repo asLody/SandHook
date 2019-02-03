@@ -11,8 +11,8 @@
 
 extern "C" {
 
-void initHideApi(JNIEnv *env, int SDK_VERSION);
-bool compileMethod(void *artMethod, void *thread);
+    void initHideApi(JNIEnv *env, int SDK_VERSION);
+    bool compileMethod(void *artMethod, void *thread);
 
 }
 
