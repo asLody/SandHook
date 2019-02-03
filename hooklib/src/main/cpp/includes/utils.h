@@ -13,11 +13,11 @@
 
 extern "C" {
 
-Size getAddressFromJava(JNIEnv *env, char *className, char *fieldName);
+Size getAddressFromJava(JNIEnv *env, const char *className, const char *fieldName);
 
-Size getAddressFromJavaByCallMethod(JNIEnv *env, char *className, char *methodName);
+Size getAddressFromJavaByCallMethod(JNIEnv *env, const char *className, const char *methodName);
 
-jint getIntFromJava(JNIEnv *env, char *className, char *fieldName);
+jint getIntFromJava(JNIEnv *env, const char *className, const char *fieldName);
 
 bool munprotect(size_t addr, size_t len);
 

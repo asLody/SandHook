@@ -21,6 +21,7 @@ add_library( # Sets the name of the library.
              src/main/cpp/trampoline/trampoline.cpp
              src/main/cpp/trampoline/trampoline_manager.cpp
              src/main/cpp/utils/fake_dlfcn.cpp
+             src/main/cpp/utils/hide_api.cpp
              src/main/cpp/utils/utils.cpp
              src/main/cpp/utils/offset.cpp
              src/main/cpp/casts/cast_art_method.cpp

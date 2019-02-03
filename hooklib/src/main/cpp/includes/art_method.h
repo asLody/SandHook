@@ -57,7 +57,7 @@ public:
     void setQuickCodeEntry(void* entry);
     void setJniCodeEntry(void* entry);
     void setInterpreterCodeEntry(void* entry);
-    void setDexCacheResolveItem(ArtMethod* method, uint32_t index);
+    void setDexCacheResolveItem(uint32_t index, void* item);
 
     void* getQuickCodeEntry();
     void* getInterpreterCodeEntry();

@@ -4,37 +4,113 @@
 #include <cstdint>
 #include "../includes/art_method.h"
 #include "../includes/cast_art_method.h"
+#include "../includes/hide_api.h"
+
 
 using namespace art::mirror;
+using namespace SandHook;
 
-void ArtMethod::setStatic() {
-
-};
 
 void ArtMethod::tryDisableInline() {
-
+    if (SDK_INT < ANDROID_O)
+        return;
+    uint32_t accessFlag = getAccessFlags();
+    accessFlag &= ~ 0x08000000;
+    setAccessFlags(accessFlag);
 }
 
 void ArtMethod::disableInterpreterForO() {
-
+    uint32_t accessFlag = getAccessFlags();
+    accessFlag |= 0x0100;
+    setAccessFlags(accessFlag);
 }
 
 void ArtMethod::disableCompilable() {
-
+    uint32_t accessFlag = getAccessFlags();
+    if (SDK_INT >= ANDROID_O2) {
+        accessFlag |= 0x02000000;
+        accessFlag |= 0x00800000;
+    } else {
+        accessFlag |= 0x01000000;
+    }
+    setAccessFlags(accessFlag);
 }
 
 bool ArtMethod::isAbstract() {
-
+    uint32_t accessFlags = getAccessFlags();
+    return ((accessFlags & 0x0400) != 0);
 }
 
 bool ArtMethod::isNative() {
+    uint32_t accessFlags = getAccessFlags();
+    return ((accessFlags & 0x0100) != 0);
+}
 
+bool ArtMethod::isCompiled() {
+    return getQuickCodeEntry() == SandHook::CastArtMethod::quickToInterpreterBridge;
 }
 
 void ArtMethod::setAccessFlags(uint32_t flags) {
-
+    CastArtMethod::accessFlag->set(this, flags);
 }
 
 void ArtMethod::setPrivate() {
+    uint32_t accessFlag = getAccessFlags();
+    accessFlag &= ~ 0x1;
+    accessFlag |= 0x2;
+    setAccessFlags(accessFlag);
+}
+
+void ArtMethod::setStatic() {
+    uint32_t accessFlag = getAccessFlags();
+    accessFlag |= 0x0008;
+    setAccessFlags(accessFlag);
+};
+
+uint32_t ArtMethod::getAccessFlags() {
+    return CastArtMethod::accessFlag->get(this);
+}
+
+uint32_t ArtMethod::getDexMethodIndex() {
+    return CastArtMethod::dexMethodIndex->get(this);
+}
+
+void* ArtMethod::getQuickCodeEntry() {
+    return CastArtMethod::entryPointQuickCompiled->get(this);
+}
+
+void* ArtMethod::getInterpreterCodeEntry() {
+    return CastArtMethod::entryPointFormInterpreter->get(this);
+}
+
+void ArtMethod::setQuickCodeEntry(void *entry) {
+    CastArtMethod::entryPointQuickCompiled->set(this, entry);
+}
+
+void ArtMethod::setJniCodeEntry(void *entry) {
+}
+
+void ArtMethod::setInterpreterCodeEntry(void *entry) {
+    CastArtMethod::entryPointFormInterpreter->set(this, entry);
+}
+
+void ArtMethod::setDexCacheResolveItem(uint32_t index, void* item) {
+    CastArtMethod::dexCacheResolvedMethods->setElement(this, index, item);
+}
+
+bool ArtMethod::compile() {
+//    if (isCompiled())
+//        return true;
+//    Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
+//    if (threadId == 0)
+//        return false;
+//    return compileMethod(this, ) && isCompiled();
+}
+
+void ArtMethod::flushCache() {
+
+}
+
+void ArtMethod::backup(ArtMethod *backup) {
 
 }

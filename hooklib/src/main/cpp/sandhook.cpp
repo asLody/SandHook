@@ -1,7 +1,7 @@
 #include <jni.h>
 #include "includes/cast_art_method.h"
 #include "includes/trampoline_manager.h"
-#include "./utils/hide_api.h"
+#include "includes/hide_api.h"
 
 SandHook::TrampolineManager trampolineManager;
 

@@ -62,7 +62,7 @@ namespace SandHook {
         template<typename T>
         int findOffset(void *start, size_t len, size_t step, T value) {
 
-            if (NULL == start) {
+            if (nullptr == start) {
                 return -1;
             }
 

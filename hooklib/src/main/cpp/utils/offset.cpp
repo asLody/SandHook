@@ -9,7 +9,7 @@ namespace SandHook {
     template<typename T>
     int Offset::findOffset(void *start, size_t len, size_t step, T value) {
 
-        if (NULL == start) {
+        if (nullptr == start) {
             return -1;
         }
 
@@ -25,7 +25,7 @@ namespace SandHook {
     template<typename T>
     int Offset::findOffsetWithCB1(void *start, size_t len, size_t step, bool func(int, T)) {
 
-        if (NULL == start) {
+        if (nullptr == start) {
             return -1;
         }
 
@@ -41,7 +41,7 @@ namespace SandHook {
     template<typename T>
     int Offset::findOffsetWithCB2(void *start1, void *start2, size_t len, size_t step, bool func(T, T)) {
 
-        if (NULL == start1 || NULL == start2) {
+        if (nullptr == start1 || nullptr == start2) {
             return -1;
         }
 
