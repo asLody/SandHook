@@ -3,10 +3,6 @@ package de.robv.android.xposed;
 import android.annotation.SuppressLint;
 import android.util.Log;
 
-import com.elderdrivers.riru.xposed.core.HookMain;
-import com.elderdrivers.riru.xposed.dexmaker.DynamicBridge;
-import com.elderdrivers.riru.xposed.dexmaker.MethodInfo;
-import com.elderdrivers.riru.xposed.util.MethodHookUtils;
 
 import java.io.File;
 import java.io.IOException;
