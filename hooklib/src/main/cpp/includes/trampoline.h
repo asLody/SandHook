@@ -190,12 +190,12 @@ namespace SandHook {
         }
 
         //work for thumb
-        Code getThumbCodeAddress(Code code) {
+        static Code getThumbCodeAddress(Code code) {
             Size addr = reinterpret_cast<Size>(code) & (~0x00000001);
             return reinterpret_cast<Code>(addr);
         }
 
-        Code getThumbCodePcAddress(Code code) {
+        static Code getThumbCodePcAddress(Code code) {
             Size addr = reinterpret_cast<Size>(code) & (~0x00000001);
             return reinterpret_cast<Code>(addr + 1);
         }

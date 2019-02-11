@@ -3,6 +3,9 @@
 //
 #include "../includes/trampoline_manager.h"
 #include "../includes/trampoline.h"
+#include "../includes/inst.h"
+
+extern int SDK_INT;
 
 namespace SandHook {
 
@@ -18,18 +21,35 @@ namespace SandHook {
         return size;
     }
 
-    bool TrampolineManager::canSafeInline(mirror::ArtMethod *method, char *msg) {
+    class PCRelatedCheckVisitor : public InstVisitor {
+    public:
+
+        bool pcRelated = false;
+
+        bool visit(Inst *inst, Size offset, Size length) override {
+            if (inst->pcRelated()) {
+                pcRelated = true;
+                return false;
+            }
+            return true;
+        }
+    };
+
+    bool TrampolineManager::canSafeInline(mirror::ArtMethod *method) {
         //check size
         if (!method->isNative()) {
             uint32_t originCodeSize = sizeOfEntryCode(method);
             if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE) {
-                msg = "code entry size < inject code size";
                 return false;
             }
         }
-        //TODO
+
         //check pc relate inst
-        return true;
+        PCRelatedCheckVisitor visitor;
+
+        InstDecode::decode(method->getQuickCodeEntry(), SIZE_DIRECT_JUMP_TRAMPOLINE, &visitor);
+
+        return !visitor.pcRelated;
     }
 
     Code TrampolineManager::allocExecuteSpace(Size size) {

@@ -15,8 +15,6 @@
 
 namespace SandHook {
 
-    static int SDK_INT = 0;
-
     template <typename T>
     class cast {
     public:

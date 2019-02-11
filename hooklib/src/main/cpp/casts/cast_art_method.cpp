@@ -5,6 +5,8 @@
 #include "../includes/cast_art_method.h"
 #include "../includes/utils.h"
 
+extern int SDK_INT;
+
 namespace SandHook {
 
     class CastDexCacheResolvedMethods : public ArrayMember<art::mirror::ArtMethod, void *> {
@@ -119,8 +121,7 @@ namespace SandHook {
     };
 
 
-    void CastArtMethod::init(JNIEnv *env, int sdk) {
-        SDK_INT = sdk;
+    void CastArtMethod::init(JNIEnv *env) {
         //init ArtMethodSize
         jclass sizeTestClass = env->FindClass("com/swift/sandhook/ArtMethodSizeTest");
         Size artMethod1 = (Size) env->GetStaticMethodID(sizeTestClass, "method1", "()V");

@@ -5,7 +5,7 @@
 
 SandHook::TrampolineManager trampolineManager;
 
-int SDK_INT = 0;
+extern "C" int SDK_INT = 0;
 
 enum HookMode {
     AUTO = 0,
@@ -19,8 +19,8 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) 
 
     // TODO
     SDK_INT = sdk;
-    SandHook::CastArtMethod::init(env, sdk);
-    trampolineManager.init(sdk, SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
+    SandHook::CastArtMethod::init(env);
+    trampolineManager.init(SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
     initHideApi(env, sdk);
     return JNI_TRUE;
 
@@ -182,10 +182,7 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
 
 label_hook:
-
-    char *msg;
-
-    if (isInlineHook && trampolineManager.canSafeInline(origin, msg)) {
+    if (isInlineHook && trampolineManager.canSafeInline(origin)) {
         return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
     } else {
         return static_cast<jboolean>(doHookWithReplacement(env, origin, hook, backup));

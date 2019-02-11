@@ -22,7 +22,7 @@ namespace SandHook {
         static void* genericJniStub;
         static void* staticResolveStub;
 
-        static void init(JNIEnv *env, int sdk);
+        static void init(JNIEnv *env);
         static void copy(art::mirror::ArtMethod* from, art::mirror::ArtMethod* to);
 
     };

@@ -28,6 +28,8 @@ add_library( # Sets the name of the library.
              src/main/cpp/art/art_method.cpp
              src/main/cpp/trampoline/arch/arm32.S
              src/main/cpp/trampoline/arch/arm64.S
+             src/main/cpp/inst/insts_arm32.cpp
+             src/main/cpp/inst/insts_arm64.cpp
             )
 
 # Searches for a specified prebuilt library and stores the path as a

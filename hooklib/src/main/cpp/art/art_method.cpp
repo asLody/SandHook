@@ -7,6 +7,7 @@
 #include "../includes/hide_api.h"
 #include "../includes/utils.h"
 
+extern int SDK_INT;
 
 using namespace art::mirror;
 using namespace SandHook;

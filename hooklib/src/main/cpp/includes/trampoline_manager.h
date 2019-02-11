@@ -37,9 +37,8 @@ namespace SandHook {
     public:
         TrampolineManager() = default;
 
-        void init(int sdk, Size quickCompileOffset) {
+        void init(Size quickCompileOffset) {
             this->quickCompileOffset = quickCompileOffset;
-            SDK_INT = sdk;
         }
 
         Code allocExecuteSpace(Size size);
@@ -47,7 +46,7 @@ namespace SandHook {
         HookTrampoline* installReplacementTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
         HookTrampoline* installInlineTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
 
-        bool canSafeInline(mirror::ArtMethod* method, char* msg);
+        bool canSafeInline(mirror::ArtMethod* method);
 
         uint32_t sizeOfEntryCode(mirror::ArtMethod* method);
 
@@ -90,7 +89,6 @@ namespace SandHook {
     private:
 
         Size quickCompileOffset;
-        int SDK_INT = 0;
         std::map<mirror::ArtMethod*,HookTrampoline*> trampolines;
         std::list<Code> executeSpaceList = std::list<Code>();
         std::mutex allocSpaceLock;
