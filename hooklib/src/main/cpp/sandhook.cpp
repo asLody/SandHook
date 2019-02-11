@@ -105,11 +105,12 @@ bool doHookWithInline(JNIEnv* env,
     if (!hookMethod->isCompiled()) {
         hookMethod->compile(env);
     }
+
     if (SDK_INT >= ANDROID_N) {
         originMethod->disableCompilable();
-        originMethod->flushCache();
     }
     originMethod->tryDisableInline();
+    originMethod->flushCache();
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
 
