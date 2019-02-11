@@ -36,6 +36,12 @@ namespace SandHook {
         }
 
         InstType_Arm64 initType() {
+            CASE(code.code, 0x7e000000, 0x34000000, InstType_Arm64::CBZ_CBNZ);
+            CASE(code.code, 0xff000010, 0x54000000, InstType_Arm64::B_COND);
+            CASE(code.code, 0x7e000000, 0x36000000, InstType_Arm64::TBZ_TBNZ);
+            CASE(code.code, 0x7c000000, 0x14000000, InstType_Arm64::B_BL);
+            CASE(code.code, 0x3b000000, 0x18000000, InstType_Arm64::LDR_LIT);
+            CASE(code.code, 0x1f000000, 0x10000000, InstType_Arm64::ADR_ADRP);
             return InstType_Arm64::PC_NO_RELATED;
         }
 

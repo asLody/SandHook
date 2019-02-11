@@ -85,6 +85,12 @@ namespace SandHook {
     };
 
     enum class InstType_Arm64 {
+        CBZ_CBNZ = 0,
+        B_COND,
+        TBZ_TBNZ,
+        B_BL,
+        LDR_LIT,
+        ADR_ADRP,
         PC_NO_RELATED
     };
 
