@@ -1,1 +1,1 @@
-include ':app', ':hooklib', ':hookers', ':annotation'
+include ':app', ':hooklib', ':hookers', ':annotation', ':xposedcompat'
