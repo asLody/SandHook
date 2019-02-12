@@ -92,8 +92,8 @@ namespace SandHook {
         return (codeAddr & 0x1) == 0x1;
     }
 
-    bool isThumb32(uint32_t code) {
-        return code >> 16 != 0;
+    bool isThumb32(uint16_t code) {
+        return ((code & 0xF000) == 0xF000) || ((code & 0xF800) == 0xE800);
     }
 
     void InstDecode::decode(void *codeStart, Size codeLen, InstVisitor *visitor) {
@@ -103,13 +103,14 @@ namespace SandHook {
             codeStart = Trampoline::getThumbCodeAddress(static_cast<Code>(codeStart));
             Size codeAddr = reinterpret_cast<Size>(codeStart);
             while (offset <= codeLen) {
+                uint16_t ram16 = *reinterpret_cast<uint16_t*>(codeAddr + offset);
                 uint32_t ram32 = *reinterpret_cast<uint32_t*>(codeAddr + offset);
-                if (isThumb32(ram32)) {
+                if (isThumb32(ram16)) {
                     //thumb32
                     inst = new InstThumb32(ram32);
                 } else {
                     //thumb16
-                    inst = new InstThumb16(static_cast<uint16_t>(ram32));
+                    inst = new InstThumb16(ram16);
                 }
                 if (!visitor->visit(inst, offset, codeLen)) {
                     delete inst;

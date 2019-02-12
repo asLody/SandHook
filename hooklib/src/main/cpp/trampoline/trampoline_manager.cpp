@@ -6,6 +6,7 @@
 #include "../includes/inst.h"
 
 extern int SDK_INT;
+#define SWITCH_SETX0 false
 
 namespace SandHook {
 
@@ -25,12 +26,23 @@ namespace SandHook {
     public:
 
         bool pcRelated = false;
+        bool canSafeBackup = true;
+
+        int instSize = 0;
 
         bool visit(Inst *inst, Size offset, Size length) override {
+
+            instSize += inst->instLen();
+
             if (inst->pcRelated()) {
                 pcRelated = true;
                 return false;
             }
+
+            if (instSize > SIZE_DIRECT_JUMP_TRAMPOLINE) {
+                canSafeBackup = false;
+            }
+
             return true;
         }
     };
@@ -44,12 +56,12 @@ namespace SandHook {
             }
         }
 
-        //check pc relate inst
+        //check pc relate inst & backup inst len
         PCRelatedCheckVisitor visitor;
 
         InstDecode::decode(method->getQuickCodeEntry(), SIZE_DIRECT_JUMP_TRAMPOLINE, &visitor);
 
-        return !visitor.pcRelated;
+        return (!visitor.pcRelated) && visitor.canSafeBackup;
     }
 
     Code TrampolineManager::allocExecuteSpace(Size size) {
@@ -103,7 +115,7 @@ namespace SandHook {
         replacementHookTrampoline->setHookMethod(reinterpret_cast<Code>(hookMethod));
         hookTrampoline->replacement = replacementHookTrampoline;
 
-        if (backupMethod != nullptr) {
+        if (SWITCH_SETX0 && backupMethod != nullptr) {
             callOriginTrampoline = new CallOriginTrampoline();
             checkThumbCode(callOriginTrampoline, getEntryCode(originMethod));
             callOriginTrampoline->init();
