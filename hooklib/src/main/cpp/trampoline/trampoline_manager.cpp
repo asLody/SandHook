@@ -25,12 +25,23 @@ namespace SandHook {
     public:
 
         bool pcRelated = false;
+        bool instWillBeDestroy = false;
+
+        int instSize = 0;
 
         bool visit(Inst *inst, Size offset, Size length) override {
+
+            instSize += inst->instLen();
+
             if (inst->pcRelated()) {
                 pcRelated = true;
                 return false;
             }
+
+            if (instSize > SIZE_DIRECT_JUMP_TRAMPOLINE) {
+                instWillBeDestroy = true;
+            }
+
             return true;
         }
     };
@@ -49,7 +60,7 @@ namespace SandHook {
 
         InstDecode::decode(method->getQuickCodeEntry(), SIZE_DIRECT_JUMP_TRAMPOLINE, &visitor);
 
-        return !visitor.pcRelated;
+        return (!visitor.pcRelated) && (!visitor.instWillBeDestroy);
     }
 
     Code TrampolineManager::allocExecuteSpace(Size size) {
