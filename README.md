@@ -30,8 +30,12 @@ cant hook if lined
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:1.1.1'
+implementation 'com.swift.sandhook:hooklib:2.0.0'
 ```
+
+- Annotation API
+
+--------------------------------------------------------------------
 
 - hook method must be a static method
 - first par must be this if method is not static
@@ -91,13 +95,47 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:1.1.1'
+provided 'com.swift.sandhook:hookannotation:2.0.0'
 ```
   
 in your plugin
 
 if OS <= 5.1 
 backup method can call itself to avoid be inlining
+
+- Xposed API
+
+--------------------------------------------------------------------
+
+Now you can use Xposed api:  
+
+```groovy
+provided 'com.swift.sandhook:xposedcompat:2.0.0'
+```
+
+```java
+//setup for xposed
+XposedCompat.cacheDir = getCacheDir();
+XposedCompat.context = this;
+XposedCompat.classLoader = getClassLoader();
+XposedCompat.isFirstApplication= true;  
+//do hook
+XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
+      @Override
+      protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+          super.beforeHookedMethod(param);
+          Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
+      }
+
+      @Override
+      protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+          super.afterHookedMethod(param);
+          Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+      }
+});
+
+```
+
 
 # References
 
