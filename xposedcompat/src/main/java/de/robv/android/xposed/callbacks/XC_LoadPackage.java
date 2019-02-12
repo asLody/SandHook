@@ -2,6 +2,9 @@ package de.robv.android.xposed.callbacks;
 
 import android.content.pm.ApplicationInfo;
 
+import com.swift.sandhook.xposedcompat.ProcessUtils;
+import com.swift.sandhook.xposedcompat.XposedCompat;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XposedBridge.CopyOnWriteSortedSet;
 
@@ -39,19 +42,19 @@ public abstract class XC_LoadPackage extends XCallback implements IXposedHookLoa
 		}
 
 		/** The name of the package being loaded. */
-		public String packageName;
+		public String packageName = XposedCompat.context.getPackageName();
 
 		/** The process in which the package is executed. */
-		public String processName;
+		public String processName = ProcessUtils.getProcessName(XposedCompat.context);
 
 		/** The ClassLoader used for this package. */
-		public ClassLoader classLoader;
+		public ClassLoader classLoader = XposedCompat.classLoader;
 
 		/** More information about the application being loaded. */
-		public ApplicationInfo appInfo;
+		public ApplicationInfo appInfo = XposedCompat.context.getApplicationInfo();
 
 		/** Set to {@code true} if this is the first (and main) application for this process. */
-		public boolean isFirstApplication;
+		public boolean isFirstApplication = XposedCompat.isFirstApplication;
 	}
 
 	/** @hide */

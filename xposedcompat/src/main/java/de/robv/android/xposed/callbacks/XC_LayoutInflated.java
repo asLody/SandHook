@@ -1,7 +1,7 @@
 package de.robv.android.xposed.callbacks;
 
-import android.content.res.XResources;
-import android.content.res.XResources.ResourceNames;
+//import android.content.res.XResources;
+//import android.content.res.XResources.ResourceNames;
 import android.view.View;
 
 import de.robv.android.xposed.XposedBridge.CopyOnWriteSortedSet;
@@ -41,13 +41,13 @@ public abstract class XC_LayoutInflated extends XCallback {
 		public View view;
 
 		/** Container with the ID and name of the underlying resource. */
-		public ResourceNames resNames;
+//		public ResourceNames resNames;
 
 		/** Directory from which the layout was actually loaded (e.g. "layout-sw600dp"). */
-		public String variant;
+//		public String variant;
 
 		/** Resources containing the layout. */
-		public XResources res;
+//		public XResources res;
 	}
 
 	/** @hide */
@@ -92,7 +92,7 @@ public abstract class XC_LayoutInflated extends XCallback {
 
 		@Override
 		public void unhook() {
-			XResources.unhookLayout(resDir, id, XC_LayoutInflated.this);
+//			XResources.unhookLayout(resDir, id, XC_LayoutInflated.this);
 		}
 
 	}

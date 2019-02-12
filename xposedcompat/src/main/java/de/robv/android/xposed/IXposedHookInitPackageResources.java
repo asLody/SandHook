@@ -1,6 +1,6 @@
 package de.robv.android.xposed;
 
-import android.content.res.XResources;
+//import android.content.res.XResources;
 
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam;

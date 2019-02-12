@@ -7,7 +7,6 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.android.internal.util.XmlUtils;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -121,14 +120,12 @@ public final class XSharedPreferences implements SharedPreferences {
 		try {
 			result = SELinuxHelper.getAppDataFileService().getFileInputStream(mFilename, mFileSize, mLastModified);
 			if (result.stream != null) {
-				map = XmlUtils.readMapXml(result.stream);
+				//map = XmlUtils.readMapXml(result.stream);
 				result.stream.close();
 			} else {
 				// The file is unchanged, keep the current values
 				map = mMap;
 			}
-		} catch (XmlPullParserException e) {
-			Log.w(TAG, "getSharedPreferences", e);
 		} catch (FileNotFoundException ignored) {
 			// SharedPreferencesImpl has a canRead() check, so it doesn't log anything in case the file doesn't exist
 		} catch (IOException e) {

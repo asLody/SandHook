@@ -1,6 +1,8 @@
 package com.swift.sandhook;
 
+import android.app.Activity;
 import android.app.Application;
+import android.util.Log;
 
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
@@ -9,13 +11,17 @@ import com.swift.sandhook.testHookers.JniHooker;
 import com.swift.sandhook.testHookers.LogHooker;
 import com.swift.sandhook.testHookers.ObjectHooker;
 import com.swift.sandhook.wrapper.HookErrorException;
+import com.swift.sandhook.xposedcompat.XposedCompat;
 
 import dalvik.system.DexClassLoader;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedHelpers;
 
 public class MyApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         try {
             SandHook.addHookClass(JniHooker.class,
                     CtrHook.class,
@@ -26,6 +32,26 @@ public class MyApp extends Application {
         } catch (HookErrorException e) {
             e.printStackTrace();
         }
+
+        //setup for xposed
+        XposedCompat.cacheDir = getCacheDir();
+        XposedCompat.context = this;
+        XposedCompat.classLoader = getClassLoader();
+        XposedCompat.isFirstApplication= true;
+
+        XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+            }
+        });
 
         try {
             ClassLoader classLoader = getClassLoader();

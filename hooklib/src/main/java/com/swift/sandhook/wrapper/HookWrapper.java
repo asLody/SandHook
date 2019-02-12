@@ -21,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class HookWrapper {
 
-    static Map<Member,HookEntity> globalHookEntityMap = new ConcurrentHashMap<>();
-
     public static void addHookClass(Class<?>... classes) throws HookErrorException {
         addHookClass(null, classes);
     }
@@ -40,12 +38,7 @@ public class HookWrapper {
         Map<Member,HookEntity> hookEntityMap = getHookMethods(classLoader, targetHookClass, clazz);
         fillBackupMethod(classLoader, clazz, hookEntityMap);
         for (HookEntity entity:hookEntityMap.values()) {
-            if (entity.target != null && entity.hook != null) {
-                if (!SandHook.hook(entity.target, entity.hook, entity.backup)) {
-                    throw new HookErrorException("hook method <" + entity.target.getName() + "> error in native!");
-                }
-                globalHookEntityMap.put(entity.target, entity);
-            }
+            SandHook.hook(entity);
         }
     }
 
@@ -285,6 +278,11 @@ public class HookWrapper {
             this.target = target;
         }
 
+        public HookEntity(Member target, Method hook, Method backup) {
+            this.target = target;
+            this.hook = hook;
+            this.backup = backup;
+        }
 
         public boolean isCtor() {
             return target instanceof Constructor;

@@ -10,8 +10,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SandHook {
+
+    static Map<Member,HookWrapper.HookEntity> globalHookEntityMap = new ConcurrentHashMap<>();
 
     public static Class artMethodClass;
 
@@ -53,6 +57,15 @@ public class SandHook {
 
     public static void addHookClass(ClassLoader classLoader, Class... hookWrapperClass) throws HookErrorException {
         HookWrapper.addHookClass(classLoader, hookWrapperClass);
+    }
+
+    public static void hook(HookWrapper.HookEntity entity) throws HookErrorException {
+        if (entity.target != null && entity.hook != null) {
+            if (!SandHook.hook(entity.target, entity.hook, entity.backup)) {
+                throw new HookErrorException("hook method <" + entity.target.getName() + "> error in native!");
+            }
+            globalHookEntityMap.put(entity.target, entity);
+        }
     }
 
     public static boolean hook(Member target, Method hook, Method backup) {

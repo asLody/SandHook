@@ -11,6 +11,8 @@ import com.android.dx.Label;
 import com.android.dx.Local;
 import com.android.dx.MethodId;
 import com.android.dx.TypeId;
+import com.swift.sandhook.SandHook;
+import com.swift.sandhook.wrapper.HookWrapper;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -37,7 +39,7 @@ public class HookerDexMaker {
     public static final String METHOD_NAME_SETUP = "setup";
     public static final TypeId<Object[]> objArrayTypeId = TypeId.get(Object[].class);
     private static final String CLASS_DESC_PREFIX = "L";
-    private static final String CLASS_NAME_PREFIX = "EdHooker";
+    private static final String CLASS_NAME_PREFIX = "SandHooker";
     private static final String FIELD_NAME_HOOK_INFO = "additionalHookInfo";
     private static final String FIELD_NAME_METHOD = "method";
     private static final String PARAMS_FIELD_NAME_METHOD = "method";
@@ -203,7 +205,7 @@ public class HookerDexMaker {
         mHookMethod = mHookClass.getMethod(METHOD_NAME_HOOK, mActualParameterTypes);
         mBackupMethod = mHookClass.getMethod(METHOD_NAME_BACKUP, mActualParameterTypes);
         mCallBackupMethod = mHookClass.getMethod(METHOD_NAME_CALL_BACKUP, mActualParameterTypes);
-        //HookMain.backupAndHook(mMember, mHookMethod, mBackupMethod);
+        SandHook.hook(new HookWrapper.HookEntity(mMember, mHookMethod, mBackupMethod));
     }
 
     public Method getHookMethod() {

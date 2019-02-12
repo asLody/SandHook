@@ -1,6 +1,6 @@
 package de.robv.android.xposed;
 
-import android.os.SELinux;
+//import android.os.SELinux;
 
 import de.robv.android.xposed.services.BaseService;
 import de.robv.android.xposed.services.DirectAccessService;
@@ -25,18 +25,18 @@ public final class SELinuxHelper {
 	 *
 	 * @return A boolean indicating whether SELinux is enforcing.
 	*/
-	public static boolean isSELinuxEnforced() {
-		return sIsSELinuxEnabled && SELinux.isSELinuxEnforced();
-	}
+//	public static boolean isSELinuxEnforced() {
+//		return sIsSELinuxEnabled && SELinux.isSELinuxEnforced();
+//	}
 
 	/**
 	 * Gets the security context of the current process.
 	 *
 	 * @return A String representing the security context of the current process.
 	 */
-	public static String getContext() {
-		return sIsSELinuxEnabled ? SELinux.getContext() : null;
-	}
+//	public static String getContext() {
+//		return sIsSELinuxEnabled ? SELinux.getContext() : null;
+//	}
 
 	/**
 	 * Retrieve the service to be used when accessing files in {@code /data/data/*}.

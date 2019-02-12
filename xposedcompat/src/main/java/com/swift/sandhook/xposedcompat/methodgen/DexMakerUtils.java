@@ -225,6 +225,7 @@ public class DexMakerUtils {
         if (addInstMethod == null) {
             try {
                 addInstMethod = Code.class.getDeclaredMethod("addInstruction", Insn.class);
+                addInstMethod.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }
@@ -240,6 +241,7 @@ public class DexMakerUtils {
         if (specMethod == null) {
             try {
                 specMethod = Local.class.getDeclaredMethod("spec");
+                specMethod.setAccessible(true);
             } catch (NoSuchMethodException e) {
                 e.printStackTrace();
             }

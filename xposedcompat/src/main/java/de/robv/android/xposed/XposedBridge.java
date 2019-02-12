@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.util.Log;
 
 
+import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.AccessibleObject;
@@ -151,7 +153,6 @@ public final class XposedBridge {
 	 * @see #hookAllConstructors
 	 */
 	public static XC_MethodHook.Unhook hookMethod(Member hookMethod, XC_MethodHook callback) {
-        hookMethod = MethodHookUtils.preCheck(hookMethod);
 		if (!(hookMethod instanceof Method) && !(hookMethod instanceof Constructor<?>)) {
 			throw new IllegalArgumentException("Only methods and constructors can be hooked: " + hookMethod.toString());
 		} else if (hookMethod.getDeclaringClass().isInterface()) {
@@ -196,16 +197,7 @@ public final class XposedBridge {
 			}
 
             AdditionalHookInfo additionalInfo = new AdditionalHookInfo(callbacks, parameterTypes, returnType);
-            MethodInfo methodInfo = new MethodInfo(hookMethod);
-            declaringClass = methodInfo.getClassForSure();
-            Member reflectMethod = (Member) HookMain.findMethod(
-                    declaringClass, methodInfo.methodName, methodInfo.methodSig);
-            if (reflectMethod == null) {
-                Log.e(TAG, "method not found: name="
-                        + methodInfo.methodName + ", sig=" + methodInfo.methodSig);
-                reflectMethod = hookMethod;
-            }
-            hookMethodNative(reflectMethod, declaringClass, slot, additionalInfo);
+            hookMethodNative(hookMethod, declaringClass, slot, additionalInfo);
         }
 
         return callback.new Unhook(hookMethod);
