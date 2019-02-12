@@ -52,7 +52,7 @@ namespace SandHook {
         Inst *inst = nullptr;
         codeStart = Trampoline::getThumbCodeAddress(static_cast<Code>(codeStart));
         Size codeAddr = reinterpret_cast<Size>(codeStart);
-        while (offset <= codeLen) {
+        while (offset < codeLen) {
             uint32_t ram32 = *reinterpret_cast<uint32_t *>(codeAddr + offset);
             inst = new InstArm64(ram32);
             if (!visitor->visit(inst, offset, codeLen)) {

@@ -102,7 +102,7 @@ namespace SandHook {
         if (isThumbCode(reinterpret_cast<Size>(codeStart))) {
             codeStart = Trampoline::getThumbCodeAddress(static_cast<Code>(codeStart));
             Size codeAddr = reinterpret_cast<Size>(codeStart);
-            while (offset <= codeLen) {
+            while (offset < codeLen) {
                 uint16_t ram16 = *reinterpret_cast<uint16_t*>(codeAddr + offset);
                 uint32_t ram32 = *reinterpret_cast<uint32_t*>(codeAddr + offset);
                 if (isThumb32(ram16)) {
