@@ -169,9 +169,7 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
         isInlineHook = false;
     } else if (!origin->isCompiled()) {
         if (SDK_INT >= ANDROID_N) {
-            if (SDK_INT >= ANDROID_N) {
-                isInlineHook = origin->compile(env);
-            }
+            isInlineHook = origin->compile(env);
         } else {
             isInlineHook = false;
         }
