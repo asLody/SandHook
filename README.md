@@ -110,7 +110,7 @@ backup method can call itself to avoid be inlining
 Now you can use Xposed api:  
 
 ```groovy
-provided 'com.swift.sandhook:xposedcompat:2.0.0'
+implementation 'com.swift.sandhook:xposedcompat:2.0.0'
 ```
 
 ```java
