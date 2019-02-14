@@ -25,8 +25,8 @@ public class XposedCompat {
     private static ClassLoader sandHookXposedClassLoader;
 
 
-    public static void loadModule(String apkPath, ClassLoader classLoader) {
-        XposedInit.loadModule(apkPath, classLoader);
+    public static void loadModule(String modulePath, String moduleOdexDir, String moduleSoPath,ClassLoader classLoader) {
+        XposedInit.loadModule(modulePath, moduleOdexDir, moduleSoPath, classLoader);
     }
 
 

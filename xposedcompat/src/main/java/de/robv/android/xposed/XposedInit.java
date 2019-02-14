@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import dalvik.system.DexClassLoader;
 import dalvik.system.DexFile;
-import dalvik.system.PathClassLoader;
 import de.robv.android.xposed.services.BaseService;
 
 import static de.robv.android.xposed.XposedHelpers.closeSilently;
@@ -102,7 +102,7 @@ public final class XposedInit {
         BufferedReader apks = new BufferedReader(new InputStreamReader(stream));
         String apk;
         while ((apk = apks.readLine()) != null) {
-            loadModule(apk, topClassLoader);
+            loadModule(apk, null, null, topClassLoader);
         }
         apks.close();
     }
@@ -112,16 +112,16 @@ public final class XposedInit {
      * Load a module from an APK by calling the init(String) method for all classes defined
      * in <code>assets/xposed_init</code>.
      */
-    public static void loadModule(String apk, ClassLoader topClassLoader) {
+    public static void loadModule(String modulePath, String moduleOdexDir, String moduleSoPath,ClassLoader topClassLoader) {
 
-        if (!new File(apk).exists()) {
+        if (!new File(modulePath).exists()) {
             Log.e(TAG, "  File does not exist");
             return;
         }
 
         DexFile dexFile;
         try {
-            dexFile = new DexFile(apk);
+            dexFile = new DexFile(modulePath);
         } catch (IOException e) {
             Log.e(TAG, "  Cannot load module", e);
             return;
@@ -147,7 +147,7 @@ public final class XposedInit {
         ZipFile zipFile = null;
         InputStream is;
         try {
-            zipFile = new ZipFile(apk);
+            zipFile = new ZipFile(modulePath);
             ZipEntry zipEntry = zipFile.getEntry("assets/xposed_init");
             if (zipEntry == null) {
                 Log.e(TAG, "  assets/xposed_init not found in the APK");
@@ -161,7 +161,7 @@ public final class XposedInit {
             return;
         }
 
-        ClassLoader mcl = new PathClassLoader(apk, XposedInit.class.getClassLoader());
+        ClassLoader mcl = new DexClassLoader(modulePath, moduleOdexDir, moduleSoPath, topClassLoader);
         BufferedReader moduleClassesReader = new BufferedReader(new InputStreamReader(is));
         try {
             String moduleClassName;
@@ -189,7 +189,7 @@ public final class XposedInit {
                         //fake
                         if (moduleInstance instanceof IXposedHookZygoteInit) {
                             IXposedHookZygoteInit.StartupParam param = new IXposedHookZygoteInit.StartupParam();
-                            param.modulePath = apk;
+                            param.modulePath = modulePath;
                             param.startsSystemServer = false;
                             ((IXposedHookZygoteInit) moduleInstance).initZygote(param);
                         }
@@ -219,7 +219,7 @@ public final class XposedInit {
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG, "  Failed to load module from " + apk, e);
+            Log.e(TAG, "  Failed to load module from " + modulePath, e);
         } finally {
             closeSilently(is);
             closeSilently(zipFile);
