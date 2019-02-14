@@ -61,18 +61,9 @@ public class XposedCompat {
         if (sandHookXposedClassLoader != null) {
             return sandHookXposedClassLoader;
         } else {
-            ClassLoader xposedClassLoader = getXposedClassLoader(sandBoxHostClassLoader);
-            sandHookXposedClassLoader = new ComposeClassLoader(xposedClassLoader, appOriginClassLoader);
+            sandHookXposedClassLoader = new ComposeClassLoader(sandBoxHostClassLoader, appOriginClassLoader);
             return sandHookXposedClassLoader;
         }
-    }
-
-    private static XposedClassLoader xposedClassLoader;
-    public static synchronized ClassLoader getXposedClassLoader(ClassLoader hostClassLoader) {
-        if (xposedClassLoader == null) {
-            xposedClassLoader = new XposedClassLoader(hostClassLoader);
-        }
-        return xposedClassLoader;
     }
 
 }

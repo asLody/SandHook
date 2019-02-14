@@ -60,7 +60,7 @@ public final class DynamicBridge {
                 }
             }
             dexMaker.start(hookMethod, additionalHookInfo,
-                    hookMethod.getDeclaringClass().getClassLoader(), dexDir == null ? null : dexDir.getAbsolutePath());
+                    XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
             hookedInfo.put(hookMethod, dexMaker.getCallBackupMethod());
         } catch (Exception e) {
             DexLog.e("error occur when generating dex. dexDir=" + dexDir, e);
