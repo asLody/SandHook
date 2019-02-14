@@ -249,6 +249,13 @@ public class HookerDexMaker {
         mBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_BACKUP, mParameterTypeIds);
         Code code = mDexMaker.declare(mBackupMethodId, Modifier.PUBLIC | Modifier.STATIC);
         Map<TypeId, Local> resultLocals = createResultLocals(code);
+
+
+        //add a try cache block avoid inline
+        Label tryCatchBlock = new Label();
+        // start of try
+        code.addCatchClause(throwableTypeId, tryCatchBlock);
+
         // do nothing
         if (mReturnTypeId.equals(TypeId.VOID)) {
             code.returnVoid();
@@ -264,6 +271,7 @@ public class HookerDexMaker {
         // just call backup and return its result
         Local[] allArgsLocals = createParameterLocals(code);
         Map<TypeId, Local> resultLocals = createResultLocals(code);
+
         if (mReturnTypeId.equals(TypeId.VOID)) {
             code.invokeStatic(mBackupMethodId, null, allArgsLocals);
             code.returnVoid();
