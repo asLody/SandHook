@@ -25,11 +25,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 
-import static com.swift.sandhook.xposedcompat.methodgen.DexMakerUtils.autoBoxIfNecessary;
-import static com.swift.sandhook.xposedcompat.methodgen.DexMakerUtils.autoUnboxIfNecessary;
-import static com.swift.sandhook.xposedcompat.methodgen.DexMakerUtils.createResultLocals;
-import static com.swift.sandhook.xposedcompat.methodgen.DexMakerUtils.getObjTypeIdIfPrimitive;
-import static com.swift.sandhook.xposedcompat.methodgen.DexMakerUtils.moveException;
+import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.autoBoxIfNecessary;
+import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.autoUnboxIfNecessary;
+import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.createResultLocals;
+import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.getObjTypeIdIfPrimitive;
+import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.moveException;
 
 public class HookerDexMaker {
 

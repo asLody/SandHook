@@ -1,4 +1,4 @@
-package com.swift.sandhook.xposedcompat;
+package com.swift.sandhook.xposedcompat.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;

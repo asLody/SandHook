@@ -1,6 +1,8 @@
 package com.swift.sandhook.xposedcompat.methodgen;
 
 import com.swift.sandhook.xposedcompat.XposedCompat;
+import com.swift.sandhook.xposedcompat.utils.DexLog;
+import com.swift.sandhook.xposedcompat.utils.FileUtils;
 
 import java.io.File;
 import java.lang.reflect.Constructor;

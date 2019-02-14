@@ -1,4 +1,4 @@
-package com.swift.sandhook.xposedcompat.methodgen;
+package com.swift.sandhook.xposedcompat.utils;
 
 import android.util.Log;
 

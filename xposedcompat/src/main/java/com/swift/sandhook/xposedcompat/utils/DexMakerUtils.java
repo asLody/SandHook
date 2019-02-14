@@ -1,4 +1,4 @@
-package com.swift.sandhook.xposedcompat.methodgen;
+package com.swift.sandhook.xposedcompat.utils;
 import com.android.dx.Code;
 import com.android.dx.Local;
 import com.android.dx.TypeId;
