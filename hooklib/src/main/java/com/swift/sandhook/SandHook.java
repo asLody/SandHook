@@ -59,8 +59,10 @@ public class SandHook {
         HookWrapper.addHookClass(classLoader, hookWrapperClass);
     }
 
-    public static void hook(HookWrapper.HookEntity entity) throws HookErrorException {
+    public static synchronized void hook(HookWrapper.HookEntity entity) throws HookErrorException {
         if (entity.target != null && entity.hook != null) {
+            if (globalHookEntityMap.containsKey(entity.target))
+                throw new HookErrorException("method <" + entity.target.getName() + "> has been hooked!");
             if (!SandHook.hook(entity.target, entity.hook, entity.backup)) {
                 throw new HookErrorException("hook method <" + entity.target.getName() + "> error in native!");
             }
