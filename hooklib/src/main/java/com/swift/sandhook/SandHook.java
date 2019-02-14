@@ -1,6 +1,7 @@
 package com.swift.sandhook;
 
 import android.os.Build;
+import android.util.Log;
 
 import com.swift.sandhook.annotation.HookMode;
 import com.swift.sandhook.wrapper.HookErrorException;
@@ -66,6 +67,7 @@ public class SandHook {
             if (!SandHook.hook(entity.target, entity.hook, entity.backup)) {
                 throw new HookErrorException("hook method <" + entity.target.getName() + "> error in native!");
             }
+            Log.d("SandHook", "method <" + entity.target.getName() + "> hook success!");
             globalHookEntityMap.put(entity.target, entity);
         }
     }

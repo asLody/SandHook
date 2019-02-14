@@ -41,7 +41,7 @@ public final class XposedBridge {
 	public static final ClassLoader BOOTCLASSLOADER = XposedBridge.class.getClassLoader();
 
 	/** @hide */
-	public static final String TAG = "EdXposed-Bridge";
+	public static final String TAG = "SandXposed-Bridge";
 
 	/** @deprecated Use {@link #getXposedVersion()} instead. */
 	@Deprecated
