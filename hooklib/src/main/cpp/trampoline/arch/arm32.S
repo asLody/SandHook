@@ -37,6 +37,7 @@ FUNCTION_START(INLINE_HOOK_TRAMPOLINE)
 origin_code:
     .long 0
     .long 0
+    nop
     ldr Reg0, addr_origin_code_entry
     ldr Reg0, [Reg0]
     add Reg0, Reg0, SIZE_JUMP
@@ -89,6 +90,9 @@ origin_code_t:
     .long 0
     //4 byte
     .long 0
+    //4byte
+    nop
+    nop
     //4 byte
     ldr RegT, addr_origin_code_entry_t
     //4 byte

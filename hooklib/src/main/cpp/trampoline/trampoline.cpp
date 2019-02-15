@@ -84,6 +84,10 @@ namespace SandHook {
             codeCopy(originCode, OFFSET_INLINE_ORIGIN_CODE, SIZE_DIRECT_JUMP_TRAMPOLINE);
         }
 
+        void setOriginCode(Code originCode, Size codeLen) {
+            codeCopy(originCode, OFFSET_INLINE_ORIGIN_CODE, codeLen);
+        }
+
         Code getCallOriginCode() {
             return reinterpret_cast<Code>((Size)getCode() + OFFSET_INLINE_ORIGIN_CODE);
         }

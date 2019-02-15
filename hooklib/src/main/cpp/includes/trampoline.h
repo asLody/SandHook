@@ -48,17 +48,19 @@
 #define SIZE_DIRECT_JUMP_TRAMPOLINE 4 * 2
 #define OFFSET_JUMP_ADDR_TARGET 4 * 1
 
-#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 16
+#define SIZE_INLINE_HOOK_TRAMPOLINE 4 * 17
 #define OFFSET_INLINE_ORIGIN_CODE 4 * 6
-#define OFFSET_INLINE_ORIGIN_ART_METHOD 4 * 12
-#define OFFSET_INLINE_ADDR_ORIGIN_CODE_ENTRY 4 * 13
-#define OFFSET_INLINE_HOOK_ART_METHOD 4 * 14
-#define OFFSET_INLINE_ADDR_HOOK_CODE_ENTRY 4 * 15
-#define OFFSET_INLINE_OP_ORIGIN_OFFSET_CODE 4 * 10
+#define OFFSET_INLINE_ORIGIN_ART_METHOD 4 * 13
+#define OFFSET_INLINE_ADDR_ORIGIN_CODE_ENTRY 4 * 14
+#define OFFSET_INLINE_HOOK_ART_METHOD 4 * 15
+#define OFFSET_INLINE_ADDR_HOOK_CODE_ENTRY 4 * 16
+#define OFFSET_INLINE_OP_ORIGIN_OFFSET_CODE 4 * 11
 
 #define SIZE_CALL_ORIGIN_TRAMPOLINE 4 * 4
 #define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 2
 #define OFFSET_CALL_ORIGIN_JUMP_ADDR 4 * 3
+
+#define SIZE_ORIGIN_PLACE_HOLDER 4 * 3
 #elif defined(__aarch64__)
 #define SIZE_REPLACEMENT_HOOK_TRAMPOLINE 4 * 8
 #define OFFSET_REPLACEMENT_ART_METHOD 4 * 4
@@ -77,6 +79,8 @@
 #define SIZE_CALL_ORIGIN_TRAMPOLINE 4 * 7
 #define OFFSET_CALL_ORIGIN_ART_METHOD 4 * 3
 #define OFFSET_CALL_ORIGIN_JUMP_ADDR 4 * 5
+
+#define SIZE_ORIGIN_PLACE_HOLDER 4 * 4
 #else
 #endif
 
@@ -98,10 +102,10 @@ namespace SandHook {
     union Code32Bit {
         uint32_t code;
         struct {
-            unsigned char op1;
-            unsigned char op2;
-            unsigned char op3;
-            unsigned char op4;
+            uint32_t op1:8;
+            uint32_t op2:8;
+            uint32_t op3:8;
+            uint32_t op4:8;
         } op;
     };
 
@@ -182,11 +186,12 @@ namespace SandHook {
             Code32Bit code32Bit;
             code32Bit.code = *reinterpret_cast<uint32_t*>(((Size)code + codeOffset));
             if (isBigEnd()) {
-                code32Bit.op.op4 = imm;
+                code32Bit.op.op2 = imm;
             } else {
                 code32Bit.op.op3 = imm;
             }
             codeCopy(reinterpret_cast<Code>(&code32Bit.code), codeOffset, 4);
+            flushCache((Size)code + codeOffset, 4);
         }
 
         //work for thumb

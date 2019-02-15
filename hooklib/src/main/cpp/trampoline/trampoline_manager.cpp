@@ -40,10 +40,21 @@ namespace SandHook {
                 return false;
             }
 
-            if (instSize > SIZE_DIRECT_JUMP_TRAMPOLINE) {
+            if (instSize > SIZE_ORIGIN_PLACE_HOLDER) {
                 canSafeBackup = false;
             }
 
+            return true;
+        }
+    };
+
+    class InstSizeNeedBackupVisitor : public InstVisitor {
+    public:
+
+        Size instSize = 0;
+
+        bool visit(Inst *inst, Size offset, Size length) override {
+            instSize += inst->instLen();
             return true;
         }
     };
@@ -87,6 +98,7 @@ namespace SandHook {
         if (mmapRes == MAP_FAILED) {
             return 0;
         }
+        memset(mmapRes, 0, EXE_BLOCK_SIZE);
         exeSpace = static_cast<Code>(mmapRes);
         executeSpaceList.push_back(exeSpace);
         executePageOffset = size;
@@ -161,6 +173,11 @@ namespace SandHook {
         Code inlineHookTrampolineSpace;
         Code callOriginTrampolineSpace;
         Code originEntry;
+        Size sizeNeedBackup = SIZE_DIRECT_JUMP_TRAMPOLINE;
+        InstSizeNeedBackupVisitor instVisitor;
+
+        InstDecode::decode(originMethod->getQuickCodeEntry(), SIZE_DIRECT_JUMP_TRAMPOLINE, &instVisitor);
+        sizeNeedBackup = instVisitor.instSize;
 
         //生成二段跳板
         inlineHookTrampoline = new InlineHookTrampoline();
@@ -176,9 +193,9 @@ namespace SandHook {
         inlineHookTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
         inlineHookTrampoline->setHookMethod(reinterpret_cast<Code>(hookMethod));
         if (inlineHookTrampoline->isThumbCode()) {
-            inlineHookTrampoline->setOriginCode(inlineHookTrampoline->getThumbCodeAddress(getEntryCode(originMethod)));
+            inlineHookTrampoline->setOriginCode(inlineHookTrampoline->getThumbCodeAddress(getEntryCode(originMethod)), sizeNeedBackup);
         } else {
-            inlineHookTrampoline->setOriginCode(getEntryCode(originMethod));
+            inlineHookTrampoline->setOriginCode(getEntryCode(originMethod), sizeNeedBackup);
         }
         hookTrampoline->inlineSecondory = inlineHookTrampoline;
 
@@ -216,12 +233,12 @@ namespace SandHook {
             if (callOriginTrampoline->isThumbCode()) {
                 originCode = callOriginTrampoline->getThumbCodePcAddress(inlineHookTrampoline->getCallOriginCode());
                 #if defined(__arm__)
-                Code originRemCode = callOriginTrampoline->getThumbCodePcAddress(originEntry + directJumpTrampoline->getCodeLen());
+                Code originRemCode = callOriginTrampoline->getThumbCodePcAddress(originEntry + sizeNeedBackup);
                 Size offset = originRemCode - getEntryCode(originMethod);
                 if (offset != directJumpTrampoline->getCodeLen()) {
                     Code32Bit offset32;
                     offset32.code = offset;
-                    unsigned char offsetOP = callOriginTrampoline->isBigEnd() ? offset32.op.op2 : offset32.op.op1;
+                    uint8_t offsetOP = callOriginTrampoline->isBigEnd() ? offset32.op.op4 : offset32.op.op1;
                     inlineHookTrampoline->tweakOpImm(OFFSET_INLINE_OP_ORIGIN_OFFSET_CODE, offsetOP);
                 }
                 #endif
