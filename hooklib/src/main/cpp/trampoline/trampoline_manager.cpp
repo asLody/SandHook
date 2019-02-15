@@ -4,6 +4,7 @@
 #include "../includes/trampoline_manager.h"
 #include "../includes/trampoline.h"
 #include "../includes/inst.h"
+#include "../includes/log.h"
 
 extern int SDK_INT;
 #define SWITCH_SETX0 false
@@ -108,8 +109,10 @@ namespace SandHook {
         replacementHookTrampoline = new ReplacementHookTrampoline();
         replacementHookTrampoline->init();
         replacementHookTrampolineSpace = allocExecuteSpace(replacementHookTrampoline->getCodeLen());
-        if (replacementHookTrampolineSpace == 0)
+        if (replacementHookTrampolineSpace == 0) {
+            LOGE("hook error due to can not alloc execute space!");
             goto label_error;
+        }
         replacementHookTrampoline->setExecuteSpace(replacementHookTrampolineSpace);
         replacementHookTrampoline->setEntryCodeOffset(quickCompileOffset);
         replacementHookTrampoline->setHookMethod(reinterpret_cast<Code>(hookMethod));
@@ -164,8 +167,10 @@ namespace SandHook {
         checkThumbCode(inlineHookTrampoline, getEntryCode(originMethod));
         inlineHookTrampoline->init();
         inlineHookTrampolineSpace = allocExecuteSpace(inlineHookTrampoline->getCodeLen());
-        if (inlineHookTrampolineSpace == 0)
+        if (inlineHookTrampolineSpace == 0) {
+            LOGE("hook error due to can not alloc execute space!");
             goto label_error;
+        }
         inlineHookTrampoline->setExecuteSpace(inlineHookTrampolineSpace);
         inlineHookTrampoline->setEntryCodeOffset(quickCompileOffset);
         inlineHookTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
@@ -183,6 +188,7 @@ namespace SandHook {
         directJumpTrampoline->init();
         originEntry = getEntryCode(originMethod);
         if (!memUnprotect(reinterpret_cast<Size>(originEntry), directJumpTrampoline->getCodeLen())) {
+            LOGE("hook error due to can not write origin code!");
             goto label_error;
         }
 
@@ -200,8 +206,10 @@ namespace SandHook {
             checkThumbCode(callOriginTrampoline, getEntryCode(originMethod));
             callOriginTrampoline->init();
             callOriginTrampolineSpace = allocExecuteSpace(callOriginTrampoline->getCodeLen());
-            if (callOriginTrampolineSpace == 0)
+            if (callOriginTrampolineSpace == 0) {
+
                 goto label_error;
+            }
             callOriginTrampoline->setExecuteSpace(callOriginTrampolineSpace);
             callOriginTrampoline->setOriginMethod(reinterpret_cast<Code>(originMethod));
             Code originCode = nullptr;

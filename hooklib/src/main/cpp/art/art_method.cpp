@@ -51,6 +51,14 @@ bool ArtMethod::isCompiled() {
     return getQuickCodeEntry() != SandHook::CastArtMethod::quickToInterpreterBridge;
 }
 
+bool ArtMethod::isThumbCode() {
+    #if defined(__arm__)
+    return (reinterpret_cast<Size>(getQuickCodeEntry()) & 0x1) == 0x1;
+    #else
+    return false;
+    #endif
+}
+
 void ArtMethod::setAccessFlags(uint32_t flags) {
     CastArtMethod::accessFlag->set(this, flags);
 }
@@ -84,6 +92,10 @@ void* ArtMethod::getInterpreterCodeEntry() {
     return CastArtMethod::entryPointFormInterpreter->get(this);
 }
 
+void* ArtMethod::getDeclaringClassPtr() {
+    return CastArtMethod::declaringClass->get(this);
+}
+
 void ArtMethod::setQuickCodeEntry(void *entry) {
     CastArtMethod::entryPointQuickCompiled->set(this, entry);
 }
@@ -101,6 +113,10 @@ void ArtMethod::setDexCacheResolveList(void *list) {
 
 void ArtMethod::setDexCacheResolveItem(uint32_t index, void* item) {
     CastArtMethod::dexCacheResolvedMethods->setElement(this, index, item);
+}
+
+void ArtMethod::setDeclaringClassPtr(void *classPtr) {
+    CastArtMethod::declaringClass->set(this, classPtr);
 }
 
 bool ArtMethod::compile(JNIEnv* env) {

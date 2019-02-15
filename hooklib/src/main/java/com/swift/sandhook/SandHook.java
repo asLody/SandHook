@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SandHook {
 
     static Map<Member,HookWrapper.HookEntity> globalHookEntityMap = new ConcurrentHashMap<>();
+    static Map<Method,HookWrapper.HookEntity> globalBackupMap = new ConcurrentHashMap<>();
 
     public static Class artMethodClass;
 
@@ -69,6 +70,9 @@ public class SandHook {
             }
             Log.d("SandHook", "method <" + entity.target.getName() + "> hook success!");
             globalHookEntityMap.put(entity.target, entity);
+            if (entity.backup != null) {
+                globalBackupMap.put(entity.backup, entity);
+            }
         }
     }
 
@@ -89,6 +93,24 @@ public class SandHook {
             backup.setAccessible(true);
         }
         return res;
+    }
+
+    public static void ensureBackupDelaringClass(Method backupMethod) {
+        if (backupMethod == null)
+            return;
+        HookWrapper.HookEntity hookEntity = globalBackupMap.get(backupMethod);
+        if (hookEntity == null)
+            return;
+        ensureMethodDeclaringClass(hookEntity.target, backupMethod);
+    }
+
+    public static void ensureBackupDelaringClassByOrigin(Member originMethod) {
+        if (originMethod == null)
+            return;
+        HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
+        if (hookEntity == null || hookEntity.backup == null)
+            return;
+        ensureMethodDeclaringClass(originMethod, hookEntity.backup);
     }
 
     private static void resolveStaticMethod(Member method) {
@@ -182,8 +204,12 @@ public class SandHook {
 
     private static native boolean initNative(int sdk);
 
+    public static native void setHookMode(int hookMode);
+
     private static native boolean hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
 
     public static native void ensureMethodCached(Method hook, Method backup);
+
+    public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
 
 }

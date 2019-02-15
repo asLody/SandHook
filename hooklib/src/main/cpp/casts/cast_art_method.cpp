@@ -101,6 +101,13 @@ namespace SandHook {
         }
     };
 
+    class CastShadowClass : public IMember<art::mirror::ArtMethod, void*> {
+    protected:
+        Size calOffset(JNIEnv *jniEnv, mirror::ArtMethod *p) override {
+            return 0;
+        }
+    };
+
 
     class CastDexMethodIndex : public IMember<art::mirror::ArtMethod, uint32_t> {
     protected:
@@ -148,6 +155,9 @@ namespace SandHook {
         dexMethodIndex = new CastDexMethodIndex();
         dexMethodIndex->init(env, m1, size);
 
+        declaringClass = new CastShadowClass();
+        declaringClass->init(env, m1, size);
+
         jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
         art::mirror::ArtMethod *neverCall = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
                 neverCallTestClass, "neverCall", "()V"));
@@ -173,6 +183,7 @@ namespace SandHook {
     ArrayMember<art::mirror::ArtMethod, void *> *CastArtMethod::dexCacheResolvedMethods = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t> *CastArtMethod::dexMethodIndex = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t> *CastArtMethod::accessFlag = nullptr;
+    IMember<art::mirror::ArtMethod, void*> *CastArtMethod::declaringClass = nullptr;
     void *CastArtMethod::quickToInterpreterBridge = nullptr;
     void *CastArtMethod::genericJniStub = nullptr;
     void *CastArtMethod::staticResolveStub = nullptr;

@@ -48,6 +48,7 @@ public:
     bool isAbstract();
     bool isNative();
     bool isCompiled();
+    bool isThumbCode();
 
     void setAccessFlags(uint32_t flags);
     void disableCompilable();
@@ -61,11 +62,13 @@ public:
     void setInterpreterCodeEntry(void* entry);
     void setDexCacheResolveList(void* list);
     void setDexCacheResolveItem(uint32_t index, void* item);
+    void setDeclaringClassPtr(void* classPtr);
 
     void* getQuickCodeEntry();
     void* getInterpreterCodeEntry();
     uint32_t getAccessFlags();
     uint32_t getDexMethodIndex();
+    void* getDeclaringClassPtr();
 
     bool compile(JNIEnv* env);
     void flushCache();

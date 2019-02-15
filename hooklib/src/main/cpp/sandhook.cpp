@@ -2,6 +2,7 @@
 #include "includes/cast_art_method.h"
 #include "includes/trampoline_manager.h"
 #include "includes/hide_api.h"
+#include "includes/log.h"
 
 SandHook::TrampolineManager trampolineManager;
 
@@ -12,6 +13,8 @@ enum HookMode {
     INLINE = 1,
     REPLACE = 2
 };
+
+HookMode gHookMode = AUTO;
 
 extern "C"
 JNIEXPORT jboolean JNICALL
@@ -50,18 +53,29 @@ void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMeth
     }
 }
 
+void ensureMethodDeclaringClass(art::mirror::ArtMethod *origin, art::mirror::ArtMethod *backup) {
+    if (origin->getDeclaringClassPtr() != backup->getDeclaringClassPtr()) {
+        LOGW("backup method declaringClass is out to date due to Moving GC!");
+        backup->setDeclaringClassPtr(origin->getDeclaringClassPtr());
+        backup->flushCache();
+    }
+}
+
 bool doHookWithReplacement(JNIEnv* env,
                            art::mirror::ArtMethod *originMethod,
                            art::mirror::ArtMethod *hookMethod,
                            art::mirror::ArtMethod *backupMethod) {
-    if (!hookMethod->isCompiled()) {
-        hookMethod->compile(env);
+
+    if (!backupMethod->isCompiled()) {
+        backupMethod->compile(env);
     }
+
     if (SDK_INT >= ANDROID_N) {
         originMethod->disableCompilable();
         hookMethod->disableCompilable();
     }
     originMethod->tryDisableInline();
+
     if (backupMethod != nullptr) {
         originMethod->backup(backupMethod);
         if (SDK_INT >= ANDROID_N) {
@@ -71,13 +85,13 @@ bool doHookWithReplacement(JNIEnv* env,
             backupMethod->disableInterpreterForO();
         }
         backupMethod->tryDisableInline();
-        backupMethod->setPrivate();
         backupMethod->flushCache();
     }
 
-    if (SDK_INT >= ANDROID_O) {
+    if (SDK_INT >= ANDROID_O && SDK_INT < ANDROID_P) {
         originMethod->disableInterpreterForO();
     }
+
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline != nullptr) {
         originMethod->setQuickCodeEntry(hookTrampoline->replacement->getCode());
@@ -130,7 +144,6 @@ bool doHookWithInline(JNIEnv* env,
             backupMethod->disableInterpreterForO();
         }
         backupMethod->tryDisableInline();
-        backupMethod->setPrivate();
         backupMethod->flushCache();
     }
     return true;
@@ -164,9 +177,14 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
         goto label_hook;
     }
 
-
     if (origin->isAbstract()) {
         isInlineHook = false;
+    } else if (gHookMode != AUTO) {
+        if (gHookMode == INLINE) {
+            isInlineHook = origin->compile(env);
+        } else {
+            isInlineHook = false;
+        }
     } else if (!origin->isCompiled()) {
         if (SDK_INT >= ANDROID_N) {
             isInlineHook = origin->compile(env);
@@ -180,8 +198,10 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
 label_hook:
     if (isInlineHook && trampolineManager.canSafeInline(origin)) {
+        LOGD("method hook by inline!");
         return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
     } else {
+        LOGW("method hook by replacement!");
         return static_cast<jboolean>(doHookWithReplacement(env, origin, hook, backup));
     }
 
@@ -194,6 +214,28 @@ Java_com_swift_sandhook_SandHook_ensureMethodCached(JNIEnv *env, jclass type, jo
     art::mirror::ArtMethod* hookeMethod = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(hook));
     art::mirror::ArtMethod* backupMethod = backup == NULL ? nullptr : reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backup));
     ensureMethodCached(hookeMethod, backupMethod);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_ensureMethodDeclaringClass(JNIEnv *env, jclass type,
+                                                            jobject originMethod,
+                                                            jobject backupMethod) {
+    if (backupMethod == NULL || originMethod == NULL)
+        return;
+    art::mirror::ArtMethod* origin = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(originMethod));
+    art::mirror::ArtMethod* backup = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backupMethod));
+
+    ensureMethodDeclaringClass(origin, backup);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_setHookMode(JNIEnv *env, jclass type, jint mode) {
+
+    // TODO
+    gHookMode = static_cast<HookMode>(mode);
+
 }
 
 extern "C"
