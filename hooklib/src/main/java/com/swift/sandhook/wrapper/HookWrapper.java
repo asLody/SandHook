@@ -273,6 +273,7 @@ public class HookWrapper {
         public boolean hookIsStub = false;
 
         public Class[] pars;
+        public int hookMode;
 
         public HookEntity(Member target) {
             this.target = target;

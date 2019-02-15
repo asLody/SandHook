@@ -24,6 +24,11 @@ public class SandHook {
         SandHook.hookModeCallBack = hookModeCallBack;
     }
 
+    private static HookResultCallBack hookResultCallBack;
+    public static void setHookResultCallBack(HookResultCallBack hookResultCallBack) {
+        SandHook.hookResultCallBack = hookResultCallBack;
+    }
+
     public static Class artMethodClass;
 
     public static Field nativePeerField;
@@ -67,23 +72,20 @@ public class SandHook {
     }
 
     public static synchronized void hook(HookWrapper.HookEntity entity) throws HookErrorException {
-        if (entity.target != null && entity.hook != null) {
-            if (globalHookEntityMap.containsKey(entity.target))
-                throw new HookErrorException("method <" + entity.target.getName() + "> has been hooked!");
-            if (!SandHook.hook(entity.target, entity.hook, entity.backup)) {
-                throw new HookErrorException("hook method <" + entity.target.getName() + "> error in native!");
-            }
-            Log.d("SandHook", "method <" + entity.target.getName() + "> hook success!");
-            globalHookEntityMap.put(entity.target, entity);
-            if (entity.backup != null) {
-                globalBackupMap.put(entity.backup, entity);
-            }
-        }
-    }
 
-    public static boolean hook(Member target, Method hook, Method backup) {
+        if (entity == null)
+            throw new HookErrorException("null entity");
+
+        Member target = entity.target;
+        Method hook = entity.hook;
+        Method backup = entity.backup;
+
         if (target == null || hook == null)
-            return false;
+            throw new HookErrorException("null input");
+
+        if (globalHookEntityMap.containsKey(entity.target))
+            throw new HookErrorException("method <" + entity.target.getName() + "> has been hooked!");
+
         resolveStaticMethod(target);
         if (backup != null) {
             resolveStaticMethod(backup);
@@ -98,7 +100,7 @@ public class SandHook {
             mode = hookModeCallBack.hookMode(target);
         }
 
-        boolean res;
+        int res;
         if (mode != HookMode.AUTO) {
             res = hookMethod(target, hook, backup, mode);
         } else {
@@ -106,10 +108,25 @@ public class SandHook {
             res = hookMethod(target, hook, backup, hookMode == null ? HookMode.AUTO : hookMode.value());
         }
 
-        if (res && backup != null) {
+        if (res > 0 && backup != null) {
             backup.setAccessible(true);
         }
-        return res;
+
+        entity.hookMode = res;
+
+        if (hookResultCallBack != null) {
+            hookResultCallBack.hookResult(res > 0, entity);
+        }
+
+        if (res <= 0)
+            throw new HookErrorException("hook method <" + entity.target.toString() + "> error in native!");
+
+        globalHookEntityMap.put(entity.target, entity);
+        if (entity.backup != null) {
+            globalBackupMap.put(entity.backup, entity);
+        }
+
+        Log.d("SandHook", "method <" + entity.target.toString() + "> hook <" + (res == HookMode.INLINE ? "inline" : "replacement") + "> success!");
     }
 
     public static void ensureBackupDeclaringClass(Method backupMethod) {
@@ -226,7 +243,7 @@ public class SandHook {
     //default on!
     public static native void setInlineSafeCheck(boolean check);
 
-    private static native boolean hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
+    private static native int hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
 
     public static native void ensureMethodCached(Method hook, Method backup);
 
@@ -235,6 +252,11 @@ public class SandHook {
     @FunctionalInterface
     public interface HookModeCallBack {
         int hookMode(Member originMethod);
+    }
+
+    @FunctionalInterface
+    public interface HookResultCallBack {
+        void hookResult(boolean success, HookWrapper.HookEntity hookEntity);
     }
 
 }

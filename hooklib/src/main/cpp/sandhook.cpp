@@ -184,7 +184,7 @@ bool doHookWithInline(JNIEnv* env,
 }
 
 extern "C"
-JNIEXPORT jboolean JNICALL
+JNIEXPORT jint JNICALL
 Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject originMethod,
                                             jobject hookMethod, jobject backupMethod, jint hookMode) {
 
@@ -232,11 +232,9 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
 label_hook:
     if (isInlineHook && trampolineManager.canSafeInline(origin)) {
-        LOGD("method hook by inline!");
-        return static_cast<jboolean>(doHookWithInline(env, origin, hook, backup));
+        return doHookWithInline(env, origin, hook, backup) ? INLINE : -1;
     } else {
-        LOGW("method hook by replacement!");
-        return static_cast<jboolean>(doHookWithReplacement(env, origin, hook, backup));
+        return doHookWithReplacement(env, origin, hook, backup) ? REPLACE : -1;
     }
 
 }
