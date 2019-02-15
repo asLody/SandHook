@@ -7,7 +7,7 @@
 #include "../includes/log.h"
 
 extern int SDK_INT;
-#define SWITCH_SETX0 false
+#define SWITCH_SETX0 true
 
 namespace SandHook {
 
@@ -31,13 +31,22 @@ namespace SandHook {
 
         int instSize = 0;
 
+        TrampolineManager* trampolineManager;
+
+        PCRelatedCheckVisitor(TrampolineManager* t) {
+            trampolineManager = t;
+        }
+
         bool visit(Inst *inst, Size offset, Size length) override {
 
             instSize += inst->instLen();
 
             if (inst->pcRelated()) {
-                pcRelated = true;
-                return false;
+                LOGW("found pc related inst: %x !", inst->bin());
+                if (trampolineManager->inlineSecurityCheck) {
+                    pcRelated = true;
+                    return false;
+                }
             }
 
             if (instSize > SIZE_ORIGIN_PLACE_HOLDER) {
@@ -69,7 +78,7 @@ namespace SandHook {
         }
 
         //check pc relate inst & backup inst len
-        PCRelatedCheckVisitor visitor;
+        PCRelatedCheckVisitor visitor(this);
 
         InstDecode::decode(method->getQuickCodeEntry(), SIZE_DIRECT_JUMP_TRAMPOLINE, &visitor);
 
@@ -129,8 +138,9 @@ namespace SandHook {
         replacementHookTrampoline->setEntryCodeOffset(quickCompileOffset);
         replacementHookTrampoline->setHookMethod(reinterpret_cast<Code>(hookMethod));
         hookTrampoline->replacement = replacementHookTrampoline;
+        hookTrampoline->originCode = static_cast<Code>(originMethod->getQuickCodeEntry());
 
-        if (SWITCH_SETX0 && backupMethod != nullptr) {
+        if (SWITCH_SETX0 && SDK_INT >= ANDROID_O && backupMethod != nullptr) {
             callOriginTrampoline = new CallOriginTrampoline();
             checkThumbCode(callOriginTrampoline, getEntryCode(originMethod));
             callOriginTrampoline->init();

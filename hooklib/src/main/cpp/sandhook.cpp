@@ -56,7 +56,38 @@ void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMeth
 void ensureMethodDeclaringClass(art::mirror::ArtMethod *origin, art::mirror::ArtMethod *backup) {
     if (origin->getDeclaringClassPtr() != backup->getDeclaringClassPtr()) {
         LOGW("backup method declaringClass is out to date due to Moving GC!");
-        backup->setDeclaringClassPtr(origin->getDeclaringClassPtr());
+
+        SandHook::HookTrampoline* trampoline = trampolineManager.getHookTrampoline(origin);
+        if (trampoline == nullptr)
+            return;
+
+        if (trampoline->inlineJump != nullptr) {
+            origin->backup(backup);
+            backup->setQuickCodeEntry(trampoline->callOrigin->getCode());
+            if (SDK_INT >= ANDROID_N) {
+                backup->disableCompilable();
+            }
+            if (SDK_INT >= ANDROID_O) {
+                backup->disableInterpreterForO();
+            }
+            backup->tryDisableInline();
+        } else if (trampoline->replacement != nullptr) {
+            origin->backup(backup);
+            if (trampoline->callOrigin != nullptr) {
+                backup->setQuickCodeEntry(trampoline->callOrigin->getCode());
+            } else {
+                backup->setQuickCodeEntry(trampoline->originCode);
+            }
+            if (SDK_INT >= ANDROID_N) {
+                backup->disableCompilable();
+            }
+            if (SDK_INT >= ANDROID_O) {
+                backup->disableInterpreterForO();
+            }
+            backup->tryDisableInline();
+        } else {
+            return;
+        }
         backup->flushCache();
     }
 }
@@ -70,11 +101,7 @@ bool doHookWithReplacement(JNIEnv* env,
         backupMethod->compile(env);
     }
 
-    if (SDK_INT >= ANDROID_N) {
-        originMethod->disableCompilable();
-        hookMethod->disableCompilable();
-    }
-    originMethod->tryDisableInline();
+    hookMethod->compile(env);
 
     if (backupMethod != nullptr) {
         originMethod->backup(backupMethod);
@@ -88,7 +115,14 @@ bool doHookWithReplacement(JNIEnv* env,
         backupMethod->flushCache();
     }
 
-    if (SDK_INT >= ANDROID_O && SDK_INT < ANDROID_P) {
+    if (SDK_INT >= ANDROID_N) {
+        originMethod->disableCompilable();
+        hookMethod->disableCompilable();
+        hookMethod->flushCache();
+    }
+    originMethod->tryDisableInline();
+
+    if (SDK_INT >= ANDROID_O && !originMethod->isCompiled()) {
         originMethod->disableInterpreterForO();
     }
 
@@ -232,10 +266,13 @@ Java_com_swift_sandhook_SandHook_ensureMethodDeclaringClass(JNIEnv *env, jclass 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_SandHook_setHookMode(JNIEnv *env, jclass type, jint mode) {
-
-    // TODO
     gHookMode = static_cast<HookMode>(mode);
+}
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_setInlineSafeCheck(JNIEnv *env, jclass type, jboolean check) {
+    trampolineManager.inlineSecurityCheck = check;
 }
 
 extern "C"

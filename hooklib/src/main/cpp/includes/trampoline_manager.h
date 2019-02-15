@@ -85,7 +85,7 @@ namespace SandHook {
             return reinterpret_cast<Code>(addr);
         }
 
-
+        bool inlineSecurityCheck = true;
     private:
 
         Size quickCompileOffset;

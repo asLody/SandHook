@@ -19,6 +19,11 @@ public class SandHook {
     static Map<Member,HookWrapper.HookEntity> globalHookEntityMap = new ConcurrentHashMap<>();
     static Map<Method,HookWrapper.HookEntity> globalBackupMap = new ConcurrentHashMap<>();
 
+    private static HookModeCallBack hookModeCallBack;
+    public static void setHookModeCallBack(HookModeCallBack hookModeCallBack) {
+        SandHook.hookModeCallBack = hookModeCallBack;
+    }
+
     public static Class artMethodClass;
 
     public static Field nativePeerField;
@@ -87,15 +92,27 @@ public class SandHook {
         if (target instanceof Method) {
             ((Method)target).setAccessible(true);
         }
-        HookMode hookMode = hook.getAnnotation(HookMode.class);
-        boolean res = hookMethod(target, hook, backup, hookMode == null ? HookMode.AUTO : hookMode.value());
+
+        int mode = HookMode.AUTO;
+        if (hookModeCallBack != null) {
+            mode = hookModeCallBack.hookMode(target);
+        }
+
+        boolean res;
+        if (mode != HookMode.AUTO) {
+            res = hookMethod(target, hook, backup, mode);
+        } else {
+            HookMode hookMode = hook.getAnnotation(HookMode.class);
+            res = hookMethod(target, hook, backup, hookMode == null ? HookMode.AUTO : hookMode.value());
+        }
+
         if (res && backup != null) {
             backup.setAccessible(true);
         }
         return res;
     }
 
-    public static void ensureBackupDelaringClass(Method backupMethod) {
+    public static void ensureBackupDeclaringClass(Method backupMethod) {
         if (backupMethod == null)
             return;
         HookWrapper.HookEntity hookEntity = globalBackupMap.get(backupMethod);
@@ -206,10 +223,18 @@ public class SandHook {
 
     public static native void setHookMode(int hookMode);
 
+    //default on!
+    public static native void setInlineSafeCheck(boolean check);
+
     private static native boolean hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
 
     public static native void ensureMethodCached(Method hook, Method backup);
 
     public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
+
+    @FunctionalInterface
+    public interface HookModeCallBack {
+        int hookMode(Member originMethod);
+    }
 
 }

@@ -34,6 +34,10 @@ namespace SandHook {
             return instType < InstType_Thumb32::PC_NO_RELATED;
         }
 
+        Size bin() override {
+            return code.code;
+        }
+
         InstType_Thumb32 initType() {
             CASE(code.code, 0xF800D000, 0xF000C000, InstType_Thumb32::BLX_THUMB32)
             CASE(code.code, 0xF800D000, 0xF000D000, InstType_Thumb32::BL_THUMB32)
@@ -73,6 +77,10 @@ namespace SandHook {
 
         bool pcRelated() override {
             return instType < InstType_Thumb16 ::PC_NO_RELATED;
+        }
+
+        Size bin() override {
+            return code.code;
         }
 
         InstType_Thumb16 initType() {

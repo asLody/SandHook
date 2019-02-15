@@ -101,6 +101,8 @@ namespace SandHook {
         virtual InstArch instArch() const = 0;
 
         virtual bool pcRelated() = 0;
+
+        virtual Size bin() = 0;
     };
 
     class InstVisitor {

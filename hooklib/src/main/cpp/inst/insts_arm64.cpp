@@ -35,6 +35,12 @@ namespace SandHook {
             return instType < InstType_Arm64::PC_NO_RELATED;
         }
 
+        Size bin() override {
+            return code.code;
+        }
+
+    private:
+
         InstType_Arm64 initType() {
             CASE(code.code, 0x7e000000, 0x34000000, InstType_Arm64::CBZ_CBNZ);
             CASE(code.code, 0xff000010, 0x54000000, InstType_Arm64::B_COND);
