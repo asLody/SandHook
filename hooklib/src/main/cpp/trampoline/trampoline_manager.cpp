@@ -69,10 +69,15 @@ namespace SandHook {
     };
 
     bool TrampolineManager::canSafeInline(mirror::ArtMethod *method) {
+
+        if (skipAllCheck)
+            return true;
+
         //check size
         if (!method->isNative()) {
             uint32_t originCodeSize = sizeOfEntryCode(method);
             if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE) {
+                LOGW("can not inline due to origin code is too small(size is %d)", originCodeSize);
                 return false;
             }
         }

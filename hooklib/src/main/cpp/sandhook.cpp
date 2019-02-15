@@ -275,6 +275,12 @@ Java_com_swift_sandhook_SandHook_setInlineSafeCheck(JNIEnv *env, jclass type, jb
 
 extern "C"
 JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_skipAllSafeCheck(JNIEnv *env, jclass type, jboolean skip) {
+    trampolineManager.skipAllCheck = skip;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
 Java_com_swift_sandhook_test_TestClass_jni_1test(JNIEnv *env, jobject instance) {
     int a = 1 + 1;
     int b = a + 1;

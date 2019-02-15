@@ -86,6 +86,7 @@ namespace SandHook {
         }
 
         bool inlineSecurityCheck = true;
+        bool skipAllCheck = false;
     private:
 
         Size quickCompileOffset;

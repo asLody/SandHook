@@ -242,6 +242,7 @@ public class SandHook {
 
     //default on!
     public static native void setInlineSafeCheck(boolean check);
+    public static native void skipAllSafeCheck(boolean skip);
 
     private static native int hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
 
