@@ -20,6 +20,8 @@ public class XposedCompat {
     public static File cacheDir;
     public static Context context;
     public static ClassLoader classLoader;
+    public static String packageName;
+    public static String processName;
     public static boolean isFirstApplication;
 
     private static ClassLoader sandHookXposedClassLoader;
@@ -39,7 +41,12 @@ public class XposedCompat {
         XC_LoadPackage.LoadPackageParam packageParam = new XC_LoadPackage.LoadPackageParam(XposedBridge.sLoadedPackageCallbacks);
         Application application = ApplicationUtils.currentApplication();
 
+
         if (application != null) {
+            if (packageParam.packageName == null) {
+                packageParam.packageName = application.getPackageName();
+            }
+
             if (packageParam.processName == null) {
                 packageParam.processName = ProcessUtils.getProcessName(application);
             }

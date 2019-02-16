@@ -42,10 +42,10 @@ public abstract class XC_LoadPackage extends XCallback implements IXposedHookLoa
 		}
 
 		/** The name of the package being loaded. */
-		public String packageName = XposedCompat.context.getPackageName();
+		public String packageName = XposedCompat.packageName;
 
 		/** The process in which the package is executed. */
-		public String processName = ProcessUtils.getProcessName(XposedCompat.context);
+		public String processName = XposedCompat.processName;
 
 		/** The ClassLoader used for this package. */
 		public ClassLoader classLoader = XposedCompat.classLoader;
