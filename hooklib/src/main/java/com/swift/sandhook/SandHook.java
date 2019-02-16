@@ -74,7 +74,7 @@ public class SandHook {
     public static synchronized void hook(HookWrapper.HookEntity entity) throws HookErrorException {
 
         if (entity == null)
-            throw new HookErrorException("null entity");
+            throw new HookErrorException("null hook entity");
 
         Member target = entity.target;
         Method hook = entity.hook;

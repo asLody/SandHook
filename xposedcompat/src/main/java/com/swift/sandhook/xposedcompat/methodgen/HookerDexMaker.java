@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 
+import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.MD5;
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.autoBoxIfNecessary;
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.autoUnboxIfNecessary;
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.createResultLocals;
@@ -78,8 +79,6 @@ public class HookerDexMaker {
             xposedBridgeTypeId.getMethod(TypeId.VOID, "log", throwableTypeId);
     private static final MethodId<XposedBridge, Void> logStrMethodId =
             xposedBridgeTypeId.getMethod(TypeId.VOID, "log", TypeId.STRING);
-
-    private static AtomicLong sClassNameSuffix = new AtomicLong(1);
 
     private FieldId<?, XposedBridge.AdditionalHookInfo> mHookInfoFieldId;
     private FieldId<?, Member> mMethodFieldId;
@@ -175,15 +174,30 @@ public class HookerDexMaker {
         } else {
             mAppClassLoader = appClassLoader;
         }
-        doMake();
-    }
 
-    private void doMake() throws Exception {
         mDexMaker = new DexMaker();
         // Generate a Hooker class.
-        String className = CLASS_NAME_PREFIX + sClassNameSuffix.getAndIncrement();
-        String classDesc = CLASS_DESC_PREFIX + className + ";";
-        mHookerTypeId = TypeId.get(classDesc);
+        String className = getClassName(mMember);
+        String dexName = className + ".jar";
+
+        HookWrapper.HookEntity hookEntity = null;
+        //try load cache first
+        try {
+            ClassLoader loader = mDexMaker.loadClassDirect(mAppClassLoader, new File(mDexDirPath), dexName);
+            if (loader != null) {
+                hookEntity = loadHookerClass(loader, className);
+            }
+        } catch (Throwable throwable) {}
+
+        //do generate
+        if (hookEntity == null) {
+            hookEntity = doMake(className, dexName);
+        }
+        SandHook.hook(hookEntity);
+    }
+
+    private HookWrapper.HookEntity doMake(String className, String dexName) throws Exception {
+        mHookerTypeId = TypeId.get(CLASS_DESC_PREFIX + className + ";");
         mDexMaker.declare(mHookerTypeId, className + ".generated", Modifier.PUBLIC, TypeId.OBJECT);
         generateFields();
         generateSetupMethod();
@@ -195,9 +209,12 @@ public class HookerDexMaker {
         if (TextUtils.isEmpty(mDexDirPath)) {
             throw new IllegalArgumentException("dexDirPath should not be empty!!!");
         }
-            // Create the dex file and load it.
-        loader = mDexMaker.generateAndLoad(mAppClassLoader, new File(mDexDirPath));
+        // Create the dex file and load it.
+        loader = mDexMaker.generateAndLoad(mAppClassLoader, new File(mDexDirPath), dexName);
+        return loadHookerClass(loader, className);
+    }
 
+    private HookWrapper.HookEntity loadHookerClass(ClassLoader loader, String className) throws Exception {
         mHookClass = loader.loadClass(className);
         // Execute our newly-generated code in-process.
         mHookClass.getMethod(METHOD_NAME_SETUP, Member.class, XposedBridge.AdditionalHookInfo.class)
@@ -205,7 +222,11 @@ public class HookerDexMaker {
         mHookMethod = mHookClass.getMethod(METHOD_NAME_HOOK, mActualParameterTypes);
         mBackupMethod = mHookClass.getMethod(METHOD_NAME_BACKUP, mActualParameterTypes);
         mCallBackupMethod = mHookClass.getMethod(METHOD_NAME_CALL_BACKUP, mActualParameterTypes);
-        SandHook.hook(new HookWrapper.HookEntity(mMember, mHookMethod, mBackupMethod));
+        return new HookWrapper.HookEntity(mMember, mHookMethod, mBackupMethod);
+    }
+
+    private String getClassName(Member originMethod) {
+        return CLASS_NAME_PREFIX + "_" + originMethod.getName() + "_" + MD5(originMethod.toString());
     }
 
     public Method getHookMethod() {

@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 
 import com.swift.sandhook.xposedcompat.classloaders.ComposeClassLoader;
-import com.swift.sandhook.xposedcompat.classloaders.XposedClassLoader;
+import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
 import com.swift.sandhook.xposedcompat.utils.ApplicationUtils;
 import com.swift.sandhook.xposedcompat.utils.ProcessUtils;
 
@@ -71,6 +71,20 @@ public class XposedCompat {
             sandHookXposedClassLoader = new ComposeClassLoader(sandBoxHostClassLoader, appOriginClassLoader);
             return sandHookXposedClassLoader;
         }
+    }
+
+    public static boolean clearCache() {
+        try {
+            cacheDir.delete();
+            cacheDir.mkdirs();
+            return true;
+        } catch (Throwable throwable) {
+            return false;
+        }
+    }
+
+    public static void clearOatCache() {
+        DynamicBridge.clearOatFile();
     }
 
 }

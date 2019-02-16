@@ -12,6 +12,9 @@ import com.android.dx.rop.type.Type;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -252,5 +255,16 @@ public class DexMakerUtils {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public static String MD5(String source) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.update(source.getBytes());
+            return new BigInteger(1, messageDigest.digest()).toString(32);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return source;
     }
 }

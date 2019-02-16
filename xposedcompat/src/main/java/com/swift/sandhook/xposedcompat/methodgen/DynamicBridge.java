@@ -1,8 +1,9 @@
 package com.swift.sandhook.xposedcompat.methodgen;
 
+import android.os.Trace;
+
 import com.swift.sandhook.xposedcompat.XposedCompat;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
-import com.swift.sandhook.xposedcompat.utils.FileUtils;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -21,7 +22,6 @@ public final class DynamicBridge {
     private static final HookerDexMaker dexMaker = new HookerDexMaker();
     private static final AtomicBoolean dexPathInited = new AtomicBoolean(false);
     private static File dexDir;
-    private static File dexOptDir;
 
     public static void onForkPost() {
         dexPathInited.set(false);
@@ -45,25 +45,32 @@ public final class DynamicBridge {
                 // delete previous compiled dex to prevent potential crashing
                 // TODO find a way to reuse them in consideration of performance
                 try {
-                    // we always choose to use device encrypted storage data on android N and later
-                    // in case some app is installing hooks before phone is unlocked
                     String fixedAppDataDir = XposedCompat.cacheDir.getAbsolutePath();
                     dexDir = new File(fixedAppDataDir, "/sandxposed/");
-                    dexOptDir = new File(dexDir, "oat");
-                    dexDir.mkdirs();
-                    try {
-                        FileUtils.delete(dexOptDir);
-                    } catch (Throwable throwable) {
-                    }
                 } catch (Throwable throwable) {
                     DexLog.e("error when init dex path", throwable);
                 }
             }
+            Trace.beginSection("SandHook-Xposed");
+            long timeStart = System.currentTimeMillis();
             dexMaker.start(hookMethod, additionalHookInfo,
                     XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
+            DexLog.d("hook method <" + hookMethod.toString() + "> use " + (System.currentTimeMillis() - timeStart) + " ms.");
+            Trace.endSection();
             hookedInfo.put(hookMethod, dexMaker.getCallBackupMethod());
         } catch (Exception e) {
             DexLog.e("error occur when generating dex. dexDir=" + dexDir, e);
+        }
+    }
+
+    public static void clearOatFile() {
+        String fixedAppDataDir = XposedCompat.cacheDir.getAbsolutePath();
+        File dexOatDir = new File(fixedAppDataDir, "/sandxposed/oat/");
+        if (!dexOatDir.exists())
+            return;
+        try {
+            dexOatDir.delete();
+        } catch (Throwable throwable) {
         }
     }
 
