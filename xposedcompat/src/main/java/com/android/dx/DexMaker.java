@@ -546,6 +546,12 @@ public final class DexMaker {
          *
          * TODO: load the dex from memory where supported.
          */
+
+        File parentDir = result.getParentFile();
+        if (!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
         result.createNewFile();
         JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(result));
         JarEntry entry = new JarEntry(DexFormat.DEX_IN_JAR_NAME);

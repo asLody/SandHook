@@ -20,7 +20,6 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -30,7 +29,6 @@ import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.autoBoxIfNeces
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.autoUnboxIfNecessary;
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.createResultLocals;
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.getObjTypeIdIfPrimitive;
-import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.moveException;
 
 public class HookerDexMaker {
 
@@ -48,7 +46,6 @@ public class HookerDexMaker {
     private static final String PARAMS_FIELD_NAME_ARGS = "args";
     private static final String CALLBACK_METHOD_NAME_BEFORE = "callBeforeHookedMethod";
     private static final String CALLBACK_METHOD_NAME_AFTER = "callAfterHookedMethod";
-    private static final String PARAMS_METHOD_NAME_IS_EARLY_RETURN = "isEarlyReturn";
     private static final TypeId<Throwable> throwableTypeId = TypeId.get(Throwable.class);
     private static final TypeId<Member> memberTypeId = TypeId.get(Member.class);
     private static final TypeId<XC_MethodHook> callbackTypeId = TypeId.get(XC_MethodHook.class);
@@ -77,8 +74,6 @@ public class HookerDexMaker {
     private static final TypeId<XposedBridge> xposedBridgeTypeId = TypeId.get(XposedBridge.class);
     private static final MethodId<XposedBridge, Void> logThrowableMethodId =
             xposedBridgeTypeId.getMethod(TypeId.VOID, "log", throwableTypeId);
-    private static final MethodId<XposedBridge, Void> logStrMethodId =
-            xposedBridgeTypeId.getMethod(TypeId.VOID, "log", TypeId.STRING);
 
     private FieldId<?, XposedBridge.AdditionalHookInfo> mHookInfoFieldId;
     private FieldId<?, Member> mMethodFieldId;
@@ -406,9 +401,9 @@ public class HookerDexMaker {
         code.newInstance(param, paramTypeId.getConstructor());
         // set method, thisObject, args
         code.sget(mMethodFieldId, method);
-        code.iput(paramTypeId.getField(memberTypeId, "method"), param, method);
-        code.iput(paramTypeId.getField(TypeId.OBJECT, "thisObject"), param, thisObject);
-        code.iput(paramTypeId.getField(objArrayTypeId, "args"), param, args);
+        code.iput(paramTypeId.getField(memberTypeId, PARAMS_FIELD_NAME_METHOD), param, method);
+        code.iput(paramTypeId.getField(TypeId.OBJECT, PARAMS_FIELD_NAME_THIS_OBJECT), param, thisObject);
+        code.iput(paramTypeId.getField(objArrayTypeId, PARAMS_FIELD_NAME_ARGS), param, args);
 
         // call beforeCallbacks
         code.loadConstant(beforeIdx, 0);
@@ -427,7 +422,7 @@ public class HookerDexMaker {
 
         // start of catch
         code.mark(tryBeforeCatch);
-        moveException(code, throwable);
+        code.moveException(throwable);
         code.invokeStatic(logThrowableMethodId, null, throwable);
         code.invokeVirtual(setResultMethodId, null, param, nullObj);
         code.loadConstant(returnEarly, false);
@@ -484,7 +479,7 @@ public class HookerDexMaker {
         code.removeCatchClause(throwableTypeId);
         // catch
         code.mark(tryOrigCatch);
-        moveException(code, throwable);
+        code.moveException(throwable);
         // exception occurred when calling backup, save throwable to param
         code.invokeVirtual(setThrowableMethodId, null, param, throwable);
 
@@ -507,7 +502,7 @@ public class HookerDexMaker {
         code.removeCatchClause(throwableTypeId);
         // catch
         code.mark(tryAfterCatch);
-        moveException(code, throwable);
+        code.moveException(throwable);
         code.invokeStatic(logThrowableMethodId, null, throwable);
         // if lastThrowable == null, go to recover lastResult
         code.compareZ(Comparison.EQ, noBackupThrowable, lastThrowable);

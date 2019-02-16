@@ -47,6 +47,8 @@ public final class DynamicBridge {
                 try {
                     String fixedAppDataDir = XposedCompat.cacheDir.getAbsolutePath();
                     dexDir = new File(fixedAppDataDir, "/sandxposed/");
+                    if (!dexDir.exists())
+                        dexDir.mkdirs();
                 } catch (Throwable throwable) {
                     DexLog.e("error when init dex path", throwable);
                 }
