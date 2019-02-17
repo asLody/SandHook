@@ -2,7 +2,7 @@ package com.swift.sandhook.xposedcompat.utils;
 
 import android.util.Log;
 
-import com.swift.sandhook.xposedcompat.BuildConfig;
+import java.lang.reflect.Member;
 
 
 public class DexLog {
@@ -18,10 +18,13 @@ public class DexLog {
     }
 
     public static int d(String s) {
-        if (BuildConfig.DEBUG) {
-            return Log.d(TAG, s);
-        }
-        return 0;
+        return Log.d(TAG, s);
+    }
+
+    public static void printMethodHookIn(Member member) {
+        if (member == null)
+            return;
+        Log.d("SandHook-Xposed", "method <" + member.toString() + "> hook in");
     }
 
     public static int w(String s) {

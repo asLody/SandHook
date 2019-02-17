@@ -13,6 +13,7 @@ import com.android.dx.MethodId;
 import com.android.dx.TypeId;
 import com.swift.sandhook.SandHook;
 import com.swift.sandhook.wrapper.HookWrapper;
+import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -36,6 +37,7 @@ public class HookerDexMaker {
     public static final String METHOD_NAME_HOOK = "hook";
     public static final String METHOD_NAME_CALL_BACKUP = "callBackup";
     public static final String METHOD_NAME_SETUP = "setup";
+    public static final String METHOD_NAME_LOG = "printMethodHookIn";
     public static final TypeId<Object[]> objArrayTypeId = TypeId.get(Object[].class);
     private static final String CLASS_DESC_PREFIX = "L";
     private static final String CLASS_NAME_PREFIX = "SandHooker";
@@ -80,6 +82,7 @@ public class HookerDexMaker {
     private MethodId<?, ?> mBackupMethodId;
     private MethodId<?, ?> mCallBackupMethodId;
     private MethodId<?, ?> mHookMethodId;
+    private MethodId<?, ?> mPrintLogMethodId;
 
     private TypeId<?> mHookerTypeId;
     private TypeId<?>[] mParameterTypeIds;
@@ -221,7 +224,7 @@ public class HookerDexMaker {
     }
 
     private String getClassName(Member originMethod) {
-        return CLASS_NAME_PREFIX + "_" + originMethod.getName() + "_" + MD5(originMethod.toString());
+        return CLASS_NAME_PREFIX + "_" + MD5(originMethod.toString());
     }
 
     public Method getHookMethod() {
@@ -300,6 +303,7 @@ public class HookerDexMaker {
 
     private void generateHookMethod() {
         mHookMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_HOOK, mParameterTypeIds);
+        mPrintLogMethodId = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), METHOD_NAME_LOG, TypeId.get(Member.class));
         Code code = mDexMaker.declare(mHookMethodId, Modifier.PUBLIC | Modifier.STATIC);
 
         // code starts
@@ -356,6 +360,10 @@ public class HookerDexMaker {
         code.loadConstant(snapshotLen, 0);
         code.loadConstant(nullObj, null);
 
+        code.sget(mMethodFieldId, method);
+        //print log
+        code.invokeStatic(mPrintLogMethodId, null, method);
+
         // check XposedBridge.disableHooks flag
 
         FieldId<XposedBridge, Boolean> disableHooksField =
@@ -400,7 +408,6 @@ public class HookerDexMaker {
         // create param
         code.newInstance(param, paramTypeId.getConstructor());
         // set method, thisObject, args
-        code.sget(mMethodFieldId, method);
         code.iput(paramTypeId.getField(memberTypeId, PARAMS_FIELD_NAME_METHOD), param, method);
         code.iput(paramTypeId.getField(TypeId.OBJECT, PARAMS_FIELD_NAME_THIS_OBJECT), param, thisObject);
         code.iput(paramTypeId.getField(objArrayTypeId, PARAMS_FIELD_NAME_ARGS), param, args);
