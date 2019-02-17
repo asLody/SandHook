@@ -9,6 +9,8 @@ public class DexLog {
 
     public static final String TAG = "SandXposed-dexmaker";
 
+    public static boolean DEBUG = true;
+
     public static int v(String s) {
         return Log.v(TAG, s);
     }
@@ -22,9 +24,9 @@ public class DexLog {
     }
 
     public static void printMethodHookIn(Member member) {
-        if (member == null)
-            return;
-        Log.d("SandHook-Xposed", "method <" + member.toString() + "> hook in");
+        if (DEBUG && member != null) {
+            Log.d("SandHook-Xposed", "method <" + member.toString() + "> hook in");
+        }
     }
 
     public static int w(String s) {
