@@ -6,7 +6,7 @@
 #define SANDHOOK_HIDE_API_H
 
 #include <jni.h>
-#include "../utils/fake_dlfcn.h"
+#include "dlfcn_nougat.h"
 #include "dlfcn.h"
 
 extern "C" {
