@@ -6,6 +6,7 @@ import android.content.Context;
 import com.swift.sandhook.xposedcompat.classloaders.ComposeClassLoader;
 import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
 import com.swift.sandhook.xposedcompat.utils.ApplicationUtils;
+import com.swift.sandhook.xposedcompat.utils.FileUtils;
 import com.swift.sandhook.xposedcompat.utils.ProcessUtils;
 
 import java.io.File;
@@ -75,7 +76,7 @@ public class XposedCompat {
 
     public static boolean clearCache() {
         try {
-            cacheDir.delete();
+            FileUtils.delete(cacheDir);
             cacheDir.mkdirs();
             return true;
         } catch (Throwable throwable) {

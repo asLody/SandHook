@@ -267,11 +267,18 @@ public class HookerDexMaker {
     private void generateBackupMethod() {
         mBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_BACKUP, mParameterTypeIds);
         Code code = mDexMaker.declare(mBackupMethodId, Modifier.PUBLIC | Modifier.STATIC);
+
+        Local<Member> method = code.newLocal(memberTypeId);
+
         Map<TypeId, Local> resultLocals = createResultLocals(code);
+        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", TypeId.get(Member.class));
 
 
+        //very very important!!!!!!!!!!!
         //add a try cache block avoid inline
         Label tryCatchBlock = new Label();
+        code.sget(mMethodFieldId, method);
+        code.invokeStatic(errLogMethod, null, method);
         // start of try
         code.addCatchClause(throwableTypeId, tryCatchBlock);
 

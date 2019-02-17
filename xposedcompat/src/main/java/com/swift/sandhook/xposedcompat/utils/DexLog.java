@@ -29,6 +29,12 @@ public class DexLog {
         }
     }
 
+    public static void printCallOriginError(Member member) {
+        if (member != null) {
+            Log.e("SandHook-Xposed", "method <" + member.toString() + "> call origin error!");
+        }
+    }
+
     public static int w(String s) {
         return Log.w(TAG, s);
     }
@@ -40,4 +46,6 @@ public class DexLog {
     public static int e(String s, Throwable t) {
         return Log.e(TAG, s, t);
     }
+
+
 }

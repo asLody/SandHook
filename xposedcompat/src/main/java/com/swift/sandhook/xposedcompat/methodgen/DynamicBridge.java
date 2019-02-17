@@ -4,6 +4,7 @@ import android.os.Trace;
 
 import com.swift.sandhook.xposedcompat.XposedCompat;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
+import com.swift.sandhook.xposedcompat.utils.FileUtils;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -71,7 +72,8 @@ public final class DynamicBridge {
         if (!dexOatDir.exists())
             return;
         try {
-            dexOatDir.delete();
+            FileUtils.delete(dexOatDir);
+            dexOatDir.mkdirs();
         } catch (Throwable throwable) {
         }
     }
