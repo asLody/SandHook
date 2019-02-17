@@ -40,8 +40,12 @@ extern "C" {
         }
         if (SDK_INT >= 24) {
             art_lib = fake_dlopen(art_lib_path, RTLD_NOW);
-            innerSuspendVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib, "_ZN3art3Dbg9SuspendVMEv"));
-            innerResumeVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib, "_ZN3art3Dbg8ResumeVMEv"));
+            if (art_lib > 0) {
+                innerSuspendVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib,
+                                                                         "_ZN3art3Dbg9SuspendVMEv"));
+                innerResumeVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib,
+                                                                        "_ZN3art3Dbg8ResumeVMEv"));
+            }
         }
     }
 
