@@ -24,7 +24,7 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) 
     SDK_INT = sdk;
     SandHook::CastArtMethod::init(env);
     trampolineManager.init(SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
-    initHideApi(env, sdk);
+    initHideApi(env);
     return JNI_TRUE;
 
 }
@@ -32,6 +32,9 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) 
 void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMethod *backupMethod) {
     if (SDK_INT >= ANDROID_P)
         return;
+
+    SandHook::StopTheWorld stopTheWorld;
+
     uint32_t index = backupMethod->getDexMethodIndex();
     if (SDK_INT < ANDROID_O2) {
         hookMethod->setDexCacheResolveItem(index, backupMethod);
@@ -60,6 +63,8 @@ void ensureMethodDeclaringClass(art::mirror::ArtMethod *origin, art::mirror::Art
         SandHook::HookTrampoline* trampoline = trampolineManager.getHookTrampoline(origin);
         if (trampoline == nullptr)
             return;
+
+        SandHook::StopTheWorld stopTheWorld;
 
         if (trampoline->inlineJump != nullptr) {
             origin->backup(backup);
@@ -196,6 +201,9 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
     bool isInlineHook = false;
 
     int mode = reinterpret_cast<int>(hookMode);
+
+    //suspend other threads
+    SandHook::StopTheWorld stopTheWorld;
 
     if (mode == INLINE) {
         if (!origin->isCompiled()) {

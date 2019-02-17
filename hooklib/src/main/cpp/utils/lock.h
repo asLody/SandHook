@@ -6,6 +6,7 @@
 #define SANDHOOK_LOCK_H
 
 #include "mutex"
+#include "../includes/hide_api.h"
 
 namespace SandHook {
 
@@ -16,6 +17,12 @@ namespace SandHook {
         inline ~AutoLock() { mLock.unlock(); }
     private:
         std::mutex& mLock;
+    };
+
+    class StopTheWorld {
+    public:
+        inline StopTheWorld()  { suspendVM(); }
+        inline ~StopTheWorld() { resumeVM(); }
     };
 
 }
