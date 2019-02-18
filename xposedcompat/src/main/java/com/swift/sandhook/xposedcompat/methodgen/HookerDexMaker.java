@@ -14,6 +14,7 @@ import com.android.dx.MethodId;
 import com.android.dx.TypeId;
 import com.swift.sandhook.SandHook;
 import com.swift.sandhook.wrapper.HookWrapper;
+import com.swift.sandhook.xposedcompat.XposedCompat;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.io.File;
@@ -204,7 +205,11 @@ public class HookerDexMaker {
         mDexMaker.declare(mHookerTypeId, className + ".generated", Modifier.PUBLIC, TypeId.OBJECT);
         generateFields();
         generateSetupMethod();
-        generateBackupMethod();
+        if (XposedCompat.retryWhenCallOriginError) {
+            generateBackupAndCallOriginCheckMethod();
+        } else {
+            generateBackupMethod();
+        }
         generateHookMethod();
         generateCallBackupMethod();
 
@@ -273,6 +278,35 @@ public class HookerDexMaker {
     }
 
     private void generateBackupMethod() {
+        mBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_BACKUP, mParameterTypeIds);
+        Code code = mDexMaker.declare(mBackupMethodId, Modifier.PUBLIC | Modifier.STATIC);
+
+        Local<Member> method = code.newLocal(memberTypeId);
+
+        Map<TypeId, Local> resultLocals = createResultLocals(code);
+        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", TypeId.get(Member.class));
+
+
+        //very very important!!!!!!!!!!!
+        //add a try cache block avoid inline
+        Label tryCatchBlock = new Label();
+
+        code.addCatchClause(throwableTypeId, tryCatchBlock);
+        code.sget(mMethodFieldId, method);
+        code.invokeStatic(errLogMethod, null, method);
+        // start of try
+        code.mark(tryCatchBlock);
+
+        // do nothing
+        if (mReturnTypeId.equals(TypeId.VOID)) {
+            code.returnVoid();
+        } else {
+            // we have limited the returnType to primitives or Object, so this should be safe
+            code.returnValue(resultLocals.get(mReturnTypeId));
+        }
+    }
+
+    private void generateBackupAndCallOriginCheckMethod() {
         mBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_BACKUP, mParameterTypeIds);
         mSandHookCallOriginMethodId = TypeId.get(ErrorCatch.class).getMethod(TypeId.get(Object.class), "callOriginError", memberTypeId, methodTypeId, TypeId.get(Object.class), TypeId.get(Object[].class));
         MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", TypeId.get(Member.class));
