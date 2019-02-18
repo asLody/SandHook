@@ -138,6 +138,13 @@ public class SandHook {
         return callOriginMethod(originMethod, hookEntity.backup, thiz, args);
     }
 
+    public static Object callOriginByBackup(Method backupMethod, Object thiz, Object... args) throws Throwable {
+        HookWrapper.HookEntity hookEntity = globalBackupMap.get(backupMethod);
+        if (hookEntity == null)
+            return null;
+        return callOriginMethod(hookEntity.target, backupMethod, thiz, args);
+    }
+
     public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
         backupMethod.setAccessible(true);
         if (Modifier.isStatic(originMethod.getModifiers())) {
