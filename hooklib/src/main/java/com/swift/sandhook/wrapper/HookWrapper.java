@@ -17,7 +17,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class HookWrapper {
 
@@ -143,11 +142,7 @@ public class HookWrapper {
             Class[] pars = new Class[methodReflectParams.value().length];
             for (int i = 0;i < methodReflectParams.value().length; i++) {
                 try {
-                    if (classLoader == null) {
-                        pars[i] = Class.forName(methodReflectParams.value()[i]);
-                    } else {
-                        pars[i] = Class.forName(methodReflectParams.value()[i], true, classLoader);
-                    }
+                    pars[i] = classNameToClass(methodReflectParams.value()[i], classLoader);
                 } catch (ClassNotFoundException e) {
                     throw new HookErrorException("hook method pars error: " + method.getName(), e);
                 }
@@ -169,11 +164,7 @@ public class HookWrapper {
             Class[] pars = new Class[methodReflectParams.value().length];
             for (int i = 0;i < methodReflectParams.value().length; i++) {
                 try {
-                    if (classLoader == null) {
-                        pars[i] = Class.forName(methodReflectParams.value()[i]);
-                    } else {
-                        pars[i] = Class.forName(methodReflectParams.value()[i], true, classLoader);
-                    }
+                    pars[i] = classNameToClass(methodReflectParams.value()[i], classLoader);
                 } catch (ClassNotFoundException e) {
                     throw new HookErrorException("hook method pars error: " + field.getName(), e);
                 }
@@ -182,6 +173,43 @@ public class HookWrapper {
         } else {
             return null;
         }
+    }
+
+    private static Class classNameToClass(String name, ClassLoader classLoader) throws ClassNotFoundException {
+        Class clazz;
+        switch (name) {
+            case MethodReflectParams.BOOLEAN:
+                clazz = boolean.class;
+                break;
+            case MethodReflectParams.BYTE:
+                clazz = byte.class;
+                break;
+            case MethodReflectParams.CHAR:
+                clazz = char.class;
+                break;
+            case MethodReflectParams.DOUBLE:
+                clazz = double.class;
+                break;
+            case MethodReflectParams.FLOAT:
+                clazz = float.class;
+                break;
+            case MethodReflectParams.INT:
+                clazz = int.class;
+                break;
+            case MethodReflectParams.LONG:
+                clazz = long.class;
+                break;
+            case MethodReflectParams.SHORT:
+                clazz = short.class;
+                break;
+            default:
+                if (classLoader == null) {
+                    clazz = Class.forName(name);
+                } else {
+                    clazz = Class.forName(name, true, classLoader);
+                }
+        }
+        return clazz;
     }
 
 
