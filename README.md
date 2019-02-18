@@ -1,7 +1,7 @@
 # SandHook
 Android ART Hook
 
-[ ![Download](https://api.bintray.com/packages/ganyao114/maven/hooklib/images/download.svg) ](https://bintray.com/ganyao114/maven/hooklib/_latestVersion)
+[ ![Version](https://api.bintray.com/packages/ganyao114/maven/hooklib/images/download.svg) ](https://bintray.com/ganyao114/maven/hooklib/_latestVersion)
 
 [中文文档以及实现](https://blog.csdn.net/ganyao939543405/article/details/86661040)
 
@@ -30,7 +30,7 @@ cant hook if lined
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:2.0.0'
+implementation 'com.swift.sandhook:hooklib:2.5.2'
 ```
 
 - Annotation API
@@ -95,7 +95,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:2.0.0'
+provided 'com.swift.sandhook:hookannotation:2.5.2'
 ```
   
 in your plugin
@@ -110,7 +110,7 @@ backup method can call itself to avoid be inlining
 Now you can use Xposed api:  
 
 ```groovy
-implementation 'com.swift.sandhook:xposedcompat:2.0.0'
+implementation 'com.swift.sandhook:xposedcompat:2.5.2'
 ```
 
 ```java
