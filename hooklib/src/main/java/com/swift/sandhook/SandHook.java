@@ -131,7 +131,7 @@ public class SandHook {
         Log.d("SandHook", "method <" + entity.target.toString() + "> hook <" + (res == HookMode.INLINE ? "inline" : "replacement") + "> success!");
     }
 
-    public static Object callOriginMethod(Member originMethod, Object thiz, Object[] args) throws Throwable {
+    public static Object callOriginMethod(Member originMethod, Object thiz, Object... args) throws Throwable {
         HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
         if (hookEntity == null || hookEntity.backup == null)
             return null;
@@ -140,21 +140,12 @@ public class SandHook {
 
     public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
         backupMethod.setAccessible(true);
-        if (args == null) {
-            args = new Object[0];
-        }
-        final int argsSize = args.length;
         if (Modifier.isStatic(originMethod.getModifiers())) {
             ensureMethodDeclaringClass(originMethod, backupMethod);
             return backupMethod.invoke(null, args);
         } else {
-            Object[] newArgs = new Object[argsSize + 1];
-            newArgs[0] = thiz;
-            for (int i = 1; i < newArgs.length; i++) {
-                newArgs[i] = args[i - 1];
-            }
             ensureMethodDeclaringClass(originMethod, backupMethod);
-            return backupMethod.invoke(null, newArgs);
+            return backupMethod.invoke(thiz, args);
         }
     }
 
