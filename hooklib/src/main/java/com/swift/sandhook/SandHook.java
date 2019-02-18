@@ -118,15 +118,44 @@ public class SandHook {
             hookResultCallBack.hookResult(res > 0, entity);
         }
 
-        if (res <= 0)
+        if (res < 0) {
             throw new HookErrorException("hook method <" + entity.target.toString() + "> error in native!");
+        }
 
         globalHookEntityMap.put(entity.target, entity);
+
         if (entity.backup != null) {
             globalBackupMap.put(entity.backup, entity);
         }
 
         Log.d("SandHook", "method <" + entity.target.toString() + "> hook <" + (res == HookMode.INLINE ? "inline" : "replacement") + "> success!");
+    }
+
+    public static Object callOriginMethod(Member originMethod, Object thiz, Object[] args) throws Throwable {
+        HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
+        if (hookEntity == null || hookEntity.backup == null)
+            return null;
+        return callOriginMethod(originMethod, hookEntity.backup, thiz, args);
+    }
+
+    public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
+        backupMethod.setAccessible(true);
+        if (args == null) {
+            args = new Object[0];
+        }
+        final int argsSize = args.length;
+        if (Modifier.isStatic(originMethod.getModifiers())) {
+            ensureMethodDeclaringClass(originMethod, backupMethod);
+            return backupMethod.invoke(null, args);
+        } else {
+            Object[] newArgs = new Object[argsSize + 1];
+            newArgs[0] = thiz;
+            for (int i = 1; i < newArgs.length; i++) {
+                newArgs[i] = args[i - 1];
+            }
+            ensureMethodDeclaringClass(originMethod, backupMethod);
+            return backupMethod.invoke(null, newArgs);
+        }
     }
 
     public static void ensureBackupDeclaringClass(Method backupMethod) {
@@ -138,13 +167,13 @@ public class SandHook {
         ensureMethodDeclaringClass(hookEntity.target, backupMethod);
     }
 
-    public static void ensureBackupDelaringClassByOrigin(Member originMethod) {
+    public static boolean ensureBackupDelaringClassByOrigin(Member originMethod) {
         if (originMethod == null)
-            return;
+            return false;
         HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
         if (hookEntity == null || hookEntity.backup == null)
-            return;
-        ensureMethodDeclaringClass(originMethod, hookEntity.backup);
+            return false;
+        return ensureMethodDeclaringClass(originMethod, hookEntity.backup);
     }
 
     private static void resolveStaticMethod(Member method) {
@@ -248,7 +277,7 @@ public class SandHook {
 
     public static native void ensureMethodCached(Method hook, Method backup);
 
-    public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
+    public static native boolean ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
 
     @FunctionalInterface
     public interface HookModeCallBack {

@@ -1,6 +1,7 @@
 package com.swift.sandhook.xposedcompat.methodgen;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.dx.BinaryOp;
 import com.android.dx.Code;
@@ -43,6 +44,7 @@ public class HookerDexMaker {
     private static final String CLASS_NAME_PREFIX = "SandHooker";
     private static final String FIELD_NAME_HOOK_INFO = "additionalHookInfo";
     private static final String FIELD_NAME_METHOD = "method";
+    private static final String FIELD_NAME_BACKUP_METHOD = "backupMethod";
     private static final String PARAMS_FIELD_NAME_METHOD = "method";
     private static final String PARAMS_FIELD_NAME_THIS_OBJECT = "thisObject";
     private static final String PARAMS_FIELD_NAME_ARGS = "args";
@@ -50,6 +52,7 @@ public class HookerDexMaker {
     private static final String CALLBACK_METHOD_NAME_AFTER = "callAfterHookedMethod";
     private static final TypeId<Throwable> throwableTypeId = TypeId.get(Throwable.class);
     private static final TypeId<Member> memberTypeId = TypeId.get(Member.class);
+    private static final TypeId<Method> methodTypeId = TypeId.get(Method.class);
     private static final TypeId<XC_MethodHook> callbackTypeId = TypeId.get(XC_MethodHook.class);
     private static final TypeId<XposedBridge.AdditionalHookInfo> hookInfoTypeId
             = TypeId.get(XposedBridge.AdditionalHookInfo.class);
@@ -79,10 +82,12 @@ public class HookerDexMaker {
 
     private FieldId<?, XposedBridge.AdditionalHookInfo> mHookInfoFieldId;
     private FieldId<?, Member> mMethodFieldId;
+    private FieldId<?, Method> mBackupMethodFieldId;
     private MethodId<?, ?> mBackupMethodId;
     private MethodId<?, ?> mCallBackupMethodId;
     private MethodId<?, ?> mHookMethodId;
     private MethodId<?, ?> mPrintLogMethodId;
+    private MethodId<?, ?> mSandHookCallOriginMethodId;
 
     private TypeId<?> mHookerTypeId;
     private TypeId<?>[] mParameterTypeIds;
@@ -215,11 +220,10 @@ public class HookerDexMaker {
     private HookWrapper.HookEntity loadHookerClass(ClassLoader loader, String className) throws Exception {
         mHookClass = loader.loadClass(className);
         // Execute our newly-generated code in-process.
-        mHookClass.getMethod(METHOD_NAME_SETUP, Member.class, XposedBridge.AdditionalHookInfo.class)
-                .invoke(null, mMember, mHookInfo);
         mHookMethod = mHookClass.getMethod(METHOD_NAME_HOOK, mActualParameterTypes);
         mBackupMethod = mHookClass.getMethod(METHOD_NAME_BACKUP, mActualParameterTypes);
         mCallBackupMethod = mHookClass.getMethod(METHOD_NAME_CALL_BACKUP, mActualParameterTypes);
+        mHookClass.getMethod(METHOD_NAME_SETUP, Member.class, Method.class, XposedBridge.AdditionalHookInfo.class).invoke(null, mMember, mBackupMethod, mHookInfo);
         return new HookWrapper.HookEntity(mMember, mHookMethod, mBackupMethod);
     }
 
@@ -246,42 +250,107 @@ public class HookerDexMaker {
     private void generateFields() {
         mHookInfoFieldId = mHookerTypeId.getField(hookInfoTypeId, FIELD_NAME_HOOK_INFO);
         mMethodFieldId = mHookerTypeId.getField(memberTypeId, FIELD_NAME_METHOD);
+        mBackupMethodFieldId = mHookerTypeId.getField(methodTypeId, FIELD_NAME_BACKUP_METHOD);
         mDexMaker.declare(mHookInfoFieldId, Modifier.STATIC, null);
         mDexMaker.declare(mMethodFieldId, Modifier.STATIC, null);
+        mDexMaker.declare(mBackupMethodFieldId, Modifier.STATIC, null);
     }
 
     private void generateSetupMethod() {
         MethodId<?, Void> setupMethodId = mHookerTypeId.getMethod(
-                TypeId.VOID, METHOD_NAME_SETUP, memberTypeId, hookInfoTypeId);
+                TypeId.VOID, METHOD_NAME_SETUP, memberTypeId, methodTypeId, hookInfoTypeId);
         Code code = mDexMaker.declare(setupMethodId, Modifier.PUBLIC | Modifier.STATIC);
         // init logic
         // get parameters
         Local<Member> method = code.getParameter(0, memberTypeId);
-        Local<XposedBridge.AdditionalHookInfo> hookInfo = code.getParameter(1, hookInfoTypeId);
+        Local<Method> backupMethod = code.getParameter(1, methodTypeId);
+        Local<XposedBridge.AdditionalHookInfo> hookInfo = code.getParameter(2, hookInfoTypeId);
         // save params to static
         code.sput(mMethodFieldId, method);
+        code.sput(mBackupMethodFieldId, backupMethod);
         code.sput(mHookInfoFieldId, hookInfo);
         code.returnVoid();
     }
 
     private void generateBackupMethod() {
         mBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_BACKUP, mParameterTypeIds);
+        mSandHookCallOriginMethodId = TypeId.get(ErrorCatch.class).getMethod(TypeId.get(Object.class), "callOriginError", memberTypeId, methodTypeId, TypeId.get(Object.class), TypeId.get(Object[].class));
+        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", TypeId.get(Member.class));
+
         Code code = mDexMaker.declare(mBackupMethodId, Modifier.PUBLIC | Modifier.STATIC);
 
         Local<Member> method = code.newLocal(memberTypeId);
+        Local<Method> backupMethod = code.newLocal(methodTypeId);
+        Local<Object> thisObject = code.newLocal(TypeId.OBJECT);
+        Local<Object[]> args = code.newLocal(objArrayTypeId);
+        Local<Integer> actualParamSize = code.newLocal(TypeId.INT);
+        Local<Integer> argIndex = code.newLocal(TypeId.INT);
+        Local<Object> resultObj = code.newLocal(TypeId.OBJECT);
+        Label tryCatchBlock = new Label();
 
+        Local[] allArgsLocals = createParameterLocals(code);
         Map<TypeId, Local> resultLocals = createResultLocals(code);
-        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", TypeId.get(Member.class));
+
 
 
         //very very important!!!!!!!!!!!
         //add a try cache block avoid inline
-        Label tryCatchBlock = new Label();
-        code.sget(mMethodFieldId, method);
-        code.invokeStatic(errLogMethod, null, method);
+
+
         // start of try
         code.addCatchClause(throwableTypeId, tryCatchBlock);
+        code.sget(mMethodFieldId, method);
+        code.invokeStatic(errLogMethod, null, method);
+        //call origin by invoke
+        code.loadConstant(args, null);
+        code.loadConstant(argIndex, 0);
+        code.sget(mBackupMethodFieldId, backupMethod);
+        int paramsSize = mParameterTypeIds.length;
+        int offset = 0;
+        // thisObject
+        if (mIsStatic) {
+            // thisObject = null
+            code.loadConstant(thisObject, null);
+        } else {
+            // thisObject = args[0]
+            offset = 1;
+            code.move(thisObject, allArgsLocals[0]);
+        }
 
+//        offset = mIsStatic ? 0 : 1;
+//        for (int i = offset; i < allArgsLocals.length; i++) {
+//            code.loadConstant(argIndex, i - offset);
+//            code.aget(resultObj, args, argIndex);
+//            autoUnboxIfNecessary(code, allArgsLocals[i], resultObj, resultLocals, true);
+//        }
+
+        // actual args (exclude thisObject if this is not a static method)
+        code.loadConstant(actualParamSize, paramsSize - offset);
+        code.newArray(args, actualParamSize);
+        for (int i = offset; i < paramsSize; i++) {
+            Local parameter = allArgsLocals[i];
+            // save parameter to resultObj as Object
+            autoBoxIfNecessary(code, resultObj, parameter);
+            code.loadConstant(argIndex, i - offset);
+            // save Object to args
+            code.aput(args, argIndex, resultObj);
+        }
+
+        if (mReturnTypeId.equals(TypeId.VOID)) {
+            code.invokeStatic(mSandHookCallOriginMethodId, null, method, backupMethod, thisObject, args);
+            code.returnVoid();
+        } else {
+            code.invokeStatic(mSandHookCallOriginMethodId, resultObj, method, backupMethod, thisObject, args);
+            TypeId objTypeId = getObjTypeIdIfPrimitive(mReturnTypeId);
+            Local matchObjLocal = resultLocals.get(objTypeId);
+            code.cast(matchObjLocal, resultObj);
+            // have to use matching typed Object(Integer, Double ...) to do unboxing
+            Local toReturn = resultLocals.get(mReturnTypeId);
+            autoUnboxIfNecessary(code, toReturn, matchObjLocal, resultLocals, true);
+            code.returnValue(toReturn);
+        }
+
+        code.mark(tryCatchBlock);
         // do nothing
         if (mReturnTypeId.equals(TypeId.VOID)) {
             code.returnVoid();

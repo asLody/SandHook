@@ -20,10 +20,12 @@ public class XposedCompat {
 
     public static File cacheDir;
     public static Context context;
-    public static ClassLoader classLoader;
+    public static volatile ClassLoader classLoader;
     public static String packageName;
     public static String processName;
     public static boolean isFirstApplication;
+
+    public static volatile boolean retryWhenCallOriginError = false;
 
     private static ClassLoader sandHookXposedClassLoader;
 
