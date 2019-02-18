@@ -167,14 +167,25 @@ public class SandHook {
         return ensureMethodDeclaringClass(originMethod, hookEntity.backup);
     }
 
+
+
     private static void resolveStaticMethod(Member method) {
         //ignore result, just call to trigger resolve
         try {
             if (method instanceof Method && Modifier.isStatic(method.getModifiers())) {
                 ((Method) method).setAccessible(true);
-                ((Method) method).invoke(new Object());
+                ((Method) method).invoke(new Object(), getFakeArgs((Method) method));
             }
-        } catch (Exception e) {
+        } catch (Throwable throwable) {
+        }
+    }
+
+    private static Object[] getFakeArgs(Method method) {
+        Class[] pars = method.getParameterTypes();
+        if (pars == null || pars.length == 0) {
+            return new Object[]{new Object()};
+        } else {
+            return null;
         }
     }
 
