@@ -84,6 +84,25 @@ public class ActivityHooker {
 
 }
 
+
+//or like this:
+
+@HookClass(TestClass.class)
+public class NewAnnotationApiHooker {
+
+    @HookMethod("testNewHookApi")
+    public static void onTestNewHookApi(@ThisObject TestClass thiz, @Param("com.swift.sandhook.MainActivity") Activity activity, int a) {
+        Log.e("TestClassHook", "testNewHookApi been hooked");
+        onTestNewHookApiBackup(thiz, activity, a);
+    }
+
+    @HookMethodBackup("testNewHookApi")
+    public static void onTestNewHookApiBackup(@ThisObject TestClass thiz, @Param("com.swift.sandhook.MainActivity") Activity activity, int a) {
+        onTestNewHookApiBackup(thiz, activity, a);
+    }
+
+}
+
 and
 SandHook.addHookClass(CtrHook.class, LogHooker.class, CustmizeHooker.class, ActivityHooker.class, ObjectHooker.class);
 
