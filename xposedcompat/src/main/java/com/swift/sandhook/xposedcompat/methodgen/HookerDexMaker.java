@@ -228,6 +228,8 @@ public class HookerDexMaker {
         mHookMethod = mHookClass.getMethod(METHOD_NAME_HOOK, mActualParameterTypes);
         mBackupMethod = mHookClass.getMethod(METHOD_NAME_BACKUP, mActualParameterTypes);
         mCallBackupMethod = mHookClass.getMethod(METHOD_NAME_CALL_BACKUP, mActualParameterTypes);
+        SandHook.resolveStaticMethod(mCallBackupMethod);
+        SandHook.compileMethod(mCallBackupMethod);
         mHookClass.getMethod(METHOD_NAME_SETUP, Member.class, Method.class, XposedBridge.AdditionalHookInfo.class).invoke(null, mMember, mBackupMethod, mHookInfo);
         return new HookWrapper.HookEntity(mMember, mHookMethod, mBackupMethod);
     }
