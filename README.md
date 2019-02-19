@@ -156,11 +156,13 @@ XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() 
 ```
 
 # Notice
-!!!!!!!!
+
+!!!!!!!!  
+
 when OS >= 8.0
 you must call backup method in hook method, if you want call it in other method, please call  SandHook.compileMethod(otherMethod) before call backup method.
     
-because when ART trigger JIT form profiling, JIT will invoke -> ResolveCompilingMethodsClass -> ClassLinker::ResolveMethod -> CheckIncompatibleClassChange -> ThrowIncompatibleClassChangeError fianlly!!!
+because when ART trigger JIT from profiling, JIT will invoke -> ResolveCompilingMethodsClass -> ClassLinker::ResolveMethod -> CheckIncompatibleClassChange -> ThrowIncompatibleClassChangeError finally!!!
 
 
 
