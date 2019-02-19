@@ -271,6 +271,21 @@ Java_com_swift_sandhook_SandHook_ensureMethodDeclaringClass(JNIEnv *env, jclass 
 
 extern "C"
 JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_compileMethod(JNIEnv *env, jclass type, jobject member) {
+
+    if (member == NULL)
+        return;
+    art::mirror::ArtMethod* method = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(member));
+
+    if (method != nullptr && !method->isCompiled()) {
+        SandHook::StopTheWorld stopTheWorld;
+        method->compile(env);
+    }
+
+}
+
+extern "C"
+JNIEXPORT void JNICALL
 Java_com_swift_sandhook_SandHook_setHookMode(JNIEnv *env, jclass type, jint mode) {
     gHookMode = static_cast<HookMode>(mode);
 }

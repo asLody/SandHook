@@ -176,7 +176,7 @@ public class SandHook {
 
 
 
-    private static void resolveStaticMethod(Member method) {
+    public static void resolveStaticMethod(Member method) {
         //ignore result, just call to trigger resolve
         try {
             if (method instanceof Method && Modifier.isStatic(method.getModifiers())) {
@@ -287,6 +287,8 @@ public class SandHook {
     public static native void ensureMethodCached(Method hook, Method backup);
 
     public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
+
+    public static native void compileMethod(Member member);
 
     @FunctionalInterface
     public interface HookModeCallBack {
