@@ -165,13 +165,13 @@ public class SandHook {
         ensureMethodDeclaringClass(hookEntity.target, backupMethod);
     }
 
-    public static boolean ensureBackupDelaringClassByOrigin(Member originMethod) {
+    public static void ensureBackupDelaringClassByOrigin(Member originMethod) {
         if (originMethod == null)
-            return false;
+            return;
         HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
         if (hookEntity == null || hookEntity.backup == null)
-            return false;
-        return ensureMethodDeclaringClass(originMethod, hookEntity.backup);
+            return;
+        ensureMethodDeclaringClass(originMethod, hookEntity.backup);
     }
 
 
@@ -286,7 +286,7 @@ public class SandHook {
 
     public static native void ensureMethodCached(Method hook, Method backup);
 
-    public static native boolean ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
+    public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
 
     @FunctionalInterface
     public interface HookModeCallBack {

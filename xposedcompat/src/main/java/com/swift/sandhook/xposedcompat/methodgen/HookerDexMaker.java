@@ -210,8 +210,8 @@ public class HookerDexMaker {
         } else {
             generateBackupMethod();
         }
-        generateHookMethod();
         generateCallBackupMethod();
+        generateHookMethod();
 
         ClassLoader loader;
         if (TextUtils.isEmpty(mDexDirPath)) {
@@ -284,7 +284,7 @@ public class HookerDexMaker {
         Local<Member> method = code.newLocal(memberTypeId);
 
         Map<TypeId, Local> resultLocals = createResultLocals(code);
-        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", TypeId.get(Member.class));
+        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", memberTypeId);
 
 
         //very very important!!!!!!!!!!!
@@ -309,7 +309,7 @@ public class HookerDexMaker {
     private void generateBackupAndCallOriginCheckMethod() {
         mBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_BACKUP, mParameterTypeIds);
         mSandHookCallOriginMethodId = TypeId.get(ErrorCatch.class).getMethod(TypeId.get(Object.class), "callOriginError", memberTypeId, methodTypeId, TypeId.get(Object.class), TypeId.get(Object[].class));
-        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", TypeId.get(Member.class));
+        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", methodTypeId);
 
         Code code = mDexMaker.declare(mBackupMethodId, Modifier.PUBLIC | Modifier.STATIC);
 
@@ -398,8 +398,19 @@ public class HookerDexMaker {
         mCallBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_CALL_BACKUP, mParameterTypeIds);
         Code code = mDexMaker.declare(mCallBackupMethodId, Modifier.PUBLIC | Modifier.STATIC);
         // just call backup and return its result
+
+        Local localOrigin = code.newLocal(memberTypeId);
+        Local localBackup = code.newLocal(methodTypeId);
         Local[] allArgsLocals = createParameterLocals(code);
         Map<TypeId, Local> resultLocals = createResultLocals(code);
+
+
+        code.sget(mMethodFieldId, localOrigin);
+        code.sget(mBackupMethodFieldId, localBackup);
+
+        MethodId methodId = TypeId.get(SandHook.class).getMethod(TypeId.get(Void.TYPE), "ensureMethodDeclaringClass", memberTypeId, methodTypeId);
+        code.invokeStatic(methodId, null, localOrigin, localBackup);
+
 
         if (mReturnTypeId.equals(TypeId.VOID)) {
             code.invokeStatic(mBackupMethodId, null, allArgsLocals);
@@ -579,12 +590,12 @@ public class HookerDexMaker {
         }
         // get pre-created Local with a matching typeId
         if (mReturnTypeId.equals(TypeId.VOID)) {
-            code.invokeStatic(mBackupMethodId, null, allArgsLocals);
+            code.invokeStatic(mCallBackupMethodId, null, allArgsLocals);
             // TODO maybe keep preset result to do some magic?
             code.invokeVirtual(setResultMethodId, null, param, nullObj);
         } else {
             Local returnedResult = resultLocals.get(mReturnTypeId);
-            code.invokeStatic(mBackupMethodId, returnedResult, allArgsLocals);
+            code.invokeStatic(mCallBackupMethodId, returnedResult, allArgsLocals);
             // save returnedResult to resultObj as a Object
             autoBoxIfNecessary(code, resultObj, returnedResult);
             // save resultObj to param
@@ -665,11 +676,11 @@ public class HookerDexMaker {
         // call backup and return
         code.mark(noHookReturn);
         if (mReturnTypeId.equals(TypeId.VOID)) {
-            code.invokeStatic(mBackupMethodId, null, allArgsLocals);
+            code.invokeStatic(mCallBackupMethodId, null, allArgsLocals);
             code.returnVoid();
         } else {
             Local result = resultLocals.get(mReturnTypeId);
-            code.invokeStatic(mBackupMethodId, result, allArgsLocals);
+            code.invokeStatic(mCallBackupMethodId, result, allArgsLocals);
             code.returnValue(result);
         }
     }
