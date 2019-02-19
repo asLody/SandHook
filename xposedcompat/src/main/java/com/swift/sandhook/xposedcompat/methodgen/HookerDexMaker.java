@@ -590,12 +590,12 @@ public class HookerDexMaker {
         }
         // get pre-created Local with a matching typeId
         if (mReturnTypeId.equals(TypeId.VOID)) {
-            code.invokeStatic(mCallBackupMethodId, null, allArgsLocals);
+            code.invokeStatic(mBackupMethodId, null, allArgsLocals);
             // TODO maybe keep preset result to do some magic?
             code.invokeVirtual(setResultMethodId, null, param, nullObj);
         } else {
             Local returnedResult = resultLocals.get(mReturnTypeId);
-            code.invokeStatic(mCallBackupMethodId, returnedResult, allArgsLocals);
+            code.invokeStatic(mBackupMethodId, returnedResult, allArgsLocals);
             // save returnedResult to resultObj as a Object
             autoBoxIfNecessary(code, resultObj, returnedResult);
             // save resultObj to param
@@ -676,11 +676,11 @@ public class HookerDexMaker {
         // call backup and return
         code.mark(noHookReturn);
         if (mReturnTypeId.equals(TypeId.VOID)) {
-            code.invokeStatic(mCallBackupMethodId, null, allArgsLocals);
+            code.invokeStatic(mBackupMethodId, null, allArgsLocals);
             code.returnVoid();
         } else {
             Local result = resultLocals.get(mReturnTypeId);
-            code.invokeStatic(mCallBackupMethodId, result, allArgsLocals);
+            code.invokeStatic(mBackupMethodId, result, allArgsLocals);
             code.returnValue(result);
         }
     }
