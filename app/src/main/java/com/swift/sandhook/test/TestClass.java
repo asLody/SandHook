@@ -1,5 +1,7 @@
 package com.swift.sandhook.test;
 
+import com.swift.sandhook.MainActivity;
+
 public class TestClass {
 
     public int a = 1;
@@ -16,6 +18,12 @@ public class TestClass {
     }
 
     public void add2 () {
+        a++;
+        b++;
+    }
+
+    public void testNewHookApi (MainActivity activity, int x) {
+        x++;
         a++;
         b++;
     }

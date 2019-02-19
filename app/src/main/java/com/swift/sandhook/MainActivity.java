@@ -1,30 +1,24 @@
 package com.swift.sandhook;
 
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.TextView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.TextView;
 
 import com.swift.sandhook.test.Inter;
 import com.swift.sandhook.test.InterImpl;
 import com.swift.sandhook.test.TestClass;
-import com.swift.sandhook.wrapper.HookErrorException;
-import com.swift.sandhook.wrapper.HookWrapper;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class MainActivity extends AppCompatActivity {
 
-    // Used to load the 'native-lib' library on application startup.
     Inter inter;
 
     @Override
@@ -61,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
         str.add1();
         str.add2();
+        str.testNewHookApi(this, 1);
 
         str.jni_test();
 

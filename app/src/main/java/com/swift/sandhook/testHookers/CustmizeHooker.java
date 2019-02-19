@@ -6,7 +6,6 @@ import com.swift.sandhook.MainActivity;
 import com.swift.sandhook.annotation.HookClass;
 import com.swift.sandhook.annotation.HookMethod;
 import com.swift.sandhook.annotation.HookMethodBackup;
-import com.swift.sandhook.annotation.HookMode;
 import com.swift.sandhook.annotation.MethodParams;
 
 import java.lang.reflect.Method;
@@ -20,7 +19,6 @@ public class CustmizeHooker {
 
     @HookMethod("methodBeHooked")
     @MethodParams({int.class, int.class})
-    @HookMode(HookMode.REPLACE)
     public static int staticMethodHooked(int a, int b) {
         Log.e("CustmizeHooker", "methodBeHooked be hooked");
         try {

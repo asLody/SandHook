@@ -9,7 +9,10 @@ import com.swift.sandhook.annotation.HookMethodBackup;
 import com.swift.sandhook.annotation.HookReflectClass;
 import com.swift.sandhook.annotation.MethodParams;
 import com.swift.sandhook.annotation.MethodReflectParams;
+import com.swift.sandhook.annotation.Param;
+import com.swift.sandhook.annotation.ThisObject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
@@ -148,6 +151,16 @@ public class HookWrapper {
                 }
             }
             return pars;
+        } else if (getParsCount(method) > 0) {
+            if (getParsCount(method) == 1) {
+                if (hasThisObject(method)) {
+                    return parseMethodParsNew(classLoader, method);
+                } else {
+                    return null;
+                }
+            } else {
+                return parseMethodParsNew(classLoader, method);
+            }
         } else {
             return null;
         }
@@ -173,6 +186,78 @@ public class HookWrapper {
         } else {
             return null;
         }
+    }
+
+    private static Class[] parseMethodParsNew(ClassLoader classLoader, Method method) throws HookErrorException {
+        Class[] hookMethodPars = method.getParameterTypes();
+        if (hookMethodPars == null || hookMethodPars.length == 0)
+            return null;
+        Annotation[][] annotations = method.getParameterAnnotations();
+        Class[] realPars = null;
+        int parIndex = 0;
+        for (int i = 0;i < annotations.length;i ++) {
+            Class hookPar = hookMethodPars[i];
+            Annotation[] methodAnnos = annotations[i];
+            if (i == 0) {
+                //check thisObject
+                if (isThisObject(methodAnnos)) {
+                    realPars = new Class[annotations.length - 1];
+                    continue;
+                } else {
+                    //static method
+                    realPars = new Class[annotations.length];
+                }
+            }
+            try {
+                realPars[parIndex] = getRealParType(classLoader, hookPar, methodAnnos);
+            } catch (Exception e) {
+                throw new HookErrorException("hook method <" + method.getName() + "> parser pars error", e);
+            }
+            parIndex++;
+        }
+        return realPars;
+    }
+
+    private static Class getRealParType(ClassLoader classLoader, Class hookPar, Annotation[] annotations) throws Exception {
+        if (annotations == null || annotations.length == 0)
+            return hookPar;
+        for (Annotation annotation:annotations) {
+            if (annotation instanceof Param) {
+                Param param = (Param) annotation;
+                if (TextUtils.isEmpty(param.value()))
+                    return hookPar;
+                Class realPar = classNameToClass(param.value(), classLoader);
+                if (realPar.equals(hookPar) || hookPar.isAssignableFrom(realPar)) {
+                    return realPar;
+                } else {
+                    throw new ClassCastException("hook method par cast error!");
+                }
+            }
+        }
+        return hookPar;
+    }
+
+    private static boolean hasThisObject(Method method) {
+        Annotation[][] annotations = method.getParameterAnnotations();
+        if (annotations == null || annotations.length == 0)
+            return false;
+        Annotation[] thisParAnno = annotations[0];
+        return isThisObject(thisParAnno);
+    }
+
+    private static boolean isThisObject(Annotation[] annotations) {
+        if (annotations == null || annotations.length == 0)
+            return false;
+        for (Annotation annotation:annotations) {
+            if (annotation instanceof ThisObject)
+                return true;
+        }
+        return false;
+    }
+
+    private static int getParsCount(Method method) {
+        Class[] hookMethodPars = method.getParameterTypes();
+        return hookMethodPars == null ? 0 : hookMethodPars.length;
     }
 
     private static Class classNameToClass(String name, ClassLoader classLoader) throws ClassNotFoundException {

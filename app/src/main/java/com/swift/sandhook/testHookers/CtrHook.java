@@ -2,26 +2,24 @@ package com.swift.sandhook.testHookers;
 
 import android.util.Log;
 
-import com.swift.sandhook.annotation.HookMode;
-import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.annotation.HookClass;
 import com.swift.sandhook.annotation.HookMethod;
 import com.swift.sandhook.annotation.HookMethodBackup;
-import com.swift.sandhook.annotation.MethodParams;
+import com.swift.sandhook.annotation.HookMode;
+import com.swift.sandhook.annotation.ThisObject;
+import com.swift.sandhook.test.TestClass;
 
 @HookClass(TestClass.class)
 public class CtrHook {
 
     @HookMethod
-    @MethodParams(int.class)
-    public static void onCtr(TestClass thiz, int a) {
+    public static void onCtr(@ThisObject TestClass thiz, int a) {
         Log.e("TestClassHook", "TestClass(int) been hooked");
         onCtrBackup(thiz, a);
     }
 
     @HookMethodBackup
-    @MethodParams(int.class)
-    public static void onCtrBackup(TestClass thiz, int a) {
+    public static void onCtrBackup(@ThisObject TestClass thiz, int a) {
         onCtrBackup(thiz, a);
     }
 
@@ -52,5 +50,6 @@ public class CtrHook {
     public static void onAdd2Backup(TestClass thiz) {
         onAdd2Backup(thiz);
     }
+
 
 }

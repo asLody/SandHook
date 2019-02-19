@@ -9,6 +9,7 @@ import com.swift.sandhook.testHookers.CtrHook;
 import com.swift.sandhook.testHookers.CustmizeHooker;
 import com.swift.sandhook.testHookers.JniHooker;
 import com.swift.sandhook.testHookers.LogHooker;
+import com.swift.sandhook.testHookers.NewAnnotationApiHooker;
 import com.swift.sandhook.testHookers.ObjectHooker;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.xposedcompat.XposedCompat;
@@ -28,7 +29,8 @@ public class MyApp extends Application {
                     LogHooker.class,
                     CustmizeHooker.class,
                     ActivityHooker.class,
-                    ObjectHooker.class);
+                    ObjectHooker.class,
+                    NewAnnotationApiHooker.class);
         } catch (HookErrorException e) {
             e.printStackTrace();
         }

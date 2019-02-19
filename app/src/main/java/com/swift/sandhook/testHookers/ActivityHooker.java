@@ -8,6 +8,7 @@ import com.swift.sandhook.annotation.HookClass;
 import com.swift.sandhook.annotation.HookMethod;
 import com.swift.sandhook.annotation.HookMethodBackup;
 import com.swift.sandhook.annotation.MethodParams;
+import com.swift.sandhook.annotation.ThisObject;
 
 import java.lang.reflect.Method;
 
@@ -36,13 +37,13 @@ public class ActivityHooker {
     }
 
     @HookMethod("onPause")
-    public static void onPause(Activity thiz) {
+    public static void onPause(@ThisObject Activity thiz) {
         Log.e("ActivityHooker", "hooked onPause success " + thiz);
         onPauseBackup(thiz);
     }
 
     @HookMethodBackup("onPause")
-    public static void onPauseBackup(Activity thiz) {
+    public static void onPauseBackup(@ThisObject Activity thiz) {
         //invoke self to kill inline
         onPauseBackup(thiz);
     }
