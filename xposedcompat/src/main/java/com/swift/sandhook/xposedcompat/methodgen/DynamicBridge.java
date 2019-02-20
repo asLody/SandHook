@@ -2,7 +2,11 @@ package com.swift.sandhook.xposedcompat.methodgen;
 
 import android.os.Trace;
 
+import com.swift.sandhook.SandHook;
+import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.xposedcompat.XposedCompat;
+import com.swift.sandhook.xposedcompat.hookstub.HookMethodEntity;
+import com.swift.sandhook.xposedcompat.hookstub.HookStubManager;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
 import com.swift.sandhook.xposedcompat.utils.FileUtils;
 
@@ -56,11 +60,16 @@ public final class DynamicBridge {
             }
             Trace.beginSection("SandHook-Xposed");
             long timeStart = System.currentTimeMillis();
-            dexMaker.start(hookMethod, additionalHookInfo,
-                    XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
+            HookMethodEntity stub = HookStubManager.getHookMethodEntity(hookMethod);
+            if (stub != null) {
+                SandHook.hook(new HookWrapper.HookEntity(hookMethod, stub.hook, stub.backup));
+            } else {
+                dexMaker.start(hookMethod, additionalHookInfo,
+                        XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
+                hookedInfo.put(hookMethod, dexMaker.getCallBackupMethod());
+            }
             DexLog.d("hook method <" + hookMethod.toString() + "> use " + (System.currentTimeMillis() - timeStart) + " ms.");
             Trace.endSection();
-            hookedInfo.put(hookMethod, dexMaker.getCallBackupMethod());
         } catch (Exception e) {
             DexLog.e("error occur when generating dex. dexDir=" + dexDir, e);
         }

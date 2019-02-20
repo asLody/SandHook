@@ -66,9 +66,55 @@ public class ParamWrapper {
         }
     }
 
-    public static long objectToAddress(Object object) {
-        if (object == null) {
+    public static long objectToAddress(Class objectType, Object object) {
+        if (SandHook.is64Bit()) {
+            return objectToAddress64(objectType, object);
+        } else {
+            return objectToAddress32(objectType, object);
+        }
+    }
+
+    public static int objectToAddress32(Class objectType, Object object) {
+        if (object == null)
             return 0;
+        if (objectType.isPrimitive()) {
+            if (objectType == int.class) {
+                return (int) object;
+            } else if (objectType == short.class) {
+                return (short)object;
+            } else if (objectType == byte.class) {
+                return (byte)object;
+            } else if (objectType == char.class) {
+                return (char)object;
+            } else if (objectType == boolean.class) {
+                return object == Boolean.TRUE ? 0 : 1;
+            } else {
+                throw new RuntimeException("unknown type: " + objectType.toString());
+            }
+        } else {
+            return (int) SandHook.getObjectAddress(object);
+        }
+    }
+
+    public static long objectToAddress64(Class objectType, Object object) {
+        if (object == null)
+            return 0;
+        if (objectType.isPrimitive()) {
+            if (objectType == int.class) {
+                return (int)object;
+            } else if (objectType == long.class) {
+                return (long) object;
+            } else if (objectType == short.class) {
+                return (short)object;
+            } else if (objectType == byte.class) {
+                return (byte)object;
+            } else if (objectType == char.class) {
+                return (char)object;
+            } else if (objectType == boolean.class) {
+                return object == Boolean.TRUE ? 0 : 1;
+            } else {
+                throw new RuntimeException("unknown type: " + objectType.toString());
+            }
         } else {
             return SandHook.getObjectAddress(object);
         }

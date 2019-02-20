@@ -1,5 +1,6 @@
 package com.swift.sandhook.xposedcompat.hookstub;
 
+import com.swift.sandhook.SandHook;
 import com.swift.sandhook.utils.ParamWrapper;
 
 import java.lang.reflect.Constructor;
@@ -11,14 +12,14 @@ public class HookMethodEntity {
 
     public Member origin;
     public Method hook;
-    public Member bacup;
+    public Method backup;
     public Class[] parType;
     public Class retType;
 
-    public HookMethodEntity(Member origin, Method hook, Member bacup) {
+    public HookMethodEntity(Member origin, Method hook, Method backup) {
         this.origin = origin;
         this.hook = hook;
-        this.bacup = bacup;
+        this.backup = backup;
     }
 
     public Object[] getArgs(long... addresses) {
@@ -31,7 +32,7 @@ public class HookMethodEntity {
             argStart = 1;
         }
         Object[] args = new Object[parType.length];
-        for (int i = argStart;i < addresses.length;i++) {
+        for (int i = argStart;i < parType.length + argStart;i++) {
             args[i - argStart] = getArg(i - argStart, addresses[i]);
         }
         return args;
@@ -46,8 +47,8 @@ public class HookMethodEntity {
             argStart = 1;
             addresses[0] = oldAddress[0];
         }
-        for (int i = 0;i < args.length;i++) {
-            addresses[i + argStart] = ParamWrapper.objectToAddress(args[i]);
+        for (int i = argStart;i < parType.length + argStart;i++) {
+            addresses[i + argStart] = ParamWrapper.objectToAddress(parType[i], args[i]);
         }
         return addresses;
     }
@@ -55,11 +56,23 @@ public class HookMethodEntity {
     public Object getThis(long address) {
         if (isStatic())
             return null;
-        return getArg(0, address);
+        return SandHook.getObject(address);
     }
 
     public Object getArg(int index, long address) {
         return ParamWrapper.addressToObject(parType[index], address);
+    }
+
+    public Object getResult(long address) {
+        if (isVoid())
+            return null;
+        return ParamWrapper.addressToObject(retType, address);
+    }
+
+    public long getResultAddress(Object result) {
+        if (isVoid())
+            return 0;
+        return ParamWrapper.objectToAddress(retType, result);
     }
 
     public boolean isVoid() {

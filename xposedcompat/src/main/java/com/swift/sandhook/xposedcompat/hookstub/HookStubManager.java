@@ -16,26 +16,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 
+import static de.robv.android.xposed.XposedBridge.sHookedMethodCallbacks;
+
 public class HookStubManager {
 
 
-    public final static int MAX_STUB_ARGS = 4;
-    public final static int MAX_PER_STUB = 5;
+    public final static int MAX_STUB_ARGS = 5;
 
-    public final static int MAX_STUB_COUNT = MAX_PER_STUB * (MAX_STUB_ARGS + 1);
+    public final static int[] stubSizes = new int[] {
+        0,0,0,0,0,10
+    };
 
     public final static AtomicInteger[] curUseStubIndexes = new AtomicInteger[MAX_STUB_ARGS + 1];
 
-    public static Member[] originMethods = new Member[MAX_STUB_COUNT];
-    public static HookMethodEntity[] hookMethodEntities = new HookMethodEntity[MAX_STUB_COUNT];
+    public static int ALL_STUB = 0;
+
+    public static Member[] originMethods;
+    public static HookMethodEntity[] hookMethodEntities;
 
     private static final Map<Member, XposedBridge.CopyOnWriteSortedSet<XC_MethodHook>> hookCallbacks
-            = new HashMap<>();
+            = sHookedMethodCallbacks;
 
     static {
-        for (int i = 0;i < curUseStubIndexes.length;i++) {
+        for (int i = 0;i < MAX_STUB_ARGS + 1;i++) {
             curUseStubIndexes[i] = new AtomicInteger(0);
+            ALL_STUB += stubSizes[i];
         }
+        originMethods = new Member[ALL_STUB];
+        hookMethodEntities = new HookMethodEntity[ALL_STUB];
     }
 
 
@@ -70,21 +78,31 @@ public class HookStubManager {
                 if (!ParamWrapper.support(par))
                     return null;
             }
+        } else {
+            parType = new Class[0];
         }
 
         synchronized (HookStubManager.class) {
-            Pair<Method,Method> methodPair = getStubMethodPair(SandHook.is64Bit(), needStubArgCount);
-            if (methodPair == null)
+            StubMethodsInfo stubMethodInfo = getStubMethodPair(SandHook.is64Bit(), needStubArgCount);
+            if (stubMethodInfo == null)
                 return null;
-            HookMethodEntity entity = new HookMethodEntity(origin, methodPair.first, methodPair.second);
+            HookMethodEntity entity = new HookMethodEntity(origin, stubMethodInfo.hook, stubMethodInfo.backup);
             entity.retType = retType;
             entity.parType = parType;
+            int id = getMethodId(stubMethodInfo.args, stubMethodInfo.index);
+            originMethods[id] = origin;
+            hookMethodEntities[id] = entity;
+            tryCompileCallOriginMethod(stubMethodInfo.args, stubMethodInfo.index);
             return entity;
         }
     }
 
     public static int getMethodId(int args, int index) {
-        return args * MAX_PER_STUB + index;
+        int id = index;
+        for (int i = 0;i < args;i++) {
+            id += stubSizes[i];
+        }
+        return id;
     }
 
     public static String getHookMethodName(int index) {
@@ -95,10 +113,33 @@ public class HookStubManager {
         return "stub_backup_" + index;
     }
 
-    private static synchronized Pair<Method,Method> getStubMethodPair(boolean is64Bit, int stubArgs) {
-        int curUseStubIndex = curUseStubIndexes[stubArgs].getAndIncrement();
-        if (curUseStubIndex >= MAX_PER_STUB)
+    public static String getCallOriginClassName(int args, int index) {
+        return "call_origin_" + args + "_" + index;
+    }
+
+
+    static class StubMethodsInfo {
+        int args = 0;
+        int index = 0;
+        Method hook;
+        Method backup;
+
+        public StubMethodsInfo(int args, int index, Method hook, Method backup) {
+            this.args = args;
+            this.index = index;
+            this.hook = hook;
+            this.backup = backup;
+        }
+    }
+
+    private static synchronized StubMethodsInfo getStubMethodPair(boolean is64Bit, int stubArgs) {
+
+        stubArgs = getMatchStubArgsCount(stubArgs);
+
+        if (stubArgs < 0)
             return null;
+
+        int curUseStubIndex = curUseStubIndexes[stubArgs].getAndIncrement();
         Class[] pars = getFindMethodParTypes(is64Bit, stubArgs);
         try {
             if (is64Bit) {
@@ -106,17 +147,45 @@ public class HookStubManager {
                 Method backup = MethodHookerStubs64.class.getDeclaredMethod(getBackupMethodName(curUseStubIndex), pars);
                 if (hook == null || backup == null)
                     return null;
-                return new Pair<>(hook, backup);
+                return new StubMethodsInfo(stubArgs, curUseStubIndex, hook, backup);
             } else {
                 Method hook = MethodHookerStubs32.class.getDeclaredMethod(getHookMethodName(curUseStubIndex), pars);
                 Method backup = MethodHookerStubs32.class.getDeclaredMethod(getBackupMethodName(curUseStubIndex), pars);
                 if (hook == null || backup == null)
                     return null;
-                return new Pair<>(hook, backup);
+                return new StubMethodsInfo(stubArgs, curUseStubIndex, hook, backup);
             }
         } catch (Exception e) {
             return null;
         }
+    }
+
+    public static Method getCallOriginMethod(int args, int index) {
+        String className = SandHook.is64Bit() ? MethodHookerStubs64.class.getName() : MethodHookerStubs32.class.getName();
+        className += "$";
+        className += getCallOriginClassName(args, index);
+        try {
+            Class callOriginClass = Class.forName(className);
+            return callOriginClass.getDeclaredMethod("call", long[].class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static void tryCompileCallOriginMethod(int args, int index) {
+        Method method = getCallOriginMethod(args, index);
+        if (method != null) {
+            SandHook.compileMethod(method);
+        }
+    }
+
+    public static int getMatchStubArgsCount(int stubArgs) {
+        for (int i = stubArgs;i <= MAX_STUB_ARGS;i++) {
+            if (curUseStubIndexes[i].get() < stubSizes[i])
+                return i;
+        }
+        return -1;
     }
 
     public static Class[] getFindMethodParTypes(boolean is64Bit, int stubArgs) {
@@ -135,7 +204,7 @@ public class HookStubManager {
         return args;
     }
 
-    public static Object hookBridge(int id, CallOriginCallBack callOrigin, long... stubArgs) throws Throwable {
+    public static long hookBridge(int id, CallOriginCallBack callOrigin, long... stubArgs) throws Throwable {
 
         if (XposedBridge.disableHooks)
             return callOrigin.call(stubArgs);
@@ -179,7 +248,7 @@ public class HookStubManager {
             try {
                 //prepare new args
                 long[] newArgs = entity.getArgsAddress(stubArgs, param.args);
-                param.setResult(callOrigin.call(newArgs));
+                param.setResult(entity.getResult(callOrigin.call(newArgs)));
             } catch (Exception e) {
                 XposedBridge.log(e);
                 param.setThrowable(e);
@@ -204,10 +273,10 @@ public class HookStubManager {
         } while (--afterIdx >= 0);
 
         if (param.hasThrowable()) {
-            return param.getResult();
+            return entity.getResultAddress(param.getResult());
         } else {
             final Object result = param.getResult();
-            return result;
+            return entity.getResultAddress(result);
         }
     }
 
