@@ -15,6 +15,9 @@ extern "C" {
     void (*innerSuspendVM)() = nullptr;
     void (*innerResumeVM)() = nullptr;
 
+    jobject (*addWeakGlobalRef)(JavaVM *, void *, void *) = nullptr;
+
+
 
     void initHideApi(JNIEnv* env) {
         //init compile
@@ -47,6 +50,29 @@ extern "C" {
                                                                         "_ZN3art3Dbg8ResumeVMEv"));
             }
         }
+        //init for getObject
+        if (SDK_INT < 23) {
+            void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
+            addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) dlsym(handle,
+                                                                                   "_ZN3art9JavaVMExt22AddWeakGlobalReferenceEPNS_6ThreadEPNS_6mirror6ObjectE");
+        } else if (SDK_INT < 24) {
+            void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
+            addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) dlsym(handle,
+                                                                                   "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE");
+        } else {
+            void *handle;
+            if (sizeof(void *) == 8) {
+                handle = fake_dlopen("/system/lib64/libart.so", RTLD_NOW);
+            } else {
+                handle = fake_dlopen("/system/lib/libart.so", RTLD_NOW);
+            }
+            const char *addWeakGloablReferenceSymbol = SDK_INT <= 25
+                                                       ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
+                                                       : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE";
+            addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) fake_dlsym(handle,
+                                                                                  addWeakGloablReferenceSymbol);
+        }
+
     }
 
     bool compileMethod(void* artMethod, void* thread) {
@@ -66,6 +92,25 @@ extern "C" {
         if (innerSuspendVM == nullptr || innerResumeVM == nullptr)
             return;
         innerResumeVM();
+    }
+
+    jobject getJavaObject(JNIEnv* env, void* thread, void* address) {
+
+        if (addWeakGlobalRef == nullptr)
+            return NULL;
+
+
+        JavaVM *vm;
+        env->GetJavaVM(&vm);
+
+        jobject object = addWeakGlobalRef(vm, thread, address);
+        if (object == NULL)
+            return NULL;
+
+        jobject result = env->NewLocalRef(object);
+        env->DeleteWeakGlobalRef(object);
+
+        return result;
     }
 
 }

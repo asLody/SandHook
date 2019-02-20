@@ -17,6 +17,8 @@ extern "C" {
     void suspendVM();
     void resumeVM();
 
+    jobject getJavaObject(JNIEnv* env, void* thread, void* address);
+
 }
 
 #endif //SANDHOOK_HIDE_API_H
