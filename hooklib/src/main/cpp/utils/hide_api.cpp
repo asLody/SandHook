@@ -2,6 +2,7 @@
 // Created by swift on 2019/1/21.
 //
 #include "../includes/hide_api.h"
+#include "../includes/arch.h"
 
 extern int SDK_INT;
 
@@ -23,7 +24,7 @@ extern "C" {
         //init compile
         if (SDK_INT >= 24) {
             void *jit_lib;
-            if (sizeof(void*) == 8) {
+            if (BYTE_POINT == 8) {
                 jit_lib = fake_dlopen("/system/lib64/libart-compiler.so", RTLD_NOW);
             } else {
                 jit_lib = fake_dlopen("/system/lib/libart-compiler.so", RTLD_NOW);
@@ -36,7 +37,7 @@ extern "C" {
         //init suspend
         void* art_lib;
         const char* art_lib_path;
-        if (sizeof(void*) == 8) {
+        if (BYTE_POINT == 8) {
             art_lib_path = "/system/lib64/libart.so";
         } else {
             art_lib_path = "/system/lib/libart.so";
@@ -61,7 +62,7 @@ extern "C" {
                                                                                    "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE");
         } else {
             void *handle;
-            if (sizeof(void *) == 8) {
+            if (BYTE_POINT == 8) {
                 handle = fake_dlopen("/system/lib64/libart.so", RTLD_NOW);
             } else {
                 handle = fake_dlopen("/system/lib/libart.so", RTLD_NOW);
@@ -92,6 +93,10 @@ extern "C" {
         if (innerSuspendVM == nullptr || innerResumeVM == nullptr)
             return;
         innerResumeVM();
+    }
+
+    bool canGetObject() {
+        return addWeakGlobalRef != nullptr;
     }
 
     jobject getJavaObject(JNIEnv* env, void* thread, void* address) {

@@ -287,6 +287,19 @@ Java_com_swift_sandhook_SandHook_compileMethod(JNIEnv *env, jclass type, jobject
 }
 
 extern "C"
+JNIEXPORT jobject JNICALL
+Java_com_swift_sandhook_SandHook_getObjectNative(JNIEnv *env, jclass type, jlong thread,
+                                                 jlong address) {
+    return getJavaObject(env, reinterpret_cast<void *>(thread), reinterpret_cast<void *>(address));
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_swift_sandhook_SandHook_canGetObject(JNIEnv *env, jclass type) {
+    return static_cast<jboolean>(canGetObject());
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_SandHook_setHookMode(JNIEnv *env, jclass type, jint mode) {
     gHookMode = static_cast<HookMode>(mode);
@@ -303,10 +316,16 @@ JNIEXPORT void JNICALL
 Java_com_swift_sandhook_SandHook_skipAllSafeCheck(JNIEnv *env, jclass type, jboolean skip) {
     trampolineManager.skipAllCheck = skip;
 }
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_swift_sandhook_SandHook_is64Bit(JNIEnv *env, jclass type) {
+    return BYTE_POINT == 8;
+}
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_test_TestClass_jni_1test(JNIEnv *env, jobject instance) {
+
     int a = 1 + 1;
     int b = a + 1;
 }

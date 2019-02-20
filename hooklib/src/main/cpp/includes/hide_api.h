@@ -17,6 +17,7 @@ extern "C" {
     void suspendVM();
     void resumeVM();
 
+    bool canGetObject();
     jobject getJavaObject(JNIEnv* env, void* thread, void* address);
 
 }

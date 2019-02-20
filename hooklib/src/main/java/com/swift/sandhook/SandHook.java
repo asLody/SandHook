@@ -4,6 +4,7 @@ import android.os.Build;
 import android.util.Log;
 
 import com.swift.sandhook.annotation.HookMode;
+import com.swift.sandhook.utils.Unsafe;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
@@ -196,6 +197,17 @@ public class SandHook {
         }
     }
 
+    public static Object getObject(long address) {
+        long threadSelf = getThreadId();
+        if (threadSelf == 0)
+            return null;
+        return getObjectNative(threadSelf, address);
+    }
+
+    public static long getObjectAddress(Object object) {
+        return Unsafe.getObjectAddress(object);
+    }
+
     private static void initTestOffset() {
         // make test methods sure resolved!
         ArtMethodSizeTest.method1();
@@ -289,6 +301,11 @@ public class SandHook {
     public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
 
     public static native void compileMethod(Member member);
+
+    public static native boolean canGetObject();
+    public static native Object getObjectNative(long thread, long address);
+
+    public static native boolean is64Bit();
 
     @FunctionalInterface
     public interface HookModeCallBack {
