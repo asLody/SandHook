@@ -199,7 +199,7 @@ public class SandHook {
 
     public static Object getObject(long address) {
         long threadSelf = getThreadId();
-        if (threadSelf == 0)
+        if (address == 0 || threadSelf == 0)
             return null;
         return getObjectNative(threadSelf, address);
     }

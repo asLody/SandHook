@@ -1,7 +1,5 @@
 package com.swift.sandhook.xposedcompat.hookstub;
 
-public class MethodHookerStubs {
-
-
+public class MethodHookerStubs32 {
 
 }
