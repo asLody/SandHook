@@ -279,7 +279,9 @@ Java_com_swift_sandhook_SandHook_compileMethod(JNIEnv *env, jclass type, jobject
 
     if (method != nullptr && !method->isCompiled()) {
         SandHook::StopTheWorld stopTheWorld;
-        method->compile(env);
+        if (!method->compile(env) && SDK_INT >= ANDROID_N) {
+            method->disableCompilable();
+        }
     }
 
 }
