@@ -281,12 +281,10 @@ public class HookStubManager {
                     param.setThrowable(lastThrowable);
             }
         } while (--afterIdx >= 0);
-
-        if (param.hasThrowable()) {
+        if (!param.hasThrowable()) {
             return entity.getResultAddress(param.getResult());
         } else {
-            final Object result = param.getResult();
-            return entity.getResultAddress(result);
+            throw param.getThrowable();
         }
     }
 
