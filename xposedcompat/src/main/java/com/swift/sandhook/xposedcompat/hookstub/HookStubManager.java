@@ -19,10 +19,10 @@ import static de.robv.android.xposed.XposedBridge.sHookedMethodCallbacks;
 public class HookStubManager {
 
 
-    public final static int MAX_STUB_ARGS = 5;
+    public final static int MAX_STUB_ARGS = 8;
 
     public final static int[] stubSizes = new int[] {
-        0,0,0,0,0,6
+            10,20,30,20,10,20,20,5,5
     };
 
     public final static AtomicInteger[] curUseStubIndexes = new AtomicInteger[MAX_STUB_ARGS + 1];
