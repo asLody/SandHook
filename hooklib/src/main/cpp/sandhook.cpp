@@ -282,18 +282,29 @@ Java_com_swift_sandhook_SandHook_ensureMethodDeclaringClass(JNIEnv *env, jclass 
 }
 
 extern "C"
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_swift_sandhook_SandHook_compileMethod(JNIEnv *env, jclass type, jobject member) {
 
     if (member == NULL)
-        return;
+        return JNI_FALSE;
     art::mirror::ArtMethod* method = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(member));
 
-    if (method != nullptr && !method->isCompiled()) {
+    if (method == nullptr)
+        return JNI_FALSE;
+
+    if (!method->isCompiled()) {
         SandHook::StopTheWorld stopTheWorld;
-        if (!method->compile(env) && SDK_INT >= ANDROID_N) {
-            method->disableCompilable();
+        if (!method->compile(env)) {
+            if (SDK_INT >= ANDROID_N) {
+                method->disableCompilable();
+                method->flushCache();
+            }
+            return JNI_FALSE;
+        } else {
+            return JNI_TRUE;
         }
+    } else {
+        return JNI_TRUE;
     }
 
 }

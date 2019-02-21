@@ -304,7 +304,7 @@ public class SandHook {
 
     public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
 
-    public static native void compileMethod(Member member);
+    public static native boolean compileMethod(Member member);
 
     public static native boolean canGetObject();
     public static native Object getObjectNative(long thread, long address);

@@ -1,6 +1,7 @@
 package com.swift.sandhook.xposedcompat.hookstub;
 
 import com.swift.sandhook.SandHook;
+import com.swift.sandhook.SandHookMethodResolver;
 import com.swift.sandhook.utils.ParamWrapper;
 
 import java.lang.reflect.Constructor;
@@ -93,8 +94,11 @@ public class HookStubManager {
             int id = getMethodId(stubMethodInfo.args, stubMethodInfo.index);
             originMethods[id] = origin;
             hookMethodEntities[id] = entity;
-            tryCompileCallOriginMethod(stubMethodInfo.args, stubMethodInfo.index);
-            return entity;
+            if (tryCompileAndResolveCallOriginMethod(entity.backup, stubMethodInfo.args, stubMethodInfo.index)) {
+                return entity;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -174,10 +178,13 @@ public class HookStubManager {
         }
     }
 
-    public static void tryCompileCallOriginMethod(int args, int index) {
+    public static boolean tryCompileAndResolveCallOriginMethod(Method backupMethod, int args, int index) {
         Method method = getCallOriginMethod(args, index);
         if (method != null) {
-            SandHook.compileMethod(method);
+            SandHookMethodResolver.resolveMethod(method, backupMethod);
+            return SandHook.compileMethod(method);
+        } else {
+            return false;
         }
     }
 
