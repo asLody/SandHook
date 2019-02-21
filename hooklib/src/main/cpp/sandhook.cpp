@@ -75,6 +75,9 @@ void ensureMethodDeclaringClass(art::mirror::ArtMethod *origin, art::mirror::Art
             if (SDK_INT >= ANDROID_O) {
                 backup->disableInterpreterForO();
             }
+            if (!backup->isStatic()) {
+                backup->setPrivate();
+            }
             backup->tryDisableInline();
         } else if (trampoline->replacement != nullptr) {
             origin->backup(backup);
@@ -88,6 +91,9 @@ void ensureMethodDeclaringClass(art::mirror::ArtMethod *origin, art::mirror::Art
             }
             if (SDK_INT >= ANDROID_O) {
                 backup->disableInterpreterForO();
+            }
+            if (!backup->isStatic()) {
+                backup->setPrivate();
             }
             backup->tryDisableInline();
         } else {
@@ -117,6 +123,9 @@ bool doHookWithReplacement(JNIEnv* env,
             backupMethod->disableInterpreterForO();
         }
         backupMethod->tryDisableInline();
+        if (!backupMethod->isStatic()) {
+            backupMethod->setPrivate();
+        }
         backupMethod->flushCache();
     }
 
@@ -183,6 +192,9 @@ bool doHookWithInline(JNIEnv* env,
             backupMethod->disableInterpreterForO();
         }
         backupMethod->tryDisableInline();
+        if (!backupMethod->isStatic()) {
+            backupMethod->setPrivate();
+        }
         backupMethod->flushCache();
     }
     return true;

@@ -47,6 +47,7 @@ public:
 
     bool isAbstract();
     bool isNative();
+    bool isStatic();
     bool isCompiled();
     bool isThumbCode();
 

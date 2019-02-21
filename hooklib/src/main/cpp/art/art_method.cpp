@@ -47,6 +47,11 @@ bool ArtMethod::isNative() {
     return ((accessFlags & 0x0100) != 0);
 }
 
+bool ArtMethod::isStatic() {
+    uint32_t accessFlags = getAccessFlags();
+    return ((accessFlags & 0x0008) != 0);
+}
+
 bool ArtMethod::isCompiled() {
     return getQuickCodeEntry() != SandHook::CastArtMethod::quickToInterpreterBridge;
 }
@@ -65,8 +70,9 @@ void ArtMethod::setAccessFlags(uint32_t flags) {
 
 void ArtMethod::setPrivate() {
     uint32_t accessFlag = getAccessFlags();
-    accessFlag &= ~ 0x1;
-    accessFlag |= 0x2;
+    accessFlag &= ~ 0x0001;
+    accessFlag &= ~ 0x0004;
+    accessFlag |= 0x0002;
     setAccessFlags(accessFlag);
 }
 
