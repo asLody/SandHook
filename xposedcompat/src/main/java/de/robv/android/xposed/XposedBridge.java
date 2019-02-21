@@ -391,7 +391,7 @@ public final class XposedBridge {
                                                      Class<?>[] parameterTypes,
                                                      Class<?> returnType,
                                                      Object thisObject, Object[] args)
-            throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+			throws Throwable {
         return DynamicBridge.invokeOriginalMethod(method, thisObject, args);
     }
 
@@ -421,7 +421,7 @@ public final class XposedBridge {
 	 *             if an exception was thrown by the invoked method
 	 */
 	public static Object invokeOriginalMethod(Member method, Object thisObject, Object[] args)
-			throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+			throws Throwable {
 		if (args == null) {
 			args = EMPTY_ARRAY;
 		}

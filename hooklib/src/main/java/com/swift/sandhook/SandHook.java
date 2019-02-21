@@ -204,6 +204,10 @@ public class SandHook {
         return getObjectNative(threadSelf, address);
     }
 
+    public static boolean canGetObjectAddress() {
+        return Unsafe.support();
+    }
+
     public static long getObjectAddress(Object object) {
         return Unsafe.getObjectAddress(object);
     }

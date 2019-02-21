@@ -12,11 +12,11 @@ import com.swift.sandhook.xposedcompat.utils.FileUtils;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.robv.android.xposed.XposedBridge;
@@ -28,6 +28,8 @@ public final class DynamicBridge {
     private static final AtomicBoolean dexPathInited = new AtomicBoolean(false);
     private static File dexDir;
 
+    public static Map<Member,HookMethodEntity> entityMap = new HashMap<>();
+
     public static void onForkPost() {
         dexPathInited.set(false);
     }
@@ -38,17 +40,13 @@ public final class DynamicBridge {
             return;
         }
 
-        if (hookedInfo.containsKey(hookMethod)) {
+        if (hookedInfo.containsKey(hookMethod) || entityMap.containsKey(hookMethod)) {
             DexLog.w("already hook method:" + hookMethod.toString());
             return;
         }
 
-        DexLog.d("start to generate class for: " + hookMethod);
         try {
-            // using file based DexClassLoader
             if (dexPathInited.compareAndSet(false, true)) {
-                // delete previous compiled dex to prevent potential crashing
-                // TODO find a way to reuse them in consideration of performance
                 try {
                     String fixedAppDataDir = XposedCompat.cacheDir.getAbsolutePath();
                     dexDir = new File(fixedAppDataDir, "/sandxposed/");
@@ -63,15 +61,16 @@ public final class DynamicBridge {
             HookMethodEntity stub = HookStubManager.getHookMethodEntity(hookMethod);
             if (stub != null) {
                 SandHook.hook(new HookWrapper.HookEntity(hookMethod, stub.hook, stub.backup));
+                entityMap.put(hookMethod, stub);
             } else {
                 dexMaker.start(hookMethod, additionalHookInfo,
                         XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
                 hookedInfo.put(hookMethod, dexMaker.getCallBackupMethod());
             }
-            DexLog.d("hook method <" + hookMethod.toString() + "> use " + (System.currentTimeMillis() - timeStart) + " ms.");
+            DexLog.d("hook method <" + hookMethod.toString() + "> cost " + (System.currentTimeMillis() - timeStart) + " ms, by " + (stub != null ? "internal stub." : "dex maker"));
             Trace.endSection();
         } catch (Exception e) {
-            DexLog.e("error occur when generating dex. dexDir=" + dexDir, e);
+            DexLog.e("error occur when hook method <" + hookMethod.toString() + ">", e);
         }
     }
 
@@ -106,10 +105,11 @@ public final class DynamicBridge {
     }
 
     public static Object invokeOriginalMethod(Member method, Object thisObject, Object[] args)
-            throws InvocationTargetException, IllegalAccessException {
+            throws Throwable {
         Method callBackup = hookedInfo.get(method);
         if (callBackup == null) {
-            throw new IllegalStateException("method not hooked, cannot call original method.");
+            //method hook use internal stub
+            return SandHook.callOriginMethod(method, thisObject, args);
         }
         if (!Modifier.isStatic(callBackup.getModifiers())) {
             throw new IllegalStateException("original method is not static, something must be wrong!");

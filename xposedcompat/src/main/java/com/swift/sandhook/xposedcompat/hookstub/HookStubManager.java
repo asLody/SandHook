@@ -1,7 +1,5 @@
 package com.swift.sandhook.xposedcompat.hookstub;
 
-import android.util.Pair;
-
 import com.swift.sandhook.SandHook;
 import com.swift.sandhook.utils.ParamWrapper;
 
@@ -9,7 +7,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +45,10 @@ public class HookStubManager {
 
 
     public static HookMethodEntity getHookMethodEntity(Member origin) {
+
+        if (!support()) {
+            return null;
+        }
 
         Class[] parType;
         Class retType;
@@ -282,6 +283,10 @@ public class HookStubManager {
 
     private static boolean hasArgs(long... args) {
         return args != null && args.length > 0;
+    }
+
+    public static boolean support() {
+        return SandHook.canGetObject() && SandHook.canGetObjectAddress();
     }
 
 }

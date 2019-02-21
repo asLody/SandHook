@@ -35,7 +35,7 @@ public class ParamWrapper {
             } else if (objectType == char.class) {
                 return (char)address;
             } else if (objectType == boolean.class) {
-                return address == 0;
+                return address != 0;
             } else {
                 throw new RuntimeException("unknown type: " + objectType.toString());
             }
@@ -57,7 +57,7 @@ public class ParamWrapper {
             } else if (objectType == char.class) {
                 return (char)address;
             } else if (objectType == boolean.class) {
-                return address == 0;
+                return address != 0;
             } else {
                 throw new RuntimeException("unknown type: " + objectType.toString());
             }
@@ -87,7 +87,7 @@ public class ParamWrapper {
             } else if (objectType == char.class) {
                 return (char)object;
             } else if (objectType == boolean.class) {
-                return object == Boolean.TRUE ? 0 : 1;
+                return object == Boolean.TRUE ? 1 : 0;
             } else {
                 throw new RuntimeException("unknown type: " + objectType.toString());
             }
@@ -111,7 +111,7 @@ public class ParamWrapper {
             } else if (objectType == char.class) {
                 return (char)object;
             } else if (objectType == boolean.class) {
-                return object == Boolean.TRUE ? 0 : 1;
+                return object == Boolean.TRUE ? 1 : 0;
             } else {
                 throw new RuntimeException("unknown type: " + objectType.toString());
             }
