@@ -41,13 +41,16 @@ public class HookMethodEntity {
     public long[] getArgsAddress(long[] oldAddress, Object... args) {
         if (oldAddress == null || oldAddress.length == 0)
             return new long[0];
-        long[] addresses = new long[oldAddress.length];
+        long[] addresses;
         int argStart = 0;
         if (!isStatic()) {
             argStart = 1;
+            addresses = new long[oldAddress.length + 1];
             addresses[0] = oldAddress[0];
+        } else {
+            addresses = new long[oldAddress.length];
         }
-        for (int i = argStart;i < parType.length + argStart;i++) {
+        for (int i = 0;i < parType.length;i++) {
             addresses[i + argStart] = ParamWrapper.objectToAddress(parType[i], args[i]);
         }
         return addresses;

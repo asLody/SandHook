@@ -3,6 +3,7 @@ package com.swift.sandhook.xposedcompat.hookstub;
 import com.swift.sandhook.SandHook;
 import com.swift.sandhook.SandHookMethodResolver;
 import com.swift.sandhook.utils.ParamWrapper;
+import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -97,6 +98,7 @@ public class HookStubManager {
             if (tryCompileAndResolveCallOriginMethod(entity.backup, stubMethodInfo.args, stubMethodInfo.index)) {
                 return entity;
             } else {
+                DexLog.w("internal stub <" + entity.hook.getName() + "> call origin compile failure, skip use internal stub");
                 return null;
             }
         }
