@@ -25,6 +25,8 @@ public class XposedCompat {
     public static String processName;
     public static boolean isFirstApplication;
 
+    //try to use internal stub hooker & backup method to speed up hook
+    public static volatile boolean useInternalStub = true;
     public static volatile boolean retryWhenCallOriginError = false;
 
     private static ClassLoader sandHookXposedClassLoader;

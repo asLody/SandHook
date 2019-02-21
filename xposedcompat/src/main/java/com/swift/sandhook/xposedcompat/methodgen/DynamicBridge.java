@@ -58,7 +58,10 @@ public final class DynamicBridge {
             }
             Trace.beginSection("SandHook-Xposed");
             long timeStart = System.currentTimeMillis();
-            HookMethodEntity stub = HookStubManager.getHookMethodEntity(hookMethod);
+            HookMethodEntity stub = null;
+            if (XposedCompat.useInternalStub) {
+                stub = HookStubManager.getHookMethodEntity(hookMethod);
+            }
             if (stub != null) {
                 SandHook.hook(new HookWrapper.HookEntity(hookMethod, stub.hook, stub.backup));
                 entityMap.put(hookMethod, stub);
