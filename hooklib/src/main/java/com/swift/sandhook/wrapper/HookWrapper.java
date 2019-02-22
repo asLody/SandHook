@@ -10,6 +10,7 @@ import com.swift.sandhook.annotation.HookReflectClass;
 import com.swift.sandhook.annotation.MethodParams;
 import com.swift.sandhook.annotation.MethodReflectParams;
 import com.swift.sandhook.annotation.Param;
+import com.swift.sandhook.annotation.SkipParamCheck;
 import com.swift.sandhook.annotation.ThisObject;
 
 import java.lang.annotation.Annotation;
@@ -99,7 +100,9 @@ public class HookWrapper {
                 } catch (NoSuchMethodException e) {
                     throw new HookErrorException("can not find target method: " + methodName, e);
                 }
-                checkSignature(foundMethod, method, pars);
+                if (!method.isAnnotationPresent(SkipParamCheck.class)) {
+                    checkSignature(foundMethod, method, pars);
+                }
                 HookEntity entity = hookEntityMap.get(foundMethod);
                 if (entity == null) {
                     entity = new HookEntity(foundMethod);
@@ -119,7 +122,9 @@ public class HookWrapper {
                 } catch (NoSuchMethodException e) {
                     throw new HookErrorException("can not find target method: " + methodName, e);
                 }
-                checkSignature(foundMethod, method, pars);
+                if (!method.isAnnotationPresent(SkipParamCheck.class)) {
+                    checkSignature(foundMethod, method, pars);
+                }
                 HookEntity entity = hookEntityMap.get(foundMethod);
                 if (entity == null) {
                     entity = new HookEntity(foundMethod);
@@ -153,7 +158,7 @@ public class HookWrapper {
             return pars;
         } else if (getParsCount(method) > 0) {
             if (getParsCount(method) == 1) {
-                if (hasThisObject(method)) {
+                if (hasThisObject(method) || Modifier.isStatic(method.getModifiers())) {
                     return parseMethodParsNew(classLoader, method);
                 } else {
                     return null;
@@ -209,7 +214,7 @@ public class HookWrapper {
                 }
             }
             try {
-                realPars[parIndex] = getRealParType(classLoader, hookPar, methodAnnos);
+                realPars[parIndex] = getRealParType(classLoader, hookPar, methodAnnos, method.isAnnotationPresent(SkipParamCheck.class));
             } catch (Exception e) {
                 throw new HookErrorException("hook method <" + method.getName() + "> parser pars error", e);
             }
@@ -218,7 +223,7 @@ public class HookWrapper {
         return realPars;
     }
 
-    private static Class getRealParType(ClassLoader classLoader, Class hookPar, Annotation[] annotations) throws Exception {
+    private static Class getRealParType(ClassLoader classLoader, Class hookPar, Annotation[] annotations, boolean skipCheck) throws Exception {
         if (annotations == null || annotations.length == 0)
             return hookPar;
         for (Annotation annotation:annotations) {
@@ -227,7 +232,7 @@ public class HookWrapper {
                 if (TextUtils.isEmpty(param.value()))
                     return hookPar;
                 Class realPar = classNameToClass(param.value(), classLoader);
-                if (realPar.equals(hookPar) || hookPar.isAssignableFrom(realPar)) {
+                if (skipCheck || realPar.equals(hookPar) || hookPar.isAssignableFrom(realPar)) {
                     return realPar;
                 } else {
                     throw new ClassCastException("hook method par cast error!");
