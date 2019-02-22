@@ -389,6 +389,7 @@ public class HookWrapper {
         public Method backup;
 
         public boolean hookIsStub = false;
+        public boolean resolveDexCache = true;
 
         public Class[] pars;
         public int hookMode;
@@ -401,6 +402,13 @@ public class HookWrapper {
             this.target = target;
             this.hook = hook;
             this.backup = backup;
+        }
+
+        public HookEntity(Member target, Method hook, Method backup, boolean resolveDexCache) {
+            this.target = target;
+            this.hook = hook;
+            this.backup = backup;
+            this.resolveDexCache = resolveDexCache;
         }
 
         public boolean isCtor() {

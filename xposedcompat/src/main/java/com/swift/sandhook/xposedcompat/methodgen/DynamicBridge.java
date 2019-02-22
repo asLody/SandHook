@@ -63,7 +63,7 @@ public final class DynamicBridge {
                 stub = HookStubManager.getHookMethodEntity(hookMethod);
             }
             if (stub != null) {
-                SandHook.hook(new HookWrapper.HookEntity(hookMethod, stub.hook, stub.backup));
+                SandHook.hook(new HookWrapper.HookEntity(hookMethod, stub.hook, stub.backup, false));
                 entityMap.put(hookMethod, stub);
             } else {
                 dexMaker.start(hookMethod, additionalHookInfo,

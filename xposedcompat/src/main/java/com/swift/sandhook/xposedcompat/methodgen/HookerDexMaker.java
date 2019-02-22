@@ -13,6 +13,7 @@ import com.android.dx.Local;
 import com.android.dx.MethodId;
 import com.android.dx.TypeId;
 import com.swift.sandhook.SandHook;
+import com.swift.sandhook.SandHookMethodResolver;
 import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.xposedcompat.XposedCompat;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
@@ -229,6 +230,7 @@ public class HookerDexMaker {
         mBackupMethod = mHookClass.getMethod(METHOD_NAME_BACKUP, mActualParameterTypes);
         mCallBackupMethod = mHookClass.getMethod(METHOD_NAME_CALL_BACKUP, mActualParameterTypes);
         SandHook.resolveStaticMethod(mCallBackupMethod);
+        SandHookMethodResolver.resolveMethod(mCallBackupMethod, mBackupMethod);
         SandHook.compileMethod(mCallBackupMethod);
         mHookClass.getMethod(METHOD_NAME_SETUP, Member.class, Method.class, XposedBridge.AdditionalHookInfo.class).invoke(null, mMember, mBackupMethod, mHookInfo);
         return new HookWrapper.HookEntity(mMember, mHookMethod, mBackupMethod);

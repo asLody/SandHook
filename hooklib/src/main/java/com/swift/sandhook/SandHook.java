@@ -88,8 +88,8 @@ public class SandHook {
             throw new HookErrorException("method <" + entity.target.getName() + "> has been hooked!");
 
         resolveStaticMethod(target);
-        if (backup != null) {
-            resolveStaticMethod(backup);
+        resolveStaticMethod(backup);
+        if (backup != null && entity.resolveDexCache) {
             SandHookMethodResolver.resolveMethod(hook, backup);
         }
         if (target instanceof Method) {
@@ -179,6 +179,8 @@ public class SandHook {
 
     public static void resolveStaticMethod(Member method) {
         //ignore result, just call to trigger resolve
+        if (method == null)
+            return;
         try {
             if (method instanceof Method && Modifier.isStatic(method.getModifiers())) {
                 ((Method) method).setAccessible(true);
