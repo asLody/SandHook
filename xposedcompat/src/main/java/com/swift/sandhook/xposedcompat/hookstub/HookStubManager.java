@@ -1,5 +1,7 @@
 package com.swift.sandhook.xposedcompat.hookstub;
 
+import android.util.Log;
+
 import com.swift.sandhook.SandHook;
 import com.swift.sandhook.SandHookMethodResolver;
 import com.swift.sandhook.utils.ParamWrapper;
@@ -162,20 +164,21 @@ public class HookStubManager {
                     return null;
                 return new StubMethodsInfo(stubArgs, curUseStubIndex, hook, backup);
             }
-        } catch (Exception e) {
+        } catch (Throwable throwable) {
             return null;
         }
     }
 
     public static Method getCallOriginMethod(int args, int index) {
-        String className = SandHook.is64Bit() ? MethodHookerStubs64.class.getName() : MethodHookerStubs32.class.getName();
+        Class stubClass = SandHook.is64Bit() ? MethodHookerStubs64.class : MethodHookerStubs32.class;
+        String className = stubClass.getName();
         className += "$";
         className += getCallOriginClassName(args, index);
         try {
-            Class callOriginClass = Class.forName(className);
+            Class callOriginClass = Class.forName(className, true, stubClass.getClassLoader());
             return callOriginClass.getDeclaredMethod("call", long[].class);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
+            Log.e("HookStubManager", "load call origin class error!", e);
             return null;
         }
     }
