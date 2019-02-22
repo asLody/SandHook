@@ -222,6 +222,8 @@ public class HookStubManager {
         Member originMethod = originMethods[id];
         HookMethodEntity entity = hookMethodEntities[id];
 
+        DexLog.printMethodHookIn(originMethod);
+
         Object[] snapshot = hookCallbacks.get(originMethod).getSnapshot();
         if (snapshot == null || snapshot.length == 0)
             return callOrigin.call(stubArgs);
