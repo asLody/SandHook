@@ -3,6 +3,9 @@
 //
 #include "../includes/hide_api.h"
 #include "../includes/arch.h"
+#include <memory>
+#include "../includes/art_compiler_options.h"
+#include "../includes/art_jit.h"
 
 extern int SDK_INT;
 
@@ -72,6 +75,17 @@ extern "C" {
                                                        : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE";
             addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) fake_dlsym(handle,
                                                                                   addWeakGloablReferenceSymbol);
+
+            //try disable inline !
+            void* jitCompileHandlerGlobalAddr = fake_dlsym(handle, "_ZN3art3jit3Jit20jit_compiler_handle_E");
+            art::jit::JitCompiler* jitCompileHandlerGlobal = *reinterpret_cast<art::jit::JitCompiler**>(jitCompileHandlerGlobalAddr);
+            art::jit::JitCompiler* jitCompileHandlerTemp = static_cast<art::jit::JitCompiler *>(jitCompilerHandle);
+            if (jitCompileHandlerGlobal == nullptr) {
+                return;
+            }
+            art::CompilerOptions* options = jitCompileHandlerGlobal->compilerOptions.get();
+            Size inlineUnit = options->inline_max_code_units_;
+            options->inline_max_code_units_ = 0;
         }
 
     }
