@@ -77,16 +77,6 @@ extern "C" {
 
             //try disable inline !
             globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(fake_dlsym(handle, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
-
-
-//            art::jit::JitCompiler* jitCompileHandlerGlobal = *reinterpret_cast<art::jit::JitCompiler**>(jitCompileHandlerGlobalAddr);
-//            art::jit::JitCompiler* jitCompileHandlerTemp = static_cast<art::jit::JitCompiler *>(jitCompilerHandle);
-//            if (jitCompileHandlerGlobal == nullptr) {
-//                return;
-//            }
-//            art::CompilerOptions* options = jitCompileHandlerGlobal->compilerOptions.get();
-//            Size inlineUnit = options->inline_max_code_units_;
-//            options->inline_max_code_units_ = 0;
         }
 
     }

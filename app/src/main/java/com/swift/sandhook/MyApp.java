@@ -23,6 +23,8 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
+        SandHook.disableVMInline();
+
         try {
             SandHook.addHookClass(JniHooker.class,
                     CtrHook.class,
