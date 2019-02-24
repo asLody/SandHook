@@ -3,9 +3,6 @@
 //
 #include "../includes/hide_api.h"
 #include "../includes/arch.h"
-#include <memory>
-#include "../includes/art_compiler_options.h"
-#include "../includes/art_jit.h"
 
 extern int SDK_INT;
 
@@ -20,6 +17,8 @@ extern "C" {
     void (*innerResumeVM)() = nullptr;
 
     jobject (*addWeakGlobalRef)(JavaVM *, void *, void *) = nullptr;
+
+    art::jit::JitCompiler** globalJitCompileHandlerAddr = nullptr;
 
 
 
@@ -54,7 +53,7 @@ extern "C" {
                                                                         "_ZN3art3Dbg8ResumeVMEv"));
             }
         }
-        //init for getObject
+        //init for getObject & JitCompiler
         if (SDK_INT < 23) {
             void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
             addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) dlsym(handle,
@@ -77,15 +76,17 @@ extern "C" {
                                                                                   addWeakGloablReferenceSymbol);
 
             //try disable inline !
-            void* jitCompileHandlerGlobalAddr = fake_dlsym(handle, "_ZN3art3jit3Jit20jit_compiler_handle_E");
-            art::jit::JitCompiler* jitCompileHandlerGlobal = *reinterpret_cast<art::jit::JitCompiler**>(jitCompileHandlerGlobalAddr);
-            art::jit::JitCompiler* jitCompileHandlerTemp = static_cast<art::jit::JitCompiler *>(jitCompilerHandle);
-            if (jitCompileHandlerGlobal == nullptr) {
-                return;
-            }
-            art::CompilerOptions* options = jitCompileHandlerGlobal->compilerOptions.get();
-            Size inlineUnit = options->inline_max_code_units_;
-            options->inline_max_code_units_ = 0;
+            globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(fake_dlsym(handle, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
+
+
+//            art::jit::JitCompiler* jitCompileHandlerGlobal = *reinterpret_cast<art::jit::JitCompiler**>(jitCompileHandlerGlobalAddr);
+//            art::jit::JitCompiler* jitCompileHandlerTemp = static_cast<art::jit::JitCompiler *>(jitCompilerHandle);
+//            if (jitCompileHandlerGlobal == nullptr) {
+//                return;
+//            }
+//            art::CompilerOptions* options = jitCompileHandlerGlobal->compilerOptions.get();
+//            Size inlineUnit = options->inline_max_code_units_;
+//            options->inline_max_code_units_ = 0;
         }
 
     }
@@ -130,6 +131,21 @@ extern "C" {
         env->DeleteWeakGlobalRef(object);
 
         return result;
+    }
+
+    art::jit::JitCompiler* getGlobalJitCompiler() {
+        if (SDK_INT < ANDROID_N)
+            return nullptr;
+        if (globalJitCompileHandlerAddr == nullptr || globalJitCompileHandlerAddr <= 0)
+            return nullptr;
+        return *globalJitCompileHandlerAddr;
+    }
+
+    art::CompilerOptions* getGlobalCompilerOptions() {
+        art::jit::JitCompiler* compiler = getGlobalJitCompiler();
+        if (compiler == nullptr)
+            return nullptr;
+        return compiler->compilerOptions.get();
     }
 
 }

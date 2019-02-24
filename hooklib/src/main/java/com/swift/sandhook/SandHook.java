@@ -313,6 +313,8 @@ public class SandHook {
 
     public static native boolean is64Bit();
 
+    public static native boolean disableVMInline();
+
     @FunctionalInterface
     public interface HookModeCallBack {
         int hookMode(Member originMethod);

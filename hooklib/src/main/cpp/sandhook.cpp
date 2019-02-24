@@ -3,6 +3,7 @@
 #include "includes/trampoline_manager.h"
 #include "includes/hide_api.h"
 #include "includes/log.h"
+#include "includes/cast_compiler_options.h"
 
 SandHook::TrampolineManager trampolineManager;
 
@@ -23,6 +24,7 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) 
     // TODO
     SDK_INT = sdk;
     SandHook::CastArtMethod::init(env);
+    SandHook::CastCompilerOptions::init(env);
     trampolineManager.init(SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
     initHideApi(env);
     return JNI_TRUE;
@@ -343,6 +345,24 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_swift_sandhook_SandHook_is64Bit(JNIEnv *env, jclass type) {
     return BYTE_POINT == 8;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_swift_sandhook_SandHook_disableVMInline(JNIEnv *env, jclass type) {
+    if (SDK_INT < ANDROID_N)
+        return JNI_FALSE;
+    art::CompilerOptions* compilerOptions = getGlobalCompilerOptions();
+    if (compilerOptions == nullptr)
+        return JNI_FALSE;
+    size_t originOptions = compilerOptions->getInlineMaxCodeUnits();
+    //maybe a real inlineMaxCodeUnits
+    if (originOptions > 0 && originOptions < 10000) {
+        compilerOptions->setInlineMaxCodeUnits(0);
+        return JNI_TRUE;
+    } else {
+        return JNI_FALSE;
+    }
 }
 
 extern "C"

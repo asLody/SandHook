@@ -25,7 +25,9 @@ add_library( # Sets the name of the library.
              src/main/cpp/utils/utils.cpp
              src/main/cpp/utils/offset.cpp
              src/main/cpp/casts/cast_art_method.cpp
+             src/main/cpp/casts/cast_compiler_options.cpp
              src/main/cpp/art/art_method.cpp
+             src/main/cpp/art/art_compiler_options.cpp
              src/main/cpp/trampoline/arch/arm32.S
              src/main/cpp/trampoline/arch/arm64.S
              src/main/cpp/inst/insts_arm32.cpp

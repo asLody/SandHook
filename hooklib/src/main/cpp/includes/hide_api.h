@@ -8,6 +8,9 @@
 #include <jni.h>
 #include "dlfcn_nougat.h"
 #include "dlfcn.h"
+#include <memory>
+#include "../includes/art_compiler_options.h"
+#include "../includes/art_jit.h"
 
 extern "C" {
 
@@ -19,6 +22,10 @@ extern "C" {
 
     bool canGetObject();
     jobject getJavaObject(JNIEnv* env, void* thread, void* address);
+
+    art::jit::JitCompiler* getGlobalJitCompiler();
+
+    art::CompilerOptions* getGlobalCompilerOptions();
 
 }
 
