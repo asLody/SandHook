@@ -158,7 +158,7 @@ public class HookWrapper {
             return pars;
         } else if (getParsCount(method) > 0) {
             if (getParsCount(method) == 1) {
-                if (hasThisObject(method) || Modifier.isStatic(method.getModifiers())) {
+                if (hasThisObject(method)) {
                     return parseMethodParsNew(classLoader, method);
                 } else {
                     return null;
