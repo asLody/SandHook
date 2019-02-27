@@ -35,6 +35,13 @@ extern "C" {
             jitLoad = reinterpret_cast<void* (*)(bool*)>(fake_dlsym(jit_lib, "jit_load"));
             bool generate_debug_info = false;
             jitCompilerHandle = (jitLoad)(&generate_debug_info);
+
+            if (jitCompilerHandle != nullptr && jitCompilerHandle > 0) {
+                art::CompilerOptions* compilerOptions = getCompilerOptions(
+                        reinterpret_cast<art::jit::JitCompiler *>(jitCompilerHandle));
+                disableJitInline(compilerOptions);
+            }
+
         }
         //init suspend
         void* art_lib;
@@ -131,11 +138,27 @@ extern "C" {
         return *globalJitCompileHandlerAddr;
     }
 
-    art::CompilerOptions* getGlobalCompilerOptions() {
-        art::jit::JitCompiler* compiler = getGlobalJitCompiler();
+    art::CompilerOptions* getCompilerOptions(art::jit::JitCompiler* compiler) {
         if (compiler == nullptr)
             return nullptr;
         return compiler->compilerOptions.get();
+    }
+
+    art::CompilerOptions* getGlobalCompilerOptions() {
+        return getCompilerOptions(getGlobalJitCompiler());
+    }
+
+    bool disableJitInline(art::CompilerOptions* compilerOptions) {
+        if (compilerOptions == nullptr || compilerOptions <= 0)
+            return false;
+        size_t originOptions = compilerOptions->getInlineMaxCodeUnits();
+        //maybe a real inlineMaxCodeUnits
+        if (originOptions > 0 && originOptions <= 1024) {
+            compilerOptions->setInlineMaxCodeUnits(0);
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

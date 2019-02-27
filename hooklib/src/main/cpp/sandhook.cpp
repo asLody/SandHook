@@ -354,14 +354,7 @@ Java_com_swift_sandhook_SandHook_disableVMInline(JNIEnv *env, jclass type) {
     art::CompilerOptions* compilerOptions = getGlobalCompilerOptions();
     if (compilerOptions == nullptr)
         return JNI_FALSE;
-    size_t originOptions = compilerOptions->getInlineMaxCodeUnits();
-    //maybe a real inlineMaxCodeUnits
-    if (originOptions > 0 && originOptions < 10000) {
-        compilerOptions->setInlineMaxCodeUnits(0);
-        return JNI_TRUE;
-    } else {
-        return JNI_FALSE;
-    }
+    return static_cast<jboolean>(disableJitInline(compilerOptions));
 }
 
 extern "C"

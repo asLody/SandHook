@@ -25,7 +25,11 @@ extern "C" {
 
     art::jit::JitCompiler* getGlobalJitCompiler();
 
+    art::CompilerOptions* getCompilerOptions(art::jit::JitCompiler* compiler);
+
     art::CompilerOptions* getGlobalCompilerOptions();
+
+    bool disableJitInline(art::CompilerOptions* compilerOptions);
 
 }
 
