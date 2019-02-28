@@ -19,6 +19,7 @@ extern "C" {
     jobject (*addWeakGlobalRef)(JavaVM *, void *, void *) = nullptr;
 
     art::jit::JitCompiler** globalJitCompileHandlerAddr = nullptr;
+    art::Runtime** globalRuntimeAddr = nullptr;
 
 
 
@@ -76,14 +77,16 @@ extern "C" {
             } else {
                 handle = fake_dlopen("/system/lib/libart.so", RTLD_NOW);
             }
-            const char *addWeakGloablReferenceSymbol = SDK_INT <= 25
+            const char *addWeakReferenceSymbol = SDK_INT <= 25
                                                        ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
                                                        : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE";
             addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) fake_dlsym(handle,
-                                                                                  addWeakGloablReferenceSymbol);
+                                                                                  addWeakReferenceSymbol);
 
             //try disable inline !
             globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(fake_dlsym(handle, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
+
+            globalRuntimeAddr = reinterpret_cast<art::Runtime **>(fake_dlsym(handle, "_ZN3art7Runtime9instance_E"));
         }
 
     }
@@ -159,6 +162,12 @@ extern "C" {
         } else {
             return false;
         }
+    }
+
+    art::Runtime* getRuntime() {
+        if (globalRuntimeAddr == nullptr || globalRuntimeAddr <= 0)
+            return nullptr;
+        return *globalRuntimeAddr;
     }
 
 }

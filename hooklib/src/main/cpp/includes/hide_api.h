@@ -11,6 +11,7 @@
 #include <memory>
 #include "../includes/art_compiler_options.h"
 #include "../includes/art_jit.h"
+#include "../includes/art_runtime.h"
 
 extern "C" {
 
@@ -30,6 +31,8 @@ extern "C" {
     art::CompilerOptions* getGlobalCompilerOptions();
 
     bool disableJitInline(art::CompilerOptions* compilerOptions);
+
+    art::Runtime* getRuntime();
 
 }
 

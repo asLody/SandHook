@@ -6,12 +6,12 @@
 #define SANDHOOK_ART_RUNTIME_H
 
 #include "art_jit.h"
+#include "art_instrumentation.h"
 
 namespace art {
     class Runtime {
-
     public:
-        jit::Jit* getJit();
+        instrumentation::Instrumentation* getInstrumentation();
     };
 }
 
