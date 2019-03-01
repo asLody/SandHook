@@ -9,6 +9,7 @@ import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -149,9 +150,25 @@ public class SandHook {
     public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
         backupMethod.setAccessible(true);
         if (Modifier.isStatic(originMethod.getModifiers())) {
-            return backupMethod.invoke(null, args);
+            try {
+                return backupMethod.invoke(null, args);
+            } catch (InvocationTargetException throwable) {
+                if (throwable.getCause() != null) {
+                    throw throwable.getCause();
+                } else {
+                    throw throwable;
+                }
+            }
         } else {
-            return backupMethod.invoke(thiz, args);
+            try {
+                return backupMethod.invoke(thiz, args);
+            } catch (InvocationTargetException throwable) {
+                if (throwable.getCause() != null) {
+                    throw throwable.getCause();
+                } else {
+                    throw throwable;
+                }
+            }
         }
     }
 

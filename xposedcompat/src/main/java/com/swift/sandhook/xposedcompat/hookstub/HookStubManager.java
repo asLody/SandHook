@@ -293,7 +293,7 @@ public class HookStubManager {
                 } else {
                     param.setResult(SandHook.callOriginMethod(originMethod, thiz, param.args));
                 }
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 XposedBridge.log(e);
                 param.setThrowable(e);
             }
