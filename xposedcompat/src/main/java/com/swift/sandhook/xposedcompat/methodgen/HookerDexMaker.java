@@ -412,7 +412,7 @@ public class HookerDexMaker {
         code.sget(mMethodFieldId, localOrigin);
         code.sget(mBackupMethodFieldId, localBackup);
 
-        MethodId methodId = TypeId.get(SandHook.class).getMethod(TypeId.get(Void.TYPE), "ensureMethodDeclaringClass", memberTypeId, methodTypeId);
+        MethodId methodId = TypeId.get(SandHook.class).getMethod(TypeId.get(Void.TYPE), "ensureBackupMethod", memberTypeId, methodTypeId);
         code.invokeStatic(methodId, null, localOrigin, localBackup);
 
 

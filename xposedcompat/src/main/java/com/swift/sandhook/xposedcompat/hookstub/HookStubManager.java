@@ -5,6 +5,7 @@ import android.util.Log;
 import com.swift.sandhook.SandHook;
 import com.swift.sandhook.SandHookMethodResolver;
 import com.swift.sandhook.utils.ParamWrapper;
+import com.swift.sandhook.wrapper.BackupMethodStubs;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.lang.reflect.Constructor;
@@ -16,19 +17,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 
 import static de.robv.android.xposed.XposedBridge.sHookedMethodCallbacks;
 
 public class HookStubManager {
 
 
-    public final static int MAX_STUB_ARGS = 8;
+    public static int MAX_STUB_ARGS = 0;
 
-    public final static int[] stubSizes = new int[] {
-            10,20,30,20,10,20,20,5,5
-    };
+    public static int[] stubSizes;
 
-    public final static AtomicInteger[] curUseStubIndexes = new AtomicInteger[MAX_STUB_ARGS + 1];
+    public static boolean hasStubBackup = false;
+
+    public static AtomicInteger[] curUseStubIndexes;
 
     public static int ALL_STUB = 0;
 
@@ -39,12 +41,20 @@ public class HookStubManager {
             = sHookedMethodCallbacks;
 
     static {
-        for (int i = 0;i < MAX_STUB_ARGS + 1;i++) {
-            curUseStubIndexes[i] = new AtomicInteger(0);
-            ALL_STUB += stubSizes[i];
+        Class stubClass = SandHook.is64Bit() ? MethodHookerStubs64.class : MethodHookerStubs32.class;
+        stubSizes = (int[]) XposedHelpers.getStaticObjectField(stubClass, "stubSizes");
+        Boolean hasBackup = (Boolean) XposedHelpers.getStaticObjectField(stubClass, "hasStubBackup");
+        hasStubBackup = hasBackup == null ? false : hasBackup;
+        if (stubSizes != null && stubSizes.length > 0) {
+            MAX_STUB_ARGS = stubSizes.length - 1;
+            curUseStubIndexes = new AtomicInteger[MAX_STUB_ARGS + 1];
+            for (int i = 0; i < MAX_STUB_ARGS + 1; i++) {
+                curUseStubIndexes[i] = new AtomicInteger(0);
+                ALL_STUB += stubSizes[i];
+            }
+            originMethods = new Member[ALL_STUB];
+            hookMethodEntities = new HookMethodEntity[ALL_STUB];
         }
-        originMethods = new Member[ALL_STUB];
-        hookMethodEntities = new HookMethodEntity[ALL_STUB];
     }
 
 
@@ -97,11 +107,11 @@ public class HookStubManager {
             int id = getMethodId(stubMethodInfo.args, stubMethodInfo.index);
             originMethods[id] = origin;
             hookMethodEntities[id] = entity;
-            if (tryCompileAndResolveCallOriginMethod(entity.backup, stubMethodInfo.args, stubMethodInfo.index)) {
-                return entity;
-            } else {
+            if (hasStubBackup && !tryCompileAndResolveCallOriginMethod(entity.backup, stubMethodInfo.args, stubMethodInfo.index)) {
                 DexLog.w("internal stub <" + entity.hook.getName() + "> call origin compile failure, skip use internal stub");
                 return null;
+            } else {
+                return entity;
             }
         }
     }
@@ -153,13 +163,13 @@ public class HookStubManager {
         try {
             if (is64Bit) {
                 Method hook = MethodHookerStubs64.class.getDeclaredMethod(getHookMethodName(curUseStubIndex), pars);
-                Method backup = MethodHookerStubs64.class.getDeclaredMethod(getBackupMethodName(curUseStubIndex), pars);
+                Method backup = hasStubBackup ? MethodHookerStubs64.class.getDeclaredMethod(getBackupMethodName(curUseStubIndex), pars) : BackupMethodStubs.getStubMethod();
                 if (hook == null || backup == null)
                     return null;
                 return new StubMethodsInfo(stubArgs, curUseStubIndex, hook, backup);
             } else {
                 Method hook = MethodHookerStubs32.class.getDeclaredMethod(getHookMethodName(curUseStubIndex), pars);
-                Method backup = MethodHookerStubs32.class.getDeclaredMethod(getBackupMethodName(curUseStubIndex), pars);
+                Method backup = hasStubBackup ? MethodHookerStubs32.class.getDeclaredMethod(getBackupMethodName(curUseStubIndex), pars) : BackupMethodStubs.getStubMethod();
                 if (hook == null || backup == null)
                     return null;
                 return new StubMethodsInfo(stubArgs, curUseStubIndex, hook, backup);
@@ -219,26 +229,41 @@ public class HookStubManager {
 
     public static long hookBridge(int id, CallOriginCallBack callOrigin, long... stubArgs) throws Throwable {
 
-        if (XposedBridge.disableHooks)
-            return callOrigin.call(stubArgs);
-
         Member originMethod = originMethods[id];
         HookMethodEntity entity = hookMethodEntities[id];
+
+        Object thiz = null;
+        Object[] args = null;
+
+        if (hasArgs(stubArgs)) {
+            thiz = entity.getThis(stubArgs[0]);
+            args = entity.getArgs(stubArgs);
+        }
+
+        if (XposedBridge.disableHooks) {
+            if (hasStubBackup) {
+                return callOrigin.call(stubArgs);
+            } else {
+                return callOrigin(entity, originMethod, thiz, args);
+            }
+        }
 
         DexLog.printMethodHookIn(originMethod);
 
         Object[] snapshot = hookCallbacks.get(originMethod).getSnapshot();
-        if (snapshot == null || snapshot.length == 0)
-            return callOrigin.call(stubArgs);
+        if (snapshot == null || snapshot.length == 0) {
+            if (hasStubBackup) {
+                return callOrigin.call(stubArgs);
+            } else {
+                return callOrigin(entity, originMethod, thiz, args);
+            }
+        }
 
         XC_MethodHook.MethodHookParam param = new XC_MethodHook.MethodHookParam();
 
-        param.method  = originMethod;
-
-        if (hasArgs(stubArgs)) {
-            param.thisObject = entity.getThis(stubArgs[0]);
-            param.args = entity.getArgs(stubArgs);
-        }
+        param.method = originMethod;
+        param.thisObject = thiz;
+        param.args = args;
 
         int beforeIdx = 0;
         do {
@@ -261,9 +286,13 @@ public class HookStubManager {
         // call original method if not requested otherwise
         if (!param.returnEarly) {
             try {
-                //prepare new args
-                long[] newArgs = entity.getArgsAddress(stubArgs, param.args);
-                param.setResult(entity.getResult(callOrigin.call(newArgs)));
+                if (hasStubBackup) {
+                    //prepare new args
+                    long[] newArgs = entity.getArgsAddress(stubArgs, param.args);
+                    param.setResult(entity.getResult(callOrigin.call(newArgs)));
+                } else {
+                    param.setResult(SandHook.callOriginMethod(originMethod, thiz, param.args));
+                }
             } catch (Exception e) {
                 XposedBridge.log(e);
                 param.setThrowable(e);
@@ -293,12 +322,17 @@ public class HookStubManager {
         }
     }
 
+    public static long callOrigin(HookMethodEntity entity, Member origin, Object thiz, Object[] args) throws Throwable {
+        Object res = SandHook.callOriginMethod(origin, thiz, args);
+        return entity.getResultAddress(res);
+    }
+
     private static boolean hasArgs(long... args) {
         return args != null && args.length > 0;
     }
 
     public static boolean support() {
-        return SandHook.canGetObject() && SandHook.canGetObjectAddress();
+        return MAX_STUB_ARGS > 0 && SandHook.canGetObject() && SandHook.canGetObjectAddress();
     }
 
 }

@@ -32,7 +32,7 @@ JAVA_TYPE_LONG = "long"
 
 TEMP_STUB_HOOK_METHOD = """
     public static %s %s(%s) throws Throwable {
-        return %s hookBridge(%s, new %s() %s);
+        return %s hookBridge(%s, %s %s);
     }
 """
 
@@ -54,8 +54,14 @@ TEMP_STUB_CALL_ORIGIN_CLASS = """
     }
 """
 
+TEMP_STUB_INFO = """
+    public static boolean hasStubBackup = %s;
+    public static int[] stubSizes = {%s};
+"""
 
-STUB_SIZES = [10,20,30,20,10,20,20,5,5]
+
+STUB_SIZES = [10,20,30,30,30,30,30,20,10,10,5,5,3]
+HAS_BACKUP = False;
 
 
 def getMethodId(args, index):
@@ -105,7 +111,8 @@ def genHookMethod(is64Bit, args, index):
     args_list_pre = ", " if args > 0 else ""
     args_list = genArgsList(is64Bit, False, args)
     args_list_def = genArgsList(is64Bit, True, args)
-    method = TEMP_STUB_HOOK_METHOD % (java_type, getMethodHookName(index), args_list_def, cast, getMethodId(args, index), getCallOriginClassName(args, index), args_list_pre + args_list)
+    call_origin_obj = ("new " + getCallOriginClassName(args, index) + "()") if HAS_BACKUP else "null"
+    method = TEMP_STUB_HOOK_METHOD % (java_type, getMethodHookName(index), args_list_def, cast, getMethodId(args, index), call_origin_obj, args_list_pre + args_list)
     return method
 
 
@@ -119,19 +126,28 @@ def genCallOriginClass(is64Bit, args, index):
     method = TEMP_STUB_CALL_ORIGIN_CLASS % (getCallOriginClassName(args, index), getMethodBackupName(index), genArgsListForCallOriginMethod(is64Bit, args))
     return method
 
+def genStubInfo():
+    hasStub = "true" if HAS_BACKUP else "false"
+    stubSizes = ""
+    for args in range(len(STUB_SIZES)):
+        if (args != 0):
+            stubSizes += ", "
+        stubSizes += str(STUB_SIZES[args])
+    return TEMP_STUB_INFO % (hasStub, stubSizes)
 
 def gen32Stub(packageDir):
-    class_content = ""
+    class_content = genStubInfo()
     class_name = STUB_FILE_NAME + "32"
     for args in range(len(STUB_SIZES)):
         for index in range(STUB_SIZES[args]):
-            class_content += """\n\n\n\t//stub of arg size %d, index %d""" % (args, index)
-            class_content += genCallOriginClass(False, args, index)
-            class_content += "\n"
+            class_content += """\n\n\t//stub of arg size %d, index %d""" % (args, index)
             class_content += genHookMethod(False, args, index)
-            class_content += "\n"
-            class_content += genBackupMethod(False, args, index)
-            class_content += "\n"
+            if HAS_BACKUP:
+                class_content += "\n"
+                class_content += genCallOriginClass(False, args, index)
+                class_content += "\n"
+                class_content += genBackupMethod(False, args, index)
+                class_content += "\n"
     class_str = TEMP_STUB_CLASS_WRAPPER % (32, class_content)
     javaFile = open(os.path.join(packageDir, class_name + ".java"), "w")
     javaFile.write(class_str)
@@ -139,17 +155,18 @@ def gen32Stub(packageDir):
 
 
 def gen64Stub(packageDir):
-    class_content = ""
+    class_content = genStubInfo()
     class_name = STUB_FILE_NAME + "64"
     for args in range(len(STUB_SIZES)):
         for index in range(STUB_SIZES[args]):
-            class_content += """\n\n\n\t//stub of arg size %d, index %d""" % (args, index)
-            class_content += genCallOriginClass(True, args, index)
-            class_content += "\n"
+            class_content += """\n\n\t//stub of arg size %d, index %d""" % (args, index)
             class_content += genHookMethod(True, args, index)
-            class_content += "\n"
-            class_content += genBackupMethod(True, args, index)
-            class_content += "\n"
+            if HAS_BACKUP:
+                class_content += "\n"
+                class_content += genCallOriginClass(True, args, index)
+                class_content += "\n"
+                class_content += genBackupMethod(True, args, index)
+                class_content += "\n"
     class_str = TEMP_STUB_CLASS_WRAPPER % (64, class_content)
     javaFile = open(os.path.join(packageDir, class_name + ".java"), "w")
     javaFile.write(class_str)

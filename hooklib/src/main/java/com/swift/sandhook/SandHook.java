@@ -149,30 +149,39 @@ public class SandHook {
     public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
         backupMethod.setAccessible(true);
         if (Modifier.isStatic(originMethod.getModifiers())) {
-            ensureMethodDeclaringClass(originMethod, backupMethod);
             return backupMethod.invoke(null, args);
         } else {
-            ensureMethodDeclaringClass(originMethod, backupMethod);
             return backupMethod.invoke(thiz, args);
         }
     }
 
-    public static void ensureBackupDeclaringClass(Method backupMethod) {
+    public static Object ensureBackupAndCallOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
+        backupMethod.setAccessible(true);
+        if (Modifier.isStatic(originMethod.getModifiers())) {
+            ensureBackupMethod(originMethod, backupMethod);
+            return backupMethod.invoke(null, args);
+        } else {
+            ensureBackupMethod(originMethod, backupMethod);
+            return backupMethod.invoke(thiz, args);
+        }
+    }
+
+    public static void ensureBackupMethod(Method backupMethod) {
         if (backupMethod == null)
             return;
         HookWrapper.HookEntity hookEntity = globalBackupMap.get(backupMethod);
         if (hookEntity == null)
             return;
-        ensureMethodDeclaringClass(hookEntity.target, backupMethod);
+        ensureBackupMethod(hookEntity.target, backupMethod);
     }
 
-    public static void ensureBackupDelaringClassByOrigin(Member originMethod) {
+    public static void ensureBackupMethodByOrigin(Member originMethod) {
         if (originMethod == null)
             return;
         HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
         if (hookEntity == null || hookEntity.backup == null)
             return;
-        ensureMethodDeclaringClass(originMethod, hookEntity.backup);
+        ensureBackupMethod(originMethod, hookEntity.backup);
     }
 
 
@@ -304,7 +313,7 @@ public class SandHook {
 
     public static native void ensureMethodCached(Method hook, Method backup);
 
-    public static native void ensureMethodDeclaringClass(Member originMethod, Method backupMethod);
+    public static native void ensureBackupMethod(Member originMethod, Method backupMethod);
 
     public static native boolean compileMethod(Member member);
 

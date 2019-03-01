@@ -17,6 +17,8 @@ import com.swift.sandhook.test.TestClass;
 
 import java.lang.reflect.Field;
 
+import de.robv.android.xposed.XposedHelpers;
+
 public class MainActivity extends AppCompatActivity {
 
     Inter inter;
@@ -51,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
 
-        TestClass str = new TestClass(1);
+        final TestClass str = new TestClass(1);
 
         str.add1();
         str.add2();
@@ -73,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("dosth", hashCode() + "");
                     }
                 };
+                Log.e("testStub", "res = " + testStub(str, 1, "origin b", false, 'x', "origin e"));
             }
         }).start();
 
@@ -120,6 +123,11 @@ public class MainActivity extends AppCompatActivity {
     public int testPluginHook(TestClass testClass) {
         Log.e("MainActivity", "call testPluginHook origin");
         return testClass.a;
+    }
+
+    public Integer testStub(TestClass testClass, int a, String b, boolean c, char d, String e) {
+        Log.e("MainActivity", "call testStub origin" + a + ("" + c) + d + e);
+        return a;
     }
 
     @Override

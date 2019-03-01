@@ -58,9 +58,9 @@ void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMeth
     }
 }
 
-void ensureMethodDeclaringClass(art::mirror::ArtMethod *origin, art::mirror::ArtMethod *backup) {
+void ensureBackupMethod(art::mirror::ArtMethod *origin, art::mirror::ArtMethod *backup) {
     if (origin->getDeclaringClassPtr() != backup->getDeclaringClassPtr()) {
-        LOGW("backup method declaringClass is out to date due to Moving GC!");
+        LOGW("backup method is out to date due to Moving GC!");
 
         SandHook::HookTrampoline* trampoline = trampolineManager.getHookTrampoline(origin);
         if (trampoline == nullptr)
@@ -271,7 +271,7 @@ Java_com_swift_sandhook_SandHook_ensureMethodCached(JNIEnv *env, jclass type, jo
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_swift_sandhook_SandHook_ensureMethodDeclaringClass(JNIEnv *env, jclass type,
+Java_com_swift_sandhook_SandHook_ensureBackupMethod(JNIEnv *env, jclass type,
                                                             jobject originMethod,
                                                             jobject backupMethod) {
     if (backupMethod == NULL || originMethod == NULL)
@@ -279,7 +279,7 @@ Java_com_swift_sandhook_SandHook_ensureMethodDeclaringClass(JNIEnv *env, jclass 
     art::mirror::ArtMethod* origin = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(originMethod));
     art::mirror::ArtMethod* backup = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backupMethod));
 
-    ensureMethodDeclaringClass(origin, backup);
+    ensureBackupMethod(origin, backup);
 }
 
 extern "C"

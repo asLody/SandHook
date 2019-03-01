@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.util.Log;
 
+import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
 import com.swift.sandhook.testHookers.CustmizeHooker;
@@ -47,6 +48,22 @@ public class MyApp extends Application {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+            }
+        });
+
+
+        XposedHelpers.findAndHookMethod(MainActivity.class, "testStub", TestClass.class, int.class, String.class, boolean.class, char.class, String.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                param.args[1] = 2;
                 Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
             }
 
