@@ -113,9 +113,6 @@ bool doHookWithReplacement(JNIEnv* env,
     hookMethod->compile(env);
 
     if (backupMethod != nullptr) {
-        if (!backupMethod->isCompiled()) {
-            backupMethod->compile(env);
-        }
         originMethod->backup(backupMethod);
         if (SDK_INT >= ANDROID_N) {
             backupMethod->disableCompilable();
@@ -165,9 +162,7 @@ bool doHookWithInline(JNIEnv* env,
                       art::mirror::ArtMethod *backupMethod) {
 
     //fix >= 8.1
-    if (!hookMethod->isCompiled()) {
-        hookMethod->compile(env);
-    }
+    hookMethod->compile(env);
 
     if (SDK_INT >= ANDROID_N) {
         originMethod->disableCompilable();

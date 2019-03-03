@@ -145,7 +145,7 @@ namespace SandHook {
         hookTrampoline->replacement = replacementHookTrampoline;
         hookTrampoline->originCode = static_cast<Code>(originMethod->getQuickCodeEntry());
 
-        if (SWITCH_SETX0 && SDK_INT >= ANDROID_O && backupMethod != nullptr) {
+        if (SWITCH_SETX0 && SDK_INT >= ANDROID_N && backupMethod != nullptr) {
             callOriginTrampoline = new CallOriginTrampoline();
             checkThumbCode(callOriginTrampoline, getEntryCode(originMethod));
             callOriginTrampoline->init();
