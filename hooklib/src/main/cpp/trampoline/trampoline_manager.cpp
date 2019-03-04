@@ -14,6 +14,8 @@ namespace SandHook {
 
     uint32_t TrampolineManager::sizeOfEntryCode(mirror::ArtMethod *method) {
         Code codeEntry = getEntryCode(method);
+        if (codeEntry == nullptr || codeEntry <= 0)
+            return 0;
         #if defined(__arm__)
         if (isThumbCode(reinterpret_cast<Size>(codeEntry))) {
             codeEntry = getThumbCodeAddress(codeEntry);

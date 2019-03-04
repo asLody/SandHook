@@ -172,36 +172,8 @@ public class SandHook {
         }
     }
 
-    public static Object ensureBackupAndCallOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
-        backupMethod.setAccessible(true);
-        if (Modifier.isStatic(originMethod.getModifiers())) {
-            ensureBackupMethod(originMethod, backupMethod);
-            return backupMethod.invoke(null, args);
-        } else {
-            ensureBackupMethod(originMethod, backupMethod);
-            return backupMethod.invoke(thiz, args);
-        }
-    }
-
     public static void ensureBackupMethod(Method backupMethod) {
-        if (backupMethod == null)
-            return;
-        HookWrapper.HookEntity hookEntity = globalBackupMap.get(backupMethod);
-        if (hookEntity == null)
-            return;
-        ensureBackupMethod(hookEntity.target, backupMethod);
     }
-
-    public static void ensureBackupMethodByOrigin(Member originMethod) {
-        if (originMethod == null)
-            return;
-        HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
-        if (hookEntity == null || hookEntity.backup == null)
-            return;
-        ensureBackupMethod(originMethod, hookEntity.backup);
-    }
-
-
 
     public static void resolveStaticMethod(Member method) {
         //ignore result, just call to trigger resolve
@@ -333,8 +305,6 @@ public class SandHook {
     private static native int hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
 
     public static native void ensureMethodCached(Method hook, Method backup);
-
-    public static native void ensureBackupMethod(Member originMethod, Method backupMethod);
 
     public static native boolean compileMethod(Member member);
 
