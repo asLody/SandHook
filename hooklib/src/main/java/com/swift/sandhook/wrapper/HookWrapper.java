@@ -39,7 +39,11 @@ public class HookWrapper {
         if (targetHookClass == null)
             throw new HookErrorException("error hook wrapper class :" + clazz.getName());
         Map<Member,HookEntity> hookEntityMap = getHookMethods(classLoader, targetHookClass, clazz);
-        fillBackupMethod(classLoader, clazz, hookEntityMap);
+        try {
+            fillBackupMethod(classLoader, clazz, hookEntityMap);
+        } catch (Throwable throwable) {
+            throw new HookErrorException("fillBackupMethod error!", throwable);
+        }
         for (HookEntity entity:hookEntityMap.values()) {
             SandHook.hook(entity);
         }
@@ -79,8 +83,12 @@ public class HookWrapper {
 
     private static Map<Member, HookEntity> getHookMethods(ClassLoader classLoader, Class targetHookClass, Class<?> hookWrapperClass) throws HookErrorException {
         Map<Member,HookEntity> hookEntityMap = new HashMap<>();
-        Method[] methods = hookWrapperClass.getDeclaredMethods();
-        if (methods == null && methods.length == 0)
+        Method[] methods = null;
+        try {
+            methods = hookWrapperClass.getDeclaredMethods();
+        } catch (Throwable throwable) {
+        }
+        if (methods == null || methods.length == 0)
             throw new HookErrorException("error hook wrapper class :" + targetHookClass.getName());
         for (Method method:methods) {
             HookMethod hookMethodAnno = method.getAnnotation(HookMethod.class);
