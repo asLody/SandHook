@@ -46,7 +46,10 @@ public class HookWrapper {
     }
 
     private static void fillBackupMethod(ClassLoader classLoader,Class<?> clazz, Map<Member, HookEntity> hookEntityMap) {
-        Field[] fields = clazz.getDeclaredFields();
+        Field[] fields = null;
+        try {
+            fields = clazz.getDeclaredFields();
+        } catch (Throwable throwable) {}
         if (fields == null || fields.length == 0)
             return;
         if (hookEntityMap.isEmpty())

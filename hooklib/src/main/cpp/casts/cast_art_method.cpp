@@ -48,8 +48,18 @@ namespace SandHook {
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod *p) override {
             if (SDK_INT >= ANDROID_L2 && SDK_INT <= ANDROID_M)
                 return getParentSize() - 3 * BYTE_POINT;
-            else if (SDK_INT <= ANDROID_L)
+            else if (SDK_INT <= ANDROID_L) {
+                Size addr = getAddressFromJava(jniEnv, "com/swift/sandhook/SandHookMethodResolver",
+                                               "entryPointFromInterpreter");
+                int offset = 0;
+                if (addr != 0) {
+                    offset = findOffset(p, getParentSize(), 2, addr);
+                    if (offset >= 0) {
+                        return static_cast<Size>(offset);
+                    }
+                }
                 return getParentSize() - 4 * 8 - 4 * 4;
+            }
             else
                 return getParentSize() + 1;
         }
@@ -60,6 +70,17 @@ namespace SandHook {
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod *p) override {
             if (SDK_INT >= ANDROID_M) {
                 return getParentSize() - BYTE_POINT;
+            } else if (SDK_INT <= ANDROID_L) {
+                Size addr = getAddressFromJava(jniEnv, "com/swift/sandhook/SandHookMethodResolver",
+                                               "entryPointFromCompiledCode");
+                int offset = 0;
+                if (addr != 0) {
+                    offset = findOffset(p, getParentSize(), 2, addr);
+                    if (offset >= 0) {
+                        return static_cast<Size>(offset);
+                    }
+                }
+                return getParentSize() - 4 - 2 * BYTE_POINT;
             } else {
                 return getParentSize() - 4 - 2 * BYTE_POINT;
             }

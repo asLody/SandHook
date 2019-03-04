@@ -312,7 +312,11 @@ public class SandHook {
         if (nativePeerField == null)
             return 0;
         try {
-            return (long) nativePeerField.get(Thread.currentThread());
+            if (nativePeerField.getType() == int.class) {
+                return nativePeerField.getInt(Thread.currentThread());
+            } else {
+                return nativePeerField.getLong(Thread.currentThread());
+            }
         } catch (IllegalAccessException e) {
             return 0;
         }

@@ -13,12 +13,17 @@ public class SandHookMethodResolver {
     public static Field dexCacheField;
     public static Field dexMethodIndexField;
     public static Field artMethodField;
+    public static Field fieldEntryPointFromCompiledCode;
+    public static Field fieldEntryPointFromInterpreter;
 
     public static boolean canResolvedInJava = false;
     public static boolean isArtMethod = false;
 
     public static long resolvedMethodsAddress = 0;
     public static int dexMethodIndex = 0;
+
+    public static long entryPointFromCompiledCode = 0;
+    public static long entryPointFromInterpreter = 0;
 
     public static Method testMethod;
     public static Object testArtMethod;
@@ -50,12 +55,36 @@ public class SandHookMethodResolver {
 
     // may 5.0
     private static void checkSupportForArtMethod() throws Exception {
-        dexMethodIndexField = getField(artMethodClass, "dexMethodIndex");
+        try {
+            dexMethodIndexField = getField(artMethodClass, "dexMethodIndex");
+        } catch (NoSuchFieldException e) {
+            //may 4.4
+            dexMethodIndexField = getField(artMethodClass, "methodDexIndex");
+        }
         dexCacheField = getField(Class.class, "dexCache");
         Object dexCache = dexCacheField.get(testMethod.getDeclaringClass());
         resolvedMethodsField = getField(dexCache.getClass(), "resolvedMethods");
         if (resolvedMethodsField.get(dexCache) instanceof Object[]) {
             canResolvedInJava = true;
+        }
+        try {
+            try {
+                fieldEntryPointFromCompiledCode = getField(artMethodClass, "entryPointFromQuickCompiledCode");
+            } catch (Exception e) {
+                fieldEntryPointFromCompiledCode = getField(artMethodClass, "entryPointFromCompiledCode");
+            }
+            if (fieldEntryPointFromCompiledCode.getType() == int.class) {
+                entryPointFromCompiledCode = fieldEntryPointFromCompiledCode.getInt(testArtMethod);
+            } else if (fieldEntryPointFromCompiledCode.getType() == long.class) {
+                entryPointFromCompiledCode = fieldEntryPointFromCompiledCode.getLong(testArtMethod);
+            }
+            fieldEntryPointFromInterpreter = getField(artMethodClass, "entryPointFromInterpreter");
+            if (fieldEntryPointFromInterpreter.getType() == int.class) {
+                entryPointFromInterpreter = fieldEntryPointFromInterpreter.getInt(testArtMethod);
+            } else if (fieldEntryPointFromCompiledCode.getType() == long.class) {
+                entryPointFromInterpreter = fieldEntryPointFromInterpreter.getLong(testArtMethod);
+            }
+        } catch (Throwable e) {
         }
     }
 
