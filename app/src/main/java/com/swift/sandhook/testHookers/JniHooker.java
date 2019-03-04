@@ -1,5 +1,6 @@
 package com.swift.sandhook.testHookers;
 
+import android.os.Build;
 import android.util.Log;
 
 import com.swift.sandhook.annotation.HookMode;
@@ -16,7 +17,12 @@ public class JniHooker {
     @HookMode(HookMode.INLINE)
     public static int onJni(@ThisObject TestClass thiz) {
         Log.e("JniHooker", "hooked success ");
-        return onJniBackup(thiz);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            return onJniBackup(thiz);
+        } else {
+            //can not call jni origin in 4.4 tmp
+            return 0;
+        }
     }
 
     @HookMethodBackup("jni_test")
