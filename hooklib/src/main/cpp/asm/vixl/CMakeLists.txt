@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror -fdiagnostics-show-option -Wextra -Wredundant-decls -pedantic -Wwrite-strings -Wunused")
 
@@ -31,6 +31,7 @@ set(VIXL_AARCH64
         aarch64/operands-aarch64.cc
         aarch64/pointer-auth-aarch64.cc
         aarch64/simulator-aarch64.cc
+        aarch64/disasm-aarch64.cc
         )
 
 
