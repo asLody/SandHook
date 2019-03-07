@@ -5,14 +5,12 @@ import android.text.TextUtils;
 import com.android.dx.Code;
 import com.android.dx.DexMaker;
 import com.android.dx.FieldId;
-import com.android.dx.Label;
 import com.android.dx.Local;
 import com.android.dx.MethodId;
 import com.android.dx.TypeId;
 import com.swift.sandhook.SandHook;
 import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.xposedcompat.hookstub.HookStubManager;
-import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -40,7 +38,6 @@ public class HookerDexMakerNew implements HookMaker {
     private static final String FIELD_NAME_HOOK_INFO = "additionalHookInfo";
     private static final String FIELD_NAME_METHOD = "method";
     private static final String FIELD_NAME_BACKUP_METHOD = "backupMethod";
-    private static final TypeId<Throwable> throwableTypeId = TypeId.get(Throwable.class);
     private static final TypeId<Member> memberTypeId = TypeId.get(Member.class);
     private static final TypeId<Method> methodTypeId = TypeId.get(Method.class);
     private static final TypeId<XposedBridge.AdditionalHookInfo> hookInfoTypeId
@@ -183,7 +180,7 @@ public class HookerDexMakerNew implements HookMaker {
         mHookClass = loader.loadClass(className);
         // Execute our newly-generated code in-process.
         mHookMethod = mHookClass.getMethod(METHOD_NAME_HOOK, mActualParameterTypes);
-        mBackupMethod = mHookClass.getMethod(METHOD_NAME_BACKUP, mActualParameterTypes);
+        mBackupMethod = mHookClass.getMethod(METHOD_NAME_BACKUP);
         setup(mHookClass);
         return new HookWrapper.HookEntity(mMember, mHookMethod, mBackupMethod, false);
     }
@@ -224,32 +221,9 @@ public class HookerDexMakerNew implements HookMaker {
     }
 
     private void generateBackupMethod() {
-        mBackupMethodId = mHookerTypeId.getMethod(mReturnTypeId, METHOD_NAME_BACKUP, mParameterTypeIds);
+        mBackupMethodId = mHookerTypeId.getMethod(TypeId.VOID, METHOD_NAME_BACKUP);
         Code code = mDexMaker.declare(mBackupMethodId, Modifier.PUBLIC | Modifier.STATIC);
-
-        Local<Member> method = code.newLocal(memberTypeId);
-
-        Map<TypeId, Local> resultLocals = createResultLocals(code);
-        MethodId<?, ?> errLogMethod = TypeId.get(DexLog.class).getMethod(TypeId.get(Void.TYPE), "printCallOriginError", memberTypeId);
-
-
-        //very very important!!!!!!!!!!!
-        //add a try cache block avoid inline
-        Label tryCatchBlock = new Label();
-
-        code.addCatchClause(throwableTypeId, tryCatchBlock);
-        code.sget(mMethodFieldId, method);
-        code.invokeStatic(errLogMethod, null, method);
-        // start of try
-        code.mark(tryCatchBlock);
-
-        // do nothing
-        if (mReturnTypeId.equals(TypeId.VOID)) {
-            code.returnVoid();
-        } else {
-            // we have limited the returnType to primitives or Object, so this should be safe
-            code.returnValue(resultLocals.get(mReturnTypeId));
-        }
+        code.returnVoid();
     }
 
     private void generateHookMethod() {
