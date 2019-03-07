@@ -59,7 +59,16 @@ extern "C" {
                 innerResumeVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib,
                                                                         "_ZN3art3Dbg8ResumeVMEv"));
             }
+        } else {
+            art_lib = dlopen(art_lib_path, RTLD_NOW);
+            if (art_lib > 0) {
+                innerSuspendVM = reinterpret_cast<void (*)()>(dlsym(art_lib,
+                                                                         "_ZN3art3Dbg9SuspendVMEv"));
+                innerResumeVM = reinterpret_cast<void (*)()>(dlsym(art_lib,
+                                                                        "_ZN3art3Dbg8ResumeVMEv"));
+            }
         }
+
         //init for getObject & JitCompiler
         if (SDK_INT < 23) {
             void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
