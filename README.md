@@ -13,7 +13,7 @@ Android ART Hook
 
 # OS
 
-5.0 - 9.0
+4.4(ART Runtime) - 9.0
 
 # Scope
 
