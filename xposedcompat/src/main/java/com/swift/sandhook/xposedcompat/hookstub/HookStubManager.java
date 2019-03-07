@@ -322,6 +322,77 @@ public class HookStubManager {
         }
     }
 
+    public static Object hookBridge(Member origin, Object thiz, Object... args) throws Throwable {
+
+
+        if (XposedBridge.disableHooks) {
+            return SandHook.callOriginMethod(origin, thiz, args);
+        }
+
+        DexLog.printMethodHookIn(origin);
+
+        Object[] snapshot = hookCallbacks.get(origin).getSnapshot();
+        if (snapshot == null || snapshot.length == 0) {
+            return SandHook.callOriginMethod(origin, thiz, args);
+        }
+
+        XC_MethodHook.MethodHookParam param = new XC_MethodHook.MethodHookParam();
+
+        param.method = origin;
+        param.thisObject = thiz;
+        param.args = args;
+
+        int beforeIdx = 0;
+        do {
+            try {
+                ((XC_MethodHook) snapshot[beforeIdx]).callBeforeHookedMethod(param);
+            } catch (Throwable t) {
+                // reset result (ignoring what the unexpectedly exiting callback did)
+                param.setResult(null);
+                param.returnEarly = false;
+                continue;
+            }
+
+            if (param.returnEarly) {
+                // skip remaining "before" callbacks and corresponding "after" callbacks
+                beforeIdx++;
+                break;
+            }
+        } while (++beforeIdx < snapshot.length);
+
+        // call original method if not requested otherwise
+        if (!param.returnEarly) {
+            try {
+                param.setResult(SandHook.callOriginMethod(origin, thiz, param.args));
+            } catch (Throwable e) {
+                XposedBridge.log(e);
+                param.setThrowable(e);
+            }
+        }
+
+        // call "after method" callbacks
+        int afterIdx = beforeIdx - 1;
+        do {
+            Object lastResult =  param.getResult();
+            Throwable lastThrowable = param.getThrowable();
+
+            try {
+                ((XC_MethodHook) snapshot[afterIdx]).callAfterHookedMethod(param);
+            } catch (Throwable t) {
+                XposedBridge.log(t);
+                if (lastThrowable == null)
+                    param.setResult(lastResult);
+                else
+                    param.setThrowable(lastThrowable);
+            }
+        } while (--afterIdx >= 0);
+        if (!param.hasThrowable()) {
+            return param.getResult();
+        } else {
+            throw param.getThrowable();
+        }
+    }
+
     public static long callOrigin(HookMethodEntity entity, Member origin, Object thiz, Object[] args) throws Throwable {
         Object res = SandHook.callOriginMethod(origin, thiz, args);
         return entity.getResultAddress(res);

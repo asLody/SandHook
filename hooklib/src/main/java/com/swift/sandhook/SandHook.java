@@ -102,6 +102,8 @@ public class SandHook {
             mode = hookModeCallBack.hookMode(target);
         }
 
+        globalHookEntityMap.put(entity.target, entity);
+
         int res;
         if (mode != HookMode.AUTO) {
             res = hookMethod(target, hook, backup, mode);
@@ -121,10 +123,9 @@ public class SandHook {
         }
 
         if (res < 0) {
+            globalHookEntityMap.remove(entity.target);
             throw new HookErrorException("hook method <" + entity.target.toString() + "> error in native!");
         }
-
-        globalHookEntityMap.put(entity.target, entity);
 
         if (entity.backup != null) {
             globalBackupMap.put(entity.backup, entity);

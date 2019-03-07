@@ -34,7 +34,7 @@ import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.autoUnboxIfNec
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.createResultLocals;
 import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.getObjTypeIdIfPrimitive;
 
-public class HookerDexMaker {
+public class HookerDexMaker implements HookMaker {
 
     public static final String METHOD_NAME_BACKUP = "backup";
     public static final String METHOD_NAME_HOOK = "hook";

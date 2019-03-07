@@ -24,7 +24,7 @@ import de.robv.android.xposed.XposedBridge;
 public final class DynamicBridge {
 
     private static final HashMap<Member, Method> hookedInfo = new HashMap<>();
-    private static final HookerDexMaker dexMaker = new HookerDexMaker();
+    private static HookMaker hookMaker = XposedCompat.useNewDexMaker ? new HookerDexMakerNew() : new HookerDexMaker();
     private static final AtomicBoolean dexPathInited = new AtomicBoolean(false);
     private static File dexDir;
 
@@ -66,9 +66,9 @@ public final class DynamicBridge {
                 SandHook.hook(new HookWrapper.HookEntity(hookMethod, stub.hook, stub.backup, false));
                 entityMap.put(hookMethod, stub);
             } else {
-                dexMaker.start(hookMethod, additionalHookInfo,
+                hookMaker.start(hookMethod, additionalHookInfo,
                         XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
-                hookedInfo.put(hookMethod, dexMaker.getCallBackupMethod());
+                hookedInfo.put(hookMethod, hookMaker.getCallBackupMethod());
             }
             DexLog.d("hook method <" + hookMethod.toString() + "> cost " + (System.currentTimeMillis() - timeStart) + " ms, by " + (stub != null ? "internal stub." : "dex maker"));
             Trace.endSection();
