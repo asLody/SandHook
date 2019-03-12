@@ -2,12 +2,12 @@
 #include "includes/cast_art_method.h"
 #include "includes/trampoline_manager.h"
 #include "includes/hide_api.h"
-#include "includes/log.h"
 #include "includes/cast_compiler_options.h"
 
 SandHook::TrampolineManager trampolineManager;
 
 extern "C" int SDK_INT = 0;
+extern "C" bool DEBUG = false;
 
 enum HookMode {
     AUTO = 0,
@@ -19,10 +19,11 @@ HookMode gHookMode = AUTO;
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk) {
+Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk, jboolean debug) {
 
     // TODO
     SDK_INT = sdk;
+    DEBUG = debug;
     SandHook::CastArtMethod::init(env);
     SandHook::CastCompilerOptions::init(env);
     trampolineManager.init(SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
@@ -70,9 +71,7 @@ bool doHookWithReplacement(JNIEnv* env,
         if (SDK_INT >= ANDROID_N) {
             backupMethod->disableCompilable();
         }
-        if (SDK_INT >= ANDROID_O) {
-            backupMethod->disableInterpreterForO();
-        }
+        backupMethod->disableInterpreterForO();
         backupMethod->tryDisableInline();
         if (!backupMethod->isStatic()) {
             backupMethod->setPrivate();
@@ -87,9 +86,7 @@ bool doHookWithReplacement(JNIEnv* env,
     }
     originMethod->tryDisableInline();
 
-    if (SDK_INT >= ANDROID_O && !originMethod->isCompiled()) {
-        originMethod->disableInterpreterForO();
-    }
+    originMethod->disableInterpreterForO();
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline != nullptr) {
@@ -137,9 +134,7 @@ bool doHookWithInline(JNIEnv* env,
         if (SDK_INT >= ANDROID_N) {
             backupMethod->disableCompilable();
         }
-        if (SDK_INT >= ANDROID_O) {
-            backupMethod->disableInterpreterForO();
-        }
+        backupMethod->disableInterpreterForO();
         backupMethod->tryDisableInline();
         if (!backupMethod->isStatic()) {
             backupMethod->setPrivate();
@@ -182,6 +177,8 @@ Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject or
 
     if (origin->isAbstract()) {
         isInlineHook = false;
+    } else if (origin->isNative()) {
+        isInlineHook = SDK_INT < ANDROID_O;
     } else if (gHookMode != AUTO) {
         if (gHookMode == INLINE) {
             isInlineHook = origin->compile(env);

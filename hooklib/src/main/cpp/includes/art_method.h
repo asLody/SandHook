@@ -57,6 +57,7 @@ public:
     void disableInterpreterForO();
     void setPrivate();
     void setStatic();
+    void setNative();
 
     void setQuickCodeEntry(void* entry);
     void setJniCodeEntry(void* entry);

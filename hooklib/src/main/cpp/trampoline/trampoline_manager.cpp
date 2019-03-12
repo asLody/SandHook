@@ -76,7 +76,7 @@ namespace SandHook {
             return true;
 
         //check size
-        if (!method->isNative()) {
+        if (method->isCompiled()) {
             uint32_t originCodeSize = sizeOfEntryCode(method);
             if (originCodeSize < SIZE_DIRECT_JUMP_TRAMPOLINE) {
                 LOGW("can not inline due to origin code is too small(size is %d)", originCodeSize);

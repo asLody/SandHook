@@ -24,7 +24,7 @@ extern "C" {
 
     void initHideApi(JNIEnv* env) {
         //init compile
-        if (SDK_INT >= 24) {
+        if (SDK_INT >= ANDROID_N) {
             void *jit_lib;
             if (BYTE_POINT == 8) {
                 jit_lib = fake_dlopen("/system/lib64/libart-compiler.so", RTLD_NOW);
@@ -51,7 +51,7 @@ extern "C" {
         } else {
             art_lib_path = "/system/lib/libart.so";
         }
-        if (SDK_INT >= 24) {
+        if (SDK_INT >= ANDROID_N) {
             art_lib = fake_dlopen(art_lib_path, RTLD_NOW);
             if (art_lib > 0) {
                 innerSuspendVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib,
@@ -70,11 +70,11 @@ extern "C" {
         }
 
         //init for getObject & JitCompiler
-        if (SDK_INT < 23) {
+        if (SDK_INT < ANDROID_M) {
             void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
             addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) dlsym(handle,
                                                                                    "_ZN3art9JavaVMExt22AddWeakGlobalReferenceEPNS_6ThreadEPNS_6mirror6ObjectE");
-        } else if (SDK_INT < 24) {
+        } else if (SDK_INT < ANDROID_N) {
             void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
             addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) dlsym(handle,
                                                                                    "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE");

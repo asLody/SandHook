@@ -8,6 +8,7 @@
 #include "../includes/utils.h"
 
 extern int SDK_INT;
+extern bool DEBUG;
 
 using namespace art::mirror;
 using namespace SandHook;
@@ -21,9 +22,9 @@ void ArtMethod::tryDisableInline() {
 }
 
 void ArtMethod::disableInterpreterForO() {
-    uint32_t accessFlag = getAccessFlags();
-    accessFlag |= 0x0100;
-    setAccessFlags(accessFlag);
+    if (SDK_INT >= ANDROID_O && DEBUG) {
+        setNative();
+    }
 }
 
 void ArtMethod::disableCompilable() {
@@ -53,7 +54,7 @@ bool ArtMethod::isStatic() {
 }
 
 bool ArtMethod::isCompiled() {
-    return getQuickCodeEntry() != SandHook::CastArtMethod::quickToInterpreterBridge;
+    return getQuickCodeEntry() != CastArtMethod::quickToInterpreterBridge && getQuickCodeEntry() != CastArtMethod::genericJniStub;
 }
 
 bool ArtMethod::isThumbCode() {
@@ -81,6 +82,13 @@ void ArtMethod::setStatic() {
     accessFlag |= 0x0008;
     setAccessFlags(accessFlag);
 };
+
+
+void ArtMethod::setNative() {
+    uint32_t accessFlag = getAccessFlags();
+    accessFlag |= 0x0100;
+    setAccessFlags(accessFlag);
+}
 
 uint32_t ArtMethod::getAccessFlags() {
     return CastArtMethod::accessFlag->get(this);
@@ -128,6 +136,9 @@ void ArtMethod::setDeclaringClassPtr(void *classPtr) {
 bool ArtMethod::compile(JNIEnv* env) {
     if (isCompiled())
         return true;
+    //some unknown error when trigger jit for jni method manually
+    if (isNative())
+        return false;
     Size threadId = getAddressFromJavaByCallMethod(env, "com/swift/sandhook/SandHook", "getThreadId");
     if (threadId == 0)
         return false;
