@@ -30,7 +30,7 @@ cant hook if lined
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:2.5.2'
+implementation 'com.swift.sandhook:hooklib:3.0.2'
 ```
 
 - Annotation API
@@ -103,7 +103,14 @@ public class NewAnnotationApiHooker {
 
 }
 
+
+
+//first set debuggable
+SandHookConfig.DEBUG = BuildConfig.DEBUG;
+
 and
+
+//add hookers
 SandHook.addHookClass(CtrHook.class, LogHooker.class, CustmizeHooker.class, ActivityHooker.class, ObjectHooker.class);
 
 you can also use:
@@ -114,7 +121,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:2.5.2'
+provided 'com.swift.sandhook:hookannotation:3.0.2'
 ```
   
 in your plugin
@@ -129,7 +136,7 @@ backup method can call itself to avoid be inlining
 Now you can use Xposed api:  
 
 ```groovy
-implementation 'com.swift.sandhook:xposedcompat:2.5.2'
+implementation 'com.swift.sandhook:xposedcompat:3.0.2'
 ```
 
 ```java
