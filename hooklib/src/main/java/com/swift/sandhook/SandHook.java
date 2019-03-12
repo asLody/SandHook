@@ -131,7 +131,7 @@ public class SandHook {
             globalBackupMap.put(entity.backup, entity);
         }
 
-        Log.d("SandHook", "method <" + entity.target.toString() + "> hook <" + (res == HookMode.INLINE ? "inline" : "replacement") + "> success!");
+        HookLog.d("method <" + entity.target.toString() + "> hook <" + (res == HookMode.INLINE ? "inline" : "replacement") + "> success!");
     }
 
     public static Object callOriginMethod(Member originMethod, Object thiz, Object... args) throws Throwable {
