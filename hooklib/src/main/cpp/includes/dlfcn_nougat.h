@@ -10,6 +10,8 @@ void *fake_dlopen(const char *filename, int flags);
 void *fake_dlsym(void *handle, const char *name);
 
 const char *fake_dlerror();
+
+void *getSymCompat(const char *filename, const char *name);
 }
 
 #endif //DLFCN_NOUGAT_H

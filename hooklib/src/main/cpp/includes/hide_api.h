@@ -31,6 +31,8 @@ extern "C" {
 
     bool disableJitInline(art::CompilerOptions* compilerOptions);
 
+    void* getInterpreterBridge(bool isNative);
+
 }
 
 #endif //SANDHOOK_HIDE_API_H

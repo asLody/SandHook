@@ -73,6 +73,7 @@ public:
     void* getDeclaringClassPtr();
 
     bool compile(JNIEnv* env);
+    bool deCompile();
     void flushCache();
     void backup(ArtMethod* backup);
 

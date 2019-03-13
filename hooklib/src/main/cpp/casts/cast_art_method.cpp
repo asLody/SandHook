@@ -182,6 +182,11 @@ namespace SandHook {
         jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
         art::mirror::ArtMethod *neverCall = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
                 neverCallTestClass, "neverCall", "()V"));
+        art::mirror::ArtMethod *neverCall2 = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
+                neverCallTestClass, "neverCall2", "()V"));
+
+        beAot = entryPointQuickCompiled->get(neverCall) != entryPointQuickCompiled->get(neverCall2);
+
         quickToInterpreterBridge = entryPointQuickCompiled->get(neverCall);
 
         art::mirror::ArtMethod *neverCallStatic = reinterpret_cast<art::mirror::ArtMethod *>(env->GetStaticMethodID(
@@ -208,5 +213,6 @@ namespace SandHook {
     void *CastArtMethod::quickToInterpreterBridge = nullptr;
     void *CastArtMethod::genericJniStub = nullptr;
     void *CastArtMethod::staticResolveStub = nullptr;
+    bool CastArtMethod::beAot = false;
 
 }

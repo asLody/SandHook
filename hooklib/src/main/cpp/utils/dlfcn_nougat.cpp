@@ -30,6 +30,8 @@
 #include <sys/mman.h>
 #include <elf.h>
 #include <android/log.h>
+#include <dlfcn.h>
+#include "../includes/arch.h"
 
 #define TAG_NAME    "nougat_dlfcn"
 
@@ -51,6 +53,8 @@
 #define Elf_Shdr Elf32_Shdr
 #define Elf_Sym  Elf32_Sym
 #endif
+
+extern int SDK_INT;
 
 
 struct ctx {
@@ -237,4 +241,20 @@ void *fake_dlsym(void *handle, const char *name) {
 const char *fake_dlerror() {
     return NULL;
 }
+
+
+void *getSymCompat(const char *filename, const char *name) {
+    if (SDK_INT >= ANDROID_N) {
+        void* handle = fake_dlopen(filename, RTLD_NOW);
+        if (handle) {
+            return fake_dlsym(handle, name);
+        }
+    } else {
+        void* handle = dlopen(filename, RTLD_LAZY | RTLD_GLOBAL);
+        if (handle) {
+            return dlsym(handle, name);
+        }
+    }
+}
+
 }

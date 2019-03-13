@@ -145,6 +145,15 @@ bool ArtMethod::compile(JNIEnv* env) {
     return compileMethod(this, reinterpret_cast<void *>(threadId)) && isCompiled();
 }
 
+bool ArtMethod::deCompile() {
+    if (!isCompiled())
+        return true;
+    if (CastArtMethod::beAot)
+        return false;
+    setQuickCodeEntry(isNative() ? CastArtMethod::genericJniStub : CastArtMethod::quickToInterpreterBridge);
+    flushCache();
+}
+
 void ArtMethod::flushCache() {
     flushCacheExt(reinterpret_cast<Size>(this), size());
 }

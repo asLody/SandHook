@@ -22,6 +22,7 @@ namespace SandHook {
         static void* quickToInterpreterBridge;
         static void* genericJniStub;
         static void* staticResolveStub;
+        static bool beAot;
 
         static void init(JNIEnv *env);
         static void copy(art::mirror::ArtMethod* from, art::mirror::ArtMethod* to);

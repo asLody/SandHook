@@ -20,19 +20,30 @@ extern "C" {
 
     art::jit::JitCompiler** globalJitCompileHandlerAddr = nullptr;
 
+    void* (*get)(bool*) = nullptr;
+
+    void* (*getQuickToInterpreterBridge)(void*) = nullptr;
+    void* (*getQuickGenericJniStub)(void*) = nullptr;
+
 
 
     void initHideApi(JNIEnv* env) {
+
+        const char* art_lib_path;
+        const char* jit_lib_path;
+        if (BYTE_POINT == 8) {
+            art_lib_path = "/system/lib64/libart.so";
+            jit_lib_path = "/system/lib64/libart-compiler.so";
+        } else {
+            art_lib_path = "/system/lib/libart.so";
+            jit_lib_path = "/system/lib/libart-compiler.so";
+        }
+
         //init compile
         if (SDK_INT >= ANDROID_N) {
-            void *jit_lib;
-            if (BYTE_POINT == 8) {
-                jit_lib = fake_dlopen("/system/lib64/libart-compiler.so", RTLD_NOW);
-            } else {
-                jit_lib = fake_dlopen("/system/lib/libart-compiler.so", RTLD_NOW);
-            }
-            jitCompileMethod = (bool (*)(void *, void *, void *, bool)) fake_dlsym(jit_lib, "jit_compile_method");
-            jitLoad = reinterpret_cast<void* (*)(bool*)>(fake_dlsym(jit_lib, "jit_load"));
+            jitCompileMethod = reinterpret_cast<bool (*)(void *, void *, void *,
+                                                    bool)>(getSymCompat(jit_lib_path, "jit_compile_method"));
+            jitLoad = reinterpret_cast<void* (*)(bool*)>(getSymCompat(jit_lib_path, "jit_load"));
             bool generate_debug_info = false;
             jitCompilerHandle = (jitLoad)(&generate_debug_info);
 
@@ -43,56 +54,34 @@ extern "C" {
             }
 
         }
+
+
         //init suspend
-        void* art_lib;
-        const char* art_lib_path;
-        if (BYTE_POINT == 8) {
-            art_lib_path = "/system/lib64/libart.so";
-        } else {
-            art_lib_path = "/system/lib/libart.so";
-        }
-        if (SDK_INT >= ANDROID_N) {
-            art_lib = fake_dlopen(art_lib_path, RTLD_NOW);
-            if (art_lib > 0) {
-                innerSuspendVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib,
+        innerSuspendVM = reinterpret_cast<void (*)()>(getSymCompat(art_lib_path,
                                                                          "_ZN3art3Dbg9SuspendVMEv"));
-                innerResumeVM = reinterpret_cast<void (*)()>(fake_dlsym(art_lib,
+        innerResumeVM = reinterpret_cast<void (*)()>(getSymCompat(art_lib_path,
                                                                         "_ZN3art3Dbg8ResumeVMEv"));
-            }
-        } else {
-            art_lib = dlopen(art_lib_path, RTLD_NOW);
-            if (art_lib > 0) {
-                innerSuspendVM = reinterpret_cast<void (*)()>(dlsym(art_lib,
-                                                                         "_ZN3art3Dbg9SuspendVMEv"));
-                innerResumeVM = reinterpret_cast<void (*)()>(dlsym(art_lib,
-                                                                        "_ZN3art3Dbg8ResumeVMEv"));
-            }
-        }
+
 
         //init for getObject & JitCompiler
+        const char* add_weak_ref_sym;
         if (SDK_INT < ANDROID_M) {
-            void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
-            addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) dlsym(handle,
-                                                                                   "_ZN3art9JavaVMExt22AddWeakGlobalReferenceEPNS_6ThreadEPNS_6mirror6ObjectE");
+            add_weak_ref_sym = "_ZN3art9JavaVMExt22AddWeakGlobalReferenceEPNS_6ThreadEPNS_6mirror6ObjectE";
         } else if (SDK_INT < ANDROID_N) {
-            void *handle = dlopen("libart.so", RTLD_LAZY | RTLD_GLOBAL);
-            addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) dlsym(handle,
-                                                                                   "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE");
-        } else {
-            void *handle;
-            if (BYTE_POINT == 8) {
-                handle = fake_dlopen("/system/lib64/libart.so", RTLD_NOW);
-            } else {
-                handle = fake_dlopen("/system/lib/libart.so", RTLD_NOW);
-            }
-            const char *addWeakGloablReferenceSymbol = SDK_INT <= 25
-                                                       ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
-                                                       : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE";
-            addWeakGlobalRef = (jobject (*)(JavaVM *, void *, void *)) fake_dlsym(handle,
-                                                                                  addWeakGloablReferenceSymbol);
+            add_weak_ref_sym = "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE";
+        } else  {
+            add_weak_ref_sym = SDK_INT <= ANDROID_N2
+                                           ? "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadEPNS_6mirror6ObjectE"
+                                           : "_ZN3art9JavaVMExt16AddWeakGlobalRefEPNS_6ThreadENS_6ObjPtrINS_6mirror6ObjectEEE";
+        }
 
-            //try disable inline !
-            globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(fake_dlsym(handle, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
+        addWeakGlobalRef = reinterpret_cast<jobject (*)(JavaVM *, void *,
+                                                   void *)>(getSymCompat(art_lib_path, add_weak_ref_sym));
+
+        if (SDK_INT >= ANDROID_N) {
+            globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
+            getQuickGenericJniStub = reinterpret_cast<void *(*)(void *)>(getSymCompat(art_lib_path, "_ZNK3art11ClassLinker29GetRuntimeQuickGenericJniStubEv"));
+            getQuickToInterpreterBridge = reinterpret_cast<void *(*)(void *)>(getSymCompat(art_lib_path, "_ZNK3art9OatHeader27GetQuickToInterpreterBridgeEv"));
         }
 
     }
@@ -167,6 +156,17 @@ extern "C" {
             return true;
         } else {
             return false;
+        }
+    }
+
+    void* getInterpreterBridge(bool isNative) {
+        if (isNative) {
+            if (getQuickGenericJniStub == nullptr || getQuickGenericJniStub <= 0)
+                return nullptr;
+            return getQuickGenericJniStub(nullptr);
+        } else {
+            //no implement
+            return nullptr;
         }
     }
 

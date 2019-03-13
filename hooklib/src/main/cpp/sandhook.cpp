@@ -243,6 +243,29 @@ Java_com_swift_sandhook_SandHook_compileMethod(JNIEnv *env, jclass type, jobject
 }
 
 extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_swift_sandhook_SandHook_deCompileMethod(JNIEnv *env, jclass type, jobject member) {
+
+    if (member == NULL)
+        return JNI_FALSE;
+    art::mirror::ArtMethod* method = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(member));
+
+    if (method == nullptr)
+        return JNI_FALSE;
+
+    if (method->isCompiled()) {
+        SandHook::StopTheWorld stopTheWorld;
+        if (SDK_INT >= ANDROID_N) {
+            method->disableCompilable();
+        }
+        return static_cast<jboolean>(method->deCompile());
+    } else {
+        return JNI_TRUE;
+    }
+
+}
+
+extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_swift_sandhook_SandHook_getObjectNative(JNIEnv *env, jclass type, jlong thread,
                                                  jlong address) {
