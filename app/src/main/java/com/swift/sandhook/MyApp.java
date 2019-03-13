@@ -24,6 +24,8 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
+        SandHookConfig.DEBUG = BuildConfig.DEBUG;
+
         SandHook.disableVMInline();
 
         try {
