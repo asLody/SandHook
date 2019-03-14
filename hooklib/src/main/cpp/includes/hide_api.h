@@ -33,6 +33,8 @@ extern "C" {
 
     void* getInterpreterBridge(bool isNative);
 
+    bool replaceUpdateCompilerOptionsQ();
+
 }
 
 #endif //SANDHOOK_HIDE_API_H

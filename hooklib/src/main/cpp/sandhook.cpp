@@ -306,6 +306,7 @@ JNIEXPORT jboolean JNICALL
 Java_com_swift_sandhook_SandHook_disableVMInline(JNIEnv *env, jclass type) {
     if (SDK_INT < ANDROID_N)
         return JNI_FALSE;
+    replaceUpdateCompilerOptionsQ();
     art::CompilerOptions* compilerOptions = getGlobalCompilerOptions();
     if (compilerOptions == nullptr)
         return JNI_FALSE;

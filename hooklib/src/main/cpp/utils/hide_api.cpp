@@ -4,6 +4,7 @@
 #include "../includes/hide_api.h"
 #include "../includes/arch.h"
 #include "../includes/elf_util.h"
+#include "../includes/log.h"
 
 extern int SDK_INT;
 
@@ -13,6 +14,7 @@ extern "C" {
     void* (*jitLoad)(bool*) = nullptr;
     void* jitCompilerHandle = nullptr;
     bool (*jitCompileMethod)(void*, void*, void*, bool) = nullptr;
+    bool (*jitCompileMethodQ)(void*, void*, void*, bool, bool) = nullptr;
 
     void (*innerSuspendVM)() = nullptr;
     void (*innerResumeVM)() = nullptr;
@@ -20,6 +22,9 @@ extern "C" {
     jobject (*addWeakGlobalRef)(JavaVM *, void *, void *) = nullptr;
 
     art::jit::JitCompiler** globalJitCompileHandlerAddr = nullptr;
+
+    //for Android Q
+    void (**origin_jit_update_options)(void *) = nullptr;
 
     void* (*get)(bool*) = nullptr;
 
@@ -40,8 +45,14 @@ extern "C" {
 
         //init compile
         if (SDK_INT >= ANDROID_N) {
-            jitCompileMethod = reinterpret_cast<bool (*)(void *, void *, void *,
-                                                    bool)>(getSymCompat(jit_lib_path, "jit_compile_method"));
+            if (SDK_INT >= ANDROID_Q) {
+                jitCompileMethodQ = reinterpret_cast<bool (*)(void *, void *, void *, bool,
+                                                         bool)>(getSymCompat(jit_lib_path, "jit_compile_method"));
+            } else {
+                jitCompileMethod = reinterpret_cast<bool (*)(void *, void *, void *,
+                                                             bool)>(getSymCompat(jit_lib_path,
+                                                                                 "jit_compile_method"));
+            }
             jitLoad = reinterpret_cast<void* (*)(bool*)>(getSymCompat(jit_lib_path, "jit_load"));
             bool generate_debug_info = false;
             jitCompilerHandle = (jitLoad)(&generate_debug_info);
@@ -79,19 +90,26 @@ extern "C" {
 
         if (SDK_INT >= ANDROID_N) {
             globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
-            SandHook::ElfImg elfImg(art_lib_path);
-            void* sym = reinterpret_cast<void *>(elfImg.getSymbAddress("art_quick_to_interpreter_bridge"));
+        }
 
-            int i = 1;
+        if (SDK_INT >= ANDROID_Q) {
+            origin_jit_update_options = reinterpret_cast<void (**)(void *)>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_update_options_E"));
         }
 
     }
 
     bool compileMethod(void* artMethod, void* thread) {
-        if (jitCompileMethod == nullptr) {
-            return false;
+        if (SDK_INT >= ANDROID_Q) {
+            if (jitCompileMethodQ == nullptr) {
+                return false;
+            }
+            return jitCompileMethodQ(jitCompilerHandle, artMethod, thread, false, false);
+        } else {
+            if (jitCompileMethod == nullptr) {
+                return false;
+            }
+            return jitCompileMethod(jitCompilerHandle, artMethod, thread, false);
         }
-        return jitCompileMethod(jitCompilerHandle, artMethod, thread, false);
     }
 
     void suspendVM() {
@@ -167,6 +185,24 @@ extern "C" {
         } else {
             return reinterpret_cast<void *>(libart.getSymbAddress("art_quick_to_interpreter_bridge"));
         }
+    }
+
+    //to replace jit_update_option
+    void fake_jit_update_options(void* handle) {
+        //do nothing
+        LOGW("android q: art request update compiler options");
+        return;
+    }
+
+    bool replaceUpdateCompilerOptionsQ() {
+        if (SDK_INT < ANDROID_Q)
+            return false;
+        if (origin_jit_update_options == nullptr
+            || origin_jit_update_options <= 0
+            || *origin_jit_update_options == nullptr
+            || *origin_jit_update_options <= 0)
+            return false;
+        *origin_jit_update_options = fake_jit_update_options;
     }
 
 }
