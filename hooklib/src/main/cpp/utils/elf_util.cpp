@@ -124,8 +124,18 @@ void *ElfImg::getModuleBase(const char *name) {
     off_t load_addr;
     int found = 0;
     maps = fopen("/proc/self/maps", "r");
-    while (!found && fgets(buff, sizeof(buff), maps))
-        if (strstr(buff, "r-xp") && strstr(buff, name)) found = 1;
+    while (fgets(buff, sizeof(buff), maps)) {
+        if ((strstr(buff, "r-xp") || strstr(buff, "r--p")) && strstr(buff, name)) {
+            found = 1;
+            __android_log_print(ANDROID_LOG_DEBUG, "dlopen", "%s\n", buff);
+            break;
+        }
+    }
+
+    if (!found) {
+        LOGE("failed to read load address for %s", name);
+        return nullptr;
+    }
 
     if (sscanf(buff, "%lx", &load_addr) != 1)
         LOGE("failed to read load address for %s", name);
