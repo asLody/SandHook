@@ -34,7 +34,7 @@ namespace SandHook {
 
         Elf_Addr getSymbOffset(const char* name);
 
-        void* getModuleBase(int pid, const char* name);
+        void* getModuleBase(const char* name);
 
         Elf_Addr getSymbAddress(const char* name);
 
@@ -44,10 +44,13 @@ namespace SandHook {
         const char* elf = nullptr;
         void* base = nullptr;
         char* buffer = nullptr;
+        off_t size = 0;
+        off_t bias = 0;
         Elf_Ehdr* header = nullptr;
         Elf_Shdr* section_header = nullptr;
         Elf_Shdr* symtab = nullptr;
         Elf_Shdr* strtab = nullptr;
+        Elf_Shdr* dynsym = nullptr;
         Elf_Sym* sym_start = nullptr;
         Elf_Off symtab_count = 0;
         Elf_Off symstr_offset = 0;
