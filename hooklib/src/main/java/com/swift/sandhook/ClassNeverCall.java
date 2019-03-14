@@ -9,4 +9,5 @@ public class ClassNeverCall {
     }
     private static void neverCallStatic() {}
     private native void neverCallNative();
+    private native void neverCallNative2();
 }

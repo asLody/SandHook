@@ -24,10 +24,10 @@ Java_com_swift_sandhook_SandHook_initNative(JNIEnv *env, jclass type, jint sdk, 
     // TODO
     SDK_INT = sdk;
     DEBUG = debug;
+    initHideApi(env);
     SandHook::CastArtMethod::init(env);
     SandHook::CastCompilerOptions::init(env);
     trampolineManager.init(SandHook::CastArtMethod::entryPointQuickCompiled->getOffset());
-    initHideApi(env);
     return JNI_TRUE;
 
 }
@@ -327,4 +327,11 @@ Java_com_swift_sandhook_ClassNeverCall_neverCallNative(JNIEnv *env, jobject inst
     int a = 1 + 1;
     int b = a + 1;
 
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_ClassNeverCall_neverCallNative2(JNIEnv *env, jobject instance) {
+    int a = 4 + 3;
+    int b = 9 + 6;
 }

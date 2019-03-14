@@ -1,3 +1,6 @@
+//
+// Created by Swift Gan on 2019/3/14.
+//
 #ifndef SANDHOOK_ELF_UTIL_H
 #define SANDHOOK_ELF_UTIL_H
 
@@ -45,7 +48,7 @@ namespace SandHook {
         void* base = nullptr;
         char* buffer = nullptr;
         off_t size = 0;
-        off_t bias = 0;
+        off_t bias = -4396;
         Elf_Ehdr* header = nullptr;
         Elf_Shdr* section_header = nullptr;
         Elf_Shdr* symtab = nullptr;

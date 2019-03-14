@@ -180,22 +180,44 @@ namespace SandHook {
         declaringClass->init(env, m1, size);
 
         jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
+
+
         art::mirror::ArtMethod *neverCall = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
                 neverCallTestClass, "neverCall", "()V"));
         art::mirror::ArtMethod *neverCall2 = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
                 neverCallTestClass, "neverCall2", "()V"));
 
-        beAot = entryPointQuickCompiled->get(neverCall) != entryPointQuickCompiled->get(neverCall2);
+        bool beAot = entryPointQuickCompiled->get(neverCall) != entryPointQuickCompiled->get(neverCall2);
+        if (beAot) {
+            quickToInterpreterBridge = getInterpreterBridge(false);
+            if (quickToInterpreterBridge == nullptr || quickToInterpreterBridge <= 0) {
+                quickToInterpreterBridge = entryPointQuickCompiled->get(neverCall);
+                canGetInterpreterBridge = false;
+            }
+        } else {
+            quickToInterpreterBridge = entryPointQuickCompiled->get(neverCall);
+        }
 
-        quickToInterpreterBridge = entryPointQuickCompiled->get(neverCall);
+
+        art::mirror::ArtMethod *neverCallNative = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
+                neverCallTestClass, "neverCallNative", "()V"));
+        art::mirror::ArtMethod *neverCallNative2 = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
+                neverCallTestClass, "neverCallNative2", "()V"));
+
+        beAot = entryPointQuickCompiled->get(neverCallNative) != entryPointQuickCompiled->get(neverCallNative2);
+        if (beAot) {
+            genericJniStub = getInterpreterBridge(true);
+            if (genericJniStub == nullptr || genericJniStub <= 0) {
+                genericJniStub = entryPointQuickCompiled->get(neverCallNative);
+                canGetJniBridge = false;
+            }
+        } else {
+            genericJniStub = entryPointQuickCompiled->get(neverCallNative);
+        }
 
         art::mirror::ArtMethod *neverCallStatic = reinterpret_cast<art::mirror::ArtMethod *>(env->GetStaticMethodID(
                 neverCallTestClass, "neverCallStatic", "()V"));
         staticResolveStub = entryPointQuickCompiled->get(neverCallStatic);
-
-        art::mirror::ArtMethod *neverCallNative = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
-                neverCallTestClass, "neverCallNative", "()V"));
-        genericJniStub = entryPointQuickCompiled->get(neverCallNative);
 
     }
 
@@ -213,6 +235,7 @@ namespace SandHook {
     void *CastArtMethod::quickToInterpreterBridge = nullptr;
     void *CastArtMethod::genericJniStub = nullptr;
     void *CastArtMethod::staticResolveStub = nullptr;
-    bool CastArtMethod::beAot = false;
+    bool CastArtMethod::canGetInterpreterBridge = true;
+    bool CastArtMethod::canGetJniBridge = true;
 
 }

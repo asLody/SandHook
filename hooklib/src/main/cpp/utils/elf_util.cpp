@@ -1,3 +1,6 @@
+//
+// Created by Swift Gan on 2019/3/14.
+//
 #include <malloc.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -12,10 +15,15 @@ ElfImg::ElfImg(const char *elf) {
     this->elf = elf;
     //load elf
     int fd = open(elf, O_RDONLY);
-    if (fd < 0) LOGE("failed to open %s", elf);
+    if (fd < 0) {
+        LOGE("failed to open %s", elf);
+        return;
+    }
 
     size = lseek(fd, 0, SEEK_END);
-    if (size <= 0) LOGE("lseek() failed for %s", elf);
+    if (size <= 0) {
+        LOGE("lseek() failed for %s", elf);
+    }
 
     header = reinterpret_cast<Elf_Ehdr *>(mmap(0, size, PROT_READ, MAP_SHARED, fd, 0));
 
@@ -56,7 +64,7 @@ ElfImg::ElfImg(const char *elf) {
                 }
                 break;
             case SHT_PROGBITS:
-                if (has_dynsym && has_strtab && bias == 0) {
+                if (has_dynsym && has_strtab && bias == -4396) {
                     bias = (off_t) section_h->sh_addr - (off_t) section_h->sh_offset;
                 }
                 break;
@@ -74,10 +82,12 @@ ElfImg::ElfImg(const char *elf) {
 }
 
 ElfImg::~ElfImg() {
+    //open elf file local
     if (buffer) {
         free(buffer);
         buffer = nullptr;
     }
+    //use mmap
     if (header) {
         munmap(header, size);
     }

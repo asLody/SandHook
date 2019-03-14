@@ -148,10 +148,16 @@ bool ArtMethod::compile(JNIEnv* env) {
 bool ArtMethod::deCompile() {
     if (!isCompiled())
         return true;
-    if (CastArtMethod::beAot)
+    if ((isNative() && CastArtMethod::canGetJniBridge) || (!isNative() && CastArtMethod::canGetInterpreterBridge)) {
+        setQuickCodeEntry(isNative() ? CastArtMethod::genericJniStub : CastArtMethod::quickToInterpreterBridge);
+        if (SDK_INT < ANDROID_N) {
+            //TODO SetEntryPointFromInterpreterCode
+        }
+        flushCache();
+        return true;
+    } else {
         return false;
-    setQuickCodeEntry(isNative() ? CastArtMethod::genericJniStub : CastArtMethod::quickToInterpreterBridge);
-    flushCache();
+    }
 }
 
 void ArtMethod::flushCache() {

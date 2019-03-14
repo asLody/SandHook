@@ -23,15 +23,13 @@ extern "C" {
 
     void* (*get)(bool*) = nullptr;
 
-    void* (*getQuickToInterpreterBridge)(void*) = nullptr;
-    void* (*getQuickGenericJniStub)(void*) = nullptr;
+    const char* art_lib_path;
+    const char* jit_lib_path;
 
 
 
     void initHideApi(JNIEnv* env) {
 
-        const char* art_lib_path;
-        const char* jit_lib_path;
         if (BYTE_POINT == 8) {
             art_lib_path = "/system/lib64/libart.so";
             jit_lib_path = "/system/lib64/libart-compiler.so";
@@ -81,9 +79,6 @@ extern "C" {
 
         if (SDK_INT >= ANDROID_N) {
             globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
-            getQuickGenericJniStub = reinterpret_cast<void *(*)(void *)>(getSymCompat(art_lib_path, "_ZNK3art11ClassLinker29GetRuntimeQuickGenericJniStubEv"));
-            getQuickToInterpreterBridge = reinterpret_cast<void *(*)(void *)>(getSymCompat(art_lib_path, "_ZNK3art9OatHeader27GetQuickToInterpreterBridgeEv"));
-
             SandHook::ElfImg elfImg(art_lib_path);
             void* sym = reinterpret_cast<void *>(elfImg.getSymbAddress("art_quick_to_interpreter_bridge"));
 
@@ -166,13 +161,11 @@ extern "C" {
     }
 
     void* getInterpreterBridge(bool isNative) {
+        SandHook::ElfImg libart(art_lib_path);
         if (isNative) {
-            if (getQuickGenericJniStub == nullptr || getQuickGenericJniStub <= 0)
-                return nullptr;
-            return getQuickGenericJniStub(nullptr);
+            return reinterpret_cast<void *>(libart.getSymbAddress("art_quick_generic_jni_trampoline"));
         } else {
-            //no implement
-            return nullptr;
+            return reinterpret_cast<void *>(libart.getSymbAddress("art_quick_to_interpreter_bridge"));
         }
     }
 
