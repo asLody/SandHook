@@ -244,7 +244,7 @@ Java_com_swift_sandhook_SandHook_compileMethod(JNIEnv *env, jclass type, jobject
 
 extern "C"
 JNIEXPORT jboolean JNICALL
-Java_com_swift_sandhook_SandHook_deCompileMethod(JNIEnv *env, jclass type, jobject member) {
+Java_com_swift_sandhook_SandHook_deCompileMethod(JNIEnv *env, jclass type, jobject member, jboolean disableJit) {
 
     if (member == NULL)
         return JNI_FALSE;
@@ -252,6 +252,10 @@ Java_com_swift_sandhook_SandHook_deCompileMethod(JNIEnv *env, jclass type, jobje
 
     if (method == nullptr)
         return JNI_FALSE;
+
+    if (disableJit) {
+        method->disableCompilable();
+    }
 
     if (method->isCompiled()) {
         SandHook::StopTheWorld stopTheWorld;
