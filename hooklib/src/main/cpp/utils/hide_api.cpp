@@ -26,8 +26,6 @@ extern "C" {
     //for Android Q
     void (**origin_jit_update_options)(void *) = nullptr;
 
-    void* (*get)(bool*) = nullptr;
-
     const char* art_lib_path;
     const char* jit_lib_path;
 
