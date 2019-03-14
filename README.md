@@ -182,6 +182,10 @@ we can do nothing to prevent some methods been inlined before app start, but we 
 if you will hook some method that could be inlined, please call SandHook.disableVMInline()(OS >= 7.0) in Application.OnCreate()
 
 
+### Deoptimize
+You can also deoptimize a caller that inlined your hook method by SandHook.deCompile(caller), just implement >= 7.0
+
+
 # Demo
 
 non-Root Xposed Environment Demo (VirtualApp With SandHook):
