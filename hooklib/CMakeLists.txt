@@ -24,6 +24,7 @@ add_library( # Sets the name of the library.
              src/main/cpp/utils/hide_api.cpp
              src/main/cpp/utils/utils.cpp
              src/main/cpp/utils/offset.cpp
+             src/main/cpp/utils/elf_util.cpp
              src/main/cpp/casts/cast_art_method.cpp
              src/main/cpp/casts/cast_compiler_options.cpp
              src/main/cpp/art/art_method.cpp

@@ -3,6 +3,7 @@
 //
 #include "../includes/hide_api.h"
 #include "../includes/arch.h"
+#include "../includes/elf_util.h"
 
 extern int SDK_INT;
 
@@ -82,6 +83,11 @@ extern "C" {
             globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
             getQuickGenericJniStub = reinterpret_cast<void *(*)(void *)>(getSymCompat(art_lib_path, "_ZNK3art11ClassLinker29GetRuntimeQuickGenericJniStubEv"));
             getQuickToInterpreterBridge = reinterpret_cast<void *(*)(void *)>(getSymCompat(art_lib_path, "_ZNK3art9OatHeader27GetQuickToInterpreterBridgeEv"));
+
+            SandHook::ElfImg elfImg(art_lib_path);
+            void* sym = reinterpret_cast<void *>(elfImg.getSymbAddress("art_quick_to_interpreter_bridge"));
+
+            int i = 1;
         }
 
     }
