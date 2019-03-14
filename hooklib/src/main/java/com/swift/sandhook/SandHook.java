@@ -54,7 +54,7 @@ public class SandHook {
         initTestOffset();
         initThreadPeer();
         SandHookMethodResolver.init();
-        return initNative(Build.VERSION.SDK_INT, SandHookConfig.DEBUG);
+        return initNative(SandHookConfig.SDK_INT, SandHookConfig.DEBUG);
     }
 
     private static void initThreadPeer() {

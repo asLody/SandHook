@@ -20,11 +20,19 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 
 public class MyApp extends Application {
+
+    //if you want test Android Q, please set true, because SDK_INT of Android Q is still 28
+    public final static boolean testAndroidQ = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
 
         SandHookConfig.DEBUG = BuildConfig.DEBUG;
+
+        if (testAndroidQ) {
+            SandHookConfig.SDK_INT = 29;
+        }
 
         SandHook.disableVMInline();
 
@@ -45,6 +53,12 @@ public class MyApp extends Application {
         XposedCompat.context = this;
         XposedCompat.classLoader = getClassLoader();
         XposedCompat.isFirstApplication= true;
+
+        //some error when invoke backup in Android Q
+        if (SandHookConfig.SDK_INT >= 29) {
+            XposedCompat.useNewDexMaker = false;
+            XposedCompat.useInternalStub = false;
+        }
 
         XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
             @Override
