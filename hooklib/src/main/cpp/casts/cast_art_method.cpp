@@ -106,10 +106,16 @@ namespace SandHook {
                                                  "testAccessFlag");
             if (accessFlag == 0) {
                 accessFlag = 524313;
+                //kAccPublicApi
+                if (SDK_INT >= ANDROID_Q) {
+                    accessFlag |= 0x10000000;
+                }
             }
             int offset = findOffset(p, getParentSize(), 2, accessFlag);
             if (offset < 0) {
-                if (SDK_INT == ANDROID_L2) {
+                if (SDK_INT >= ANDROID_Q) {
+                    return 4;
+                } else if (SDK_INT == ANDROID_L2) {
                     return 20;
                 } else if (SDK_INT == ANDROID_L) {
                     return 56;

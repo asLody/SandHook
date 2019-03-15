@@ -55,11 +55,6 @@ public class MyApp extends Application {
         XposedCompat.classLoader = getClassLoader();
         XposedCompat.isFirstApplication= true;
 
-//        //some error when invoke backup in Android Q
-        if (SandHookConfig.SDK_INT >= 29) {
-            XposedCompat.useNewCallBackup = false;
-        }
-
         XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {

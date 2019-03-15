@@ -61,7 +61,7 @@ TEMP_STUB_INFO = """
 
 
 STUB_SIZES = [10,20,30,30,30,30,30,20,10,10,5,5,3]
-HAS_BACKUP = True;
+HAS_BACKUP = False
 
 
 def getMethodId(args, index):
