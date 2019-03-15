@@ -13,7 +13,7 @@ Android ART Hook
 
 # OS
 
-4.4(ART Runtime) - 9.0
+4.4(ART Runtime) - 10.0
 
 # Scope
 
@@ -30,7 +30,7 @@ cant hook if lined
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:3.0.2'
+implementation 'com.swift.sandhook:hooklib:3.1.0'
 ```
 
 - Annotation API
@@ -121,7 +121,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:3.0.2'
+provided 'com.swift.sandhook:hookannotation:3.1.0'
 ```
   
 in your plugin
@@ -136,7 +136,7 @@ backup method can call itself to avoid be inlining
 Now you can use Xposed api:  
 
 ```groovy
-implementation 'com.swift.sandhook:xposedcompat:3.0.2'
+implementation 'com.swift.sandhook:xposedcompat:3.1.0'
 ```
 
 ```java
@@ -191,6 +191,13 @@ You can also deoptimize a caller that inlined your hook method by SandHook.deCom
 non-Root Xposed Environment Demo (VirtualApp With SandHook):
 
 https://github.com/ganyao114/SandVXposed
+
+# Android Q(10.0)
+
+in MyApp.java
+
+//if you want test Android Q, please set true, because SDK_INT of Android Q is still 28
+public final static boolean testAndroidQ = false;
  
 
 # References

@@ -6,6 +6,7 @@ import com.swift.sandhook.SandHook;
 import com.swift.sandhook.SandHookMethodResolver;
 import com.swift.sandhook.utils.ParamWrapper;
 import com.swift.sandhook.wrapper.BackupMethodStubs;
+import com.swift.sandhook.xposedcompat.XposedCompat;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.lang.reflect.Constructor;
@@ -44,7 +45,7 @@ public class HookStubManager {
         Class stubClass = SandHook.is64Bit() ? MethodHookerStubs64.class : MethodHookerStubs32.class;
         stubSizes = (int[]) XposedHelpers.getStaticObjectField(stubClass, "stubSizes");
         Boolean hasBackup = (Boolean) XposedHelpers.getStaticObjectField(stubClass, "hasStubBackup");
-        hasStubBackup = hasBackup == null ? false : hasBackup;
+        hasStubBackup = hasBackup != null && (hasBackup && !XposedCompat.useNewCallBackup);
         if (stubSizes != null && stubSizes.length > 0) {
             MAX_STUB_ARGS = stubSizes.length - 1;
             curUseStubIndexes = new AtomicInteger[MAX_STUB_ARGS + 1];

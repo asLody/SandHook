@@ -54,10 +54,9 @@ public class MyApp extends Application {
         XposedCompat.classLoader = getClassLoader();
         XposedCompat.isFirstApplication= true;
 
-        //some error when invoke backup in Android Q
+//        //some error when invoke backup in Android Q
         if (SandHookConfig.SDK_INT >= 29) {
-            XposedCompat.useNewDexMaker = false;
-            XposedCompat.useInternalStub = false;
+            XposedCompat.useNewCallBackup = false;
         }
 
         XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {

@@ -24,7 +24,7 @@ import de.robv.android.xposed.XposedBridge;
 public final class DynamicBridge {
 
     private static final HashMap<Member, Method> hookedInfo = new HashMap<>();
-    private static HookMaker hookMaker = XposedCompat.useNewDexMaker ? new HookerDexMakerNew() : new HookerDexMaker();
+    private static HookMaker hookMaker = XposedCompat.useNewCallBackup ? new HookerDexMakerNew() : new HookerDexMaker();
     private static final AtomicBoolean dexPathInited = new AtomicBoolean(false);
     private static File dexDir;
 
