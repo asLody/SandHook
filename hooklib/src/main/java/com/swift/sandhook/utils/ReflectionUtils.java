@@ -33,6 +33,16 @@ public class ReflectionUtils {
         }
     }
 
+    public static boolean passApiCheck() {
+        try {
+            addReflectionWhiteList("Landroid/", "Lcom/android/");
+            return true;
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            return false;
+        }
+    }
+
     //methidSigs like Lcom/swift/sandhook/utils/ReflectionUtils;->vmRuntime:java/lang/Object; (from hidden policy list)
     public static void addReflectionWhiteList(String... memberSigs) throws Throwable {
         addWhiteListMethod.invoke(vmRuntime, new Object[] {memberSigs});

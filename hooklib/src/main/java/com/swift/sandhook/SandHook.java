@@ -1,9 +1,7 @@
 package com.swift.sandhook;
 
-import android.os.Build;
-import android.util.Log;
-
 import com.swift.sandhook.annotation.HookMode;
+import com.swift.sandhook.utils.ReflectionUtils;
 import com.swift.sandhook.utils.Unsafe;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
@@ -293,6 +291,10 @@ public class SandHook {
         } catch (IllegalAccessException e) {
             return 0;
         }
+    }
+
+    public static boolean passApiCheck() {
+        return ReflectionUtils.passApiCheck();
     }
 
     private static native boolean initNative(int sdk, boolean debug);

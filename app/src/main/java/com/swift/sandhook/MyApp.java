@@ -35,6 +35,7 @@ public class MyApp extends Application {
         }
 
         SandHook.disableVMInline();
+        SandHook.passApiCheck();
 
         try {
             SandHook.addHookClass(JniHooker.class,
