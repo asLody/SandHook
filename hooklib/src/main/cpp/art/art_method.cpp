@@ -54,12 +54,8 @@ bool ArtMethod::isStatic() {
 }
 
 bool ArtMethod::isCompiled() {
-    if (SDK_INT >= ANDROID_Q) {
-        return getQuickCodeEntry() != CastArtMethod::quickToInterpreterBridge;
-    } else {
-        return getQuickCodeEntry() != CastArtMethod::quickToInterpreterBridge &&
-               getQuickCodeEntry() != CastArtMethod::genericJniStub;
-    }
+    return getQuickCodeEntry() != CastArtMethod::quickToInterpreterBridge &&
+           getQuickCodeEntry() != CastArtMethod::genericJniStub;
 }
 
 bool ArtMethod::isThumbCode() {
