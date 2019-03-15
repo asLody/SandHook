@@ -8,6 +8,8 @@ import java.lang.reflect.Method;
 // Created by Swift Gan on 2019/3/15.
 //
 
+
+//bypass hidden api on Android 9 - 10
 public class ReflectionUtils {
 
     public static Method forNameMethod;
