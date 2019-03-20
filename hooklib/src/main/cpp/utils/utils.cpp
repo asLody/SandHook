@@ -48,6 +48,20 @@ extern "C" {
         return env->GetStaticIntField(clazz, id);
     }
 
+    bool getBooleanFromJava(JNIEnv *env, const char *className, const char *fieldName) {
+        jclass clazz = env->FindClass(className);
+        if (clazz == NULL) {
+            printf("find class error !");
+            return false;
+        }
+        jfieldID id = env->GetStaticFieldID(clazz, fieldName, "Z");
+        if (id == NULL) {
+            printf("find field error !");
+            return false;
+        }
+        return env->GetStaticBooleanField(clazz, id);
+    }
+
     bool munprotect(size_t addr, size_t len) {
         long pagesize = sysconf(_SC_PAGESIZE);
         unsigned alignment = (unsigned) ((unsigned long long) addr % pagesize);

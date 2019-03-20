@@ -20,6 +20,8 @@ extern "C" {
 
     jint getIntFromJava(JNIEnv *env, const char *className, const char *fieldName);
 
+    bool getBooleanFromJava(JNIEnv *env, const char *className, const char *fieldName);
+
     bool munprotect(size_t addr, size_t len);
 
     bool flushCacheExt(Size addr, Size len);

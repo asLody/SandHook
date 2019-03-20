@@ -5,9 +5,9 @@
 #include "../includes/arch.h"
 #include "../includes/elf_util.h"
 #include "../includes/log.h"
+#include "../includes/utils.h"
 
 extern int SDK_INT;
-extern bool COMPILER;
 
 extern "C" {
 
@@ -30,9 +30,11 @@ extern "C" {
     const char* art_lib_path;
     const char* jit_lib_path;
 
-
+    JavaVM* jvm;
 
     void initHideApi(JNIEnv* env) {
+
+        env->GetJavaVM(&jvm);
 
         if (BYTE_POINT == 8) {
             art_lib_path = "/system/lib64/libart.so";
@@ -97,8 +99,15 @@ extern "C" {
 
     }
 
+    bool canCompile() {
+        JNIEnv *env;
+        jvm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
+        return getBooleanFromJava(env, "com/swift/sandhook/SandHookConfig",
+                                  "compiler");
+    }
+
     bool compileMethod(void* artMethod, void* thread) {
-        if (!COMPILER) return false;
+        if (!canCompile()) return false;
         if (SDK_INT >= ANDROID_Q) {
             if (jitCompileMethodQ == nullptr) {
                 return false;
@@ -133,11 +142,7 @@ extern "C" {
         if (addWeakGlobalRef == nullptr)
             return NULL;
 
-
-        JavaVM *vm;
-        env->GetJavaVM(&vm);
-
-        jobject object = addWeakGlobalRef(vm, thread, address);
+        jobject object = addWeakGlobalRef(jvm, thread, address);
         if (object == NULL)
             return NULL;
 

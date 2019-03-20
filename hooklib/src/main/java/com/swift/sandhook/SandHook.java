@@ -52,7 +52,6 @@ public class SandHook {
         initTestOffset();
         initThreadPeer();
         SandHookMethodResolver.init();
-        enableCompiler(SandHookConfig.compiler);
         return initNative(SandHookConfig.SDK_INT, SandHookConfig.DEBUG);
     }
 
@@ -319,9 +318,6 @@ public class SandHook {
     public static native boolean is64Bit();
 
     public static native boolean disableVMInline();
-
-    //compile error when in zygote process
-    public static native void enableCompiler(boolean enable);
 
     @FunctionalInterface
     public interface HookModeCallBack {

@@ -8,7 +8,6 @@ SandHook::TrampolineManager trampolineManager;
 
 extern "C" int SDK_INT = 0;
 extern "C" bool DEBUG = false;
-extern "C" volatile bool COMPILER = true;
 
 enum HookMode {
     AUTO = 0,
@@ -316,12 +315,6 @@ Java_com_swift_sandhook_SandHook_disableVMInline(JNIEnv *env, jclass type) {
     if (compilerOptions == nullptr)
         return JNI_FALSE;
     return static_cast<jboolean>(disableJitInline(compilerOptions));
-}
-
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_swift_sandhook_SandHook_enableCompiler(JNIEnv *env, jclass type, jboolean enable) {
-    COMPILER = enable;
 }
 
 extern "C"
