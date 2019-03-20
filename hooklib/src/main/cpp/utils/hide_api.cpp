@@ -7,6 +7,7 @@
 #include "../includes/log.h"
 
 extern int SDK_INT;
+extern bool COMPILER;
 
 extern "C" {
 
@@ -97,6 +98,7 @@ extern "C" {
     }
 
     bool compileMethod(void* artMethod, void* thread) {
+        if (!COMPILER) return false;
         if (SDK_INT >= ANDROID_Q) {
             if (jitCompileMethodQ == nullptr) {
                 return false;

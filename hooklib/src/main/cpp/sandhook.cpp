@@ -8,6 +8,7 @@ SandHook::TrampolineManager trampolineManager;
 
 extern "C" int SDK_INT = 0;
 extern "C" bool DEBUG = false;
+extern "C" volatile bool COMPILER = true;
 
 enum HookMode {
     AUTO = 0,
@@ -64,13 +65,13 @@ bool doHookWithReplacement(JNIEnv* env,
                            art::mirror::ArtMethod *hookMethod,
                            art::mirror::ArtMethod *backupMethod) {
 
-    hookMethod->compile(env);
+    if (!hookMethod->compile(env)) {
+        hookMethod->disableCompilable();
+    }
 
     if (backupMethod != nullptr) {
         originMethod->backup(backupMethod);
-        if (SDK_INT >= ANDROID_N) {
-            backupMethod->disableCompilable();
-        }
+        backupMethod->disableCompilable();
         backupMethod->disableInterpreterForO();
         backupMethod->tryDisableInline();
         if (!backupMethod->isStatic()) {
@@ -79,13 +80,11 @@ bool doHookWithReplacement(JNIEnv* env,
         backupMethod->flushCache();
     }
 
-    if (SDK_INT >= ANDROID_N) {
-        originMethod->disableCompilable();
-        hookMethod->disableCompilable();
-        hookMethod->flushCache();
-    }
-    originMethod->tryDisableInline();
+    originMethod->disableCompilable();
+    hookMethod->disableCompilable();
+    hookMethod->flushCache();
 
+    originMethod->tryDisableInline();
     originMethod->disableInterpreterForO();
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod);
@@ -112,7 +111,9 @@ bool doHookWithInline(JNIEnv* env,
                       art::mirror::ArtMethod *backupMethod) {
 
     //fix >= 8.1
-    hookMethod->compile(env);
+    if (!hookMethod->compile(env)) {
+        hookMethod->disableCompilable();
+    }
 
     if (SDK_INT >= ANDROID_N) {
         originMethod->disableCompilable();
@@ -315,6 +316,12 @@ Java_com_swift_sandhook_SandHook_disableVMInline(JNIEnv *env, jclass type) {
     if (compilerOptions == nullptr)
         return JNI_FALSE;
     return static_cast<jboolean>(disableJitInline(compilerOptions));
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_enableCompiler(JNIEnv *env, jclass type, jboolean enable) {
+    COMPILER = enable;
 }
 
 extern "C"

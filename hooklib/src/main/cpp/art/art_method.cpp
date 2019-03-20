@@ -28,6 +28,8 @@ void ArtMethod::disableInterpreterForO() {
 }
 
 void ArtMethod::disableCompilable() {
+    if (SDK_INT < ANDROID_N)
+        return;
     uint32_t accessFlag = getAccessFlags();
     if (SDK_INT >= ANDROID_O2) {
         accessFlag |= 0x02000000;
