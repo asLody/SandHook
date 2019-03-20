@@ -67,7 +67,7 @@ public class HookWrapper {
             if (hookMethodBackup == null)
                 continue;
             for (HookEntity hookEntity:hookEntityMap.values()) {
-                if (TextUtils.equals(hookEntity.target.getName(), hookMethodBackup.value()) && samePars(classLoader, field, hookEntity.pars)) {
+                if (TextUtils.equals(hookEntity.isCtor() ? "<init>" : hookEntity.target.getName(), hookMethodBackup.value()) && samePars(classLoader, field, hookEntity.pars)) {
                     field.setAccessible(true);
                     if (hookEntity.backup == null)
                         hookEntity.backup = BackupMethodStubs.getStubMethod();
@@ -317,10 +317,9 @@ public class HookWrapper {
     private static boolean samePars(ClassLoader classLoader, Field field, Class[] par) {
         try {
             Class[] parsOnField = parseMethodPars(classLoader, field);
+            if (parsOnField == null && field.isAnnotationPresent(SkipParamCheck.class))
+                return true;
             if (par == null) {
-                if (field.isAnnotationPresent(SkipParamCheck.class)) {
-                    return true;
-                }
                 par = new Class[0];
             }
             if (parsOnField == null)
