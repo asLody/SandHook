@@ -317,8 +317,12 @@ public class HookWrapper {
     private static boolean samePars(ClassLoader classLoader, Field field, Class[] par) {
         try {
             Class[] parsOnField = parseMethodPars(classLoader, field);
-            if (par == null)
+            if (par == null) {
+                if (field.isAnnotationPresent(SkipParamCheck.class)) {
+                    return true;
+                }
                 par = new Class[0];
+            }
             if (parsOnField == null)
                 parsOnField = new Class[0];
             if (par.length != parsOnField.length)
