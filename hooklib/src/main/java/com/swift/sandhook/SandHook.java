@@ -255,7 +255,11 @@ public class SandHook {
         if (artMethodClass != null)
             return true;
         try {
-            artMethodClass = Class.forName("java.lang.reflect.ArtMethod");
+            if (SandHookConfig.initClassLoader == null) {
+                artMethodClass = Class.forName("java.lang.reflect.ArtMethod");
+            } else {
+                artMethodClass = Class.forName("java.lang.reflect.ArtMethod", true, SandHookConfig.initClassLoader);
+            }
             return true;
         } catch (ClassNotFoundException e) {
             return false;
