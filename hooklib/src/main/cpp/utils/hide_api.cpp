@@ -100,7 +100,7 @@ extern "C" {
     }
 
     bool canCompile() {
-        if (!getGlobalJitCompiler()) {
+        if (getGlobalJitCompiler() == nullptr || getGlobalJitCompiler() <= 0) {
             LOGE("JIT not init!");
             return false;
         }
