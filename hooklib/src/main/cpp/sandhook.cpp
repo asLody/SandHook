@@ -450,3 +450,21 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
 
     return JNI_VERSION_1_6;
 }
+
+JNIEXPORT bool JNI_Load_Ex(JNIEnv* env, jclass classSandHook, jclass classNeverCall) {
+    int jniMethodSize = sizeof(JNINativeMethod);
+
+    if (env == nullptr || classSandHook == nullptr || classNeverCall == nullptr)
+        return false;
+
+    if (env->RegisterNatives(classSandHook, jniSandHook, sizeof(jniSandHook) / jniMethodSize) < 0) {
+        return false;
+    }
+
+    if (env->RegisterNatives(classNeverCall, jniNeverCall, sizeof(jniNeverCall) / jniMethodSize) < 0) {
+        return false;
+    }
+
+    LOGW("JNI Loaded");
+    return true;
+}
