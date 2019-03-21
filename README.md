@@ -188,9 +188,17 @@ You can also deoptimize a caller that inlined your hook method by SandHook.deCom
 
 # Demo
 
+## SandVXPosed
+
 non-Root Xposed Environment Demo (VirtualApp With SandHook):
 
 https://github.com/ganyao114/SandVXposed
+
+## EdXposed(SandHook Brunch)
+
+Unofficial Xposed framework for >= 8.0
+
+https://github.com/ElderDrivers/EdXposed/tree/sandhook
 
 # Android Q(10.0)
 
