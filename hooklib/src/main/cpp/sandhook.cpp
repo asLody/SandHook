@@ -451,7 +451,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     return JNI_VERSION_1_6;
 }
 
-JNIEXPORT bool JNICALL JNI_Load_Ex(JNIEnv* env, jclass classSandHook, jclass classNeverCall) {
+extern "C"
+JNIEXPORT bool JNI_Load_Ex(JNIEnv* env, jclass classSandHook, jclass classNeverCall) {
     int jniMethodSize = sizeof(JNINativeMethod);
 
     if (env == nullptr || classSandHook == nullptr || classNeverCall == nullptr)
