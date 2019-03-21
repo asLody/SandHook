@@ -100,6 +100,10 @@ extern "C" {
     }
 
     bool canCompile() {
+        if (!getGlobalJitCompiler()) {
+            LOGE("JIT not init!");
+            return false;
+        }
         JNIEnv *env;
         jvm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
         return getBooleanFromJava(env, "com/swift/sandhook/SandHookConfig",
