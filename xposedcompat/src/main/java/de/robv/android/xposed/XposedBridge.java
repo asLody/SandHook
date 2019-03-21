@@ -5,6 +5,7 @@ import android.util.Log;
 
 
 import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
+import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.io.File;
 import java.io.IOException;
@@ -122,7 +123,9 @@ public final class XposedBridge {
 	 * @param text The log message.
 	 */
 	public synchronized static void log(String text) {
-		Log.i(TAG, text);
+		if (DexLog.DEBUG) {
+			Log.i(TAG, text);
+		}
 	}
 
 	/**
@@ -134,7 +137,9 @@ public final class XposedBridge {
 	 * @param t The Throwable object for the stack trace.
 	 */
 	public synchronized static void log(Throwable t) {
-		Log.e(TAG, Log.getStackTraceString(t));
+		if (DexLog.DEBUG) {
+			Log.e(TAG, Log.getStackTraceString(t));
+		}
 	}
 
 	/**

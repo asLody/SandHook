@@ -12,7 +12,7 @@ import static com.swift.sandhook.xposedcompat.utils.DexLog.printCallOriginError;
 public class MethodHookerStubs64 {
 
     public static boolean hasStubBackup = false;
-    public static int[] stubSizes = {10, 20, 30, 30, 30, 30, 30, 20, 10, 10, 5, 5, 3};
+    public static int[] stubSizes = {10, 20, 30, 30, 30, 30, 50, 50};
 
 
 	//stub of arg size 0, index 0
@@ -1095,6 +1095,126 @@ public class MethodHookerStubs64 {
     }
 
 
+	//stub of arg size 6, index 30
+    public static long stub_hook_30(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 30), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 31
+    public static long stub_hook_31(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 31), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 32
+    public static long stub_hook_32(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 32), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 33
+    public static long stub_hook_33(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 33), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 34
+    public static long stub_hook_34(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 34), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 35
+    public static long stub_hook_35(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 35), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 36
+    public static long stub_hook_36(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 36), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 37
+    public static long stub_hook_37(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 37), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 38
+    public static long stub_hook_38(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 38), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 39
+    public static long stub_hook_39(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 39), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 40
+    public static long stub_hook_40(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 40), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 41
+    public static long stub_hook_41(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 41), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 42
+    public static long stub_hook_42(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 42), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 43
+    public static long stub_hook_43(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 43), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 44
+    public static long stub_hook_44(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 44), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 45
+    public static long stub_hook_45(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 45), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 46
+    public static long stub_hook_46(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 46), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 47
+    public static long stub_hook_47(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 47), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 48
+    public static long stub_hook_48(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 48), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
+	//stub of arg size 6, index 49
+    public static long stub_hook_49(long a0, long a1, long a2, long a3, long a4, long a5) throws Throwable {
+        return  hookBridge(getMethodId(6, 49), null , a0, a1, a2, a3, a4, a5);
+    }
+
+
 	//stub of arg size 7, index 0
     public static long stub_hook_0(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
         return  hookBridge(getMethodId(7, 0), null , a0, a1, a2, a3, a4, a5, a6);
@@ -1215,201 +1335,183 @@ public class MethodHookerStubs64 {
     }
 
 
-	//stub of arg size 8, index 0
-    public static long stub_hook_0(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 0), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 20
+    public static long stub_hook_20(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 20), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 1
-    public static long stub_hook_1(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 1), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 21
+    public static long stub_hook_21(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 21), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 2
-    public static long stub_hook_2(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 2), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 22
+    public static long stub_hook_22(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 22), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 3
-    public static long stub_hook_3(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 3), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 23
+    public static long stub_hook_23(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 23), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 4
-    public static long stub_hook_4(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 4), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 24
+    public static long stub_hook_24(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 24), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 5
-    public static long stub_hook_5(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 5), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 25
+    public static long stub_hook_25(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 25), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 6
-    public static long stub_hook_6(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 6), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 26
+    public static long stub_hook_26(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 26), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 7
-    public static long stub_hook_7(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 7), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 27
+    public static long stub_hook_27(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 27), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 8
-    public static long stub_hook_8(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 8), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 28
+    public static long stub_hook_28(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 28), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 8, index 9
-    public static long stub_hook_9(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7) throws Throwable {
-        return  hookBridge(getMethodId(8, 9), null , a0, a1, a2, a3, a4, a5, a6, a7);
+	//stub of arg size 7, index 29
+    public static long stub_hook_29(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 29), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 0
-    public static long stub_hook_0(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 0), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 30
+    public static long stub_hook_30(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 30), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 1
-    public static long stub_hook_1(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 1), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 31
+    public static long stub_hook_31(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 31), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 2
-    public static long stub_hook_2(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 2), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 32
+    public static long stub_hook_32(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 32), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 3
-    public static long stub_hook_3(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 3), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 33
+    public static long stub_hook_33(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 33), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 4
-    public static long stub_hook_4(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 4), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 34
+    public static long stub_hook_34(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 34), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 5
-    public static long stub_hook_5(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 5), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 35
+    public static long stub_hook_35(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 35), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 6
-    public static long stub_hook_6(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 6), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 36
+    public static long stub_hook_36(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 36), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 7
-    public static long stub_hook_7(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 7), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 37
+    public static long stub_hook_37(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 37), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 8
-    public static long stub_hook_8(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 8), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 38
+    public static long stub_hook_38(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 38), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 9, index 9
-    public static long stub_hook_9(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8) throws Throwable {
-        return  hookBridge(getMethodId(9, 9), null , a0, a1, a2, a3, a4, a5, a6, a7, a8);
+	//stub of arg size 7, index 39
+    public static long stub_hook_39(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 39), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 10, index 0
-    public static long stub_hook_0(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) throws Throwable {
-        return  hookBridge(getMethodId(10, 0), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+	//stub of arg size 7, index 40
+    public static long stub_hook_40(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 40), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 10, index 1
-    public static long stub_hook_1(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) throws Throwable {
-        return  hookBridge(getMethodId(10, 1), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+	//stub of arg size 7, index 41
+    public static long stub_hook_41(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 41), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 10, index 2
-    public static long stub_hook_2(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) throws Throwable {
-        return  hookBridge(getMethodId(10, 2), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+	//stub of arg size 7, index 42
+    public static long stub_hook_42(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 42), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 10, index 3
-    public static long stub_hook_3(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) throws Throwable {
-        return  hookBridge(getMethodId(10, 3), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+	//stub of arg size 7, index 43
+    public static long stub_hook_43(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 43), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 10, index 4
-    public static long stub_hook_4(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9) throws Throwable {
-        return  hookBridge(getMethodId(10, 4), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+	//stub of arg size 7, index 44
+    public static long stub_hook_44(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 44), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 11, index 0
-    public static long stub_hook_0(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10) throws Throwable {
-        return  hookBridge(getMethodId(11, 0), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+	//stub of arg size 7, index 45
+    public static long stub_hook_45(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 45), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 11, index 1
-    public static long stub_hook_1(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10) throws Throwable {
-        return  hookBridge(getMethodId(11, 1), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+	//stub of arg size 7, index 46
+    public static long stub_hook_46(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 46), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 11, index 2
-    public static long stub_hook_2(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10) throws Throwable {
-        return  hookBridge(getMethodId(11, 2), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+	//stub of arg size 7, index 47
+    public static long stub_hook_47(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 47), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 11, index 3
-    public static long stub_hook_3(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10) throws Throwable {
-        return  hookBridge(getMethodId(11, 3), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+	//stub of arg size 7, index 48
+    public static long stub_hook_48(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 48), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 
-	//stub of arg size 11, index 4
-    public static long stub_hook_4(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10) throws Throwable {
-        return  hookBridge(getMethodId(11, 4), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
-    }
-
-
-	//stub of arg size 12, index 0
-    public static long stub_hook_0(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10, long a11) throws Throwable {
-        return  hookBridge(getMethodId(12, 0), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
-    }
-
-
-	//stub of arg size 12, index 1
-    public static long stub_hook_1(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10, long a11) throws Throwable {
-        return  hookBridge(getMethodId(12, 1), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
-    }
-
-
-	//stub of arg size 12, index 2
-    public static long stub_hook_2(long a0, long a1, long a2, long a3, long a4, long a5, long a6, long a7, long a8, long a9, long a10, long a11) throws Throwable {
-        return  hookBridge(getMethodId(12, 2), null , a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
+	//stub of arg size 7, index 49
+    public static long stub_hook_49(long a0, long a1, long a2, long a3, long a4, long a5, long a6) throws Throwable {
+        return  hookBridge(getMethodId(7, 49), null , a0, a1, a2, a3, a4, a5, a6);
     }
 
 }
