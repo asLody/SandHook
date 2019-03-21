@@ -1,7 +1,11 @@
 # SandHook
 Android ART Hook
 
+## Version 
+
 [ ![Version](https://api.bintray.com/packages/ganyao114/maven/hooklib/images/download.svg) ](https://bintray.com/ganyao114/maven/hooklib/_latestVersion)
+
+## Chinese
 
 [中文文档以及实现](https://blog.csdn.net/ganyao939543405/article/details/86661040)
 
@@ -33,7 +37,7 @@ cant hook if lined
 implementation 'com.swift.sandhook:hooklib:3.1.0'
 ```
 
-- Annotation API
+## Annotation API
 
 --------------------------------------------------------------------
 
@@ -49,7 +53,7 @@ public class ActivityHooker {
     
     // can invoke to call origin
     @HookMethodBackup("onCreate")
-    @MethodParams(Bundle.class)
+    @SkipParamCheck
     static Method onCreateBackup;
 
     @HookMethodBackup("onPause")
@@ -129,7 +133,7 @@ in your plugin
 if OS <= 5.1 
 backup method can call itself to avoid be inlining
 
-- Xposed API
+## Xposed API
 
 --------------------------------------------------------------------
 
@@ -176,27 +180,36 @@ because when ART trigger JIT from profiling, JIT will invoke -> ResolveCompiling
 
 ## Inline
 
+### disable JIT inline
 
-we can do nothing to prevent some methods been inlined before app start, but we can try to disable VM Jit Inline after launch.
+We can do nothing to prevent some methods been inlined before app start, but we can try to disable VM Jit Inline after launch.
 
 if you will hook some method that could be inlined, please call SandHook.disableVMInline()(OS >= 7.0) in Application.OnCreate()
 
 
 ### Deoptimize
+
 You can also deoptimize a caller that inlined your hook method by SandHook.deCompile(caller), just implement >= 7.0
+
+
+## Hidden API
+
+SandHook.passApiCheck();
+
+To bypass hidden api on P & Q
 
 
 # Demo
 
 ## SandVXPosed
 
-non-Root Xposed Environment Demo (VirtualApp With SandHook):
+non-Root Xposed Environment Demo (VirtualApp with SandHook):
 
 https://github.com/ganyao114/SandVXposed
 
 ## EdXposed(SandHook Brunch)
 
-Unofficial Xposed framework for >= 8.0
+Unofficial xposed framework >= 8.0
 
 https://github.com/ElderDrivers/EdXposed/tree/sandhook
 
