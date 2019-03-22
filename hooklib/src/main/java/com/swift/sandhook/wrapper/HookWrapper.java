@@ -76,6 +76,7 @@ public class HookWrapper {
                     try {
                         field.set(null, hookEntity.backup);
                         hookEntity.hookIsStub = true;
+                        hookEntity.resolveDexCache = false;
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }

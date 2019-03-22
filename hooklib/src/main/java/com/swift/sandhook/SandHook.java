@@ -1,5 +1,7 @@
 package com.swift.sandhook;
 
+import android.os.Build;
+
 import com.swift.sandhook.annotation.HookMode;
 import com.swift.sandhook.utils.ReflectionUtils;
 import com.swift.sandhook.utils.Unsafe;
@@ -252,6 +254,8 @@ public class SandHook {
 
 
     public static boolean hasJavaArtMethod() {
+        if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.O)
+            return false;
         if (artMethodClass != null)
             return true;
         try {
