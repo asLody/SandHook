@@ -7,7 +7,7 @@
 #include "../includes/log.h"
 
 extern int SDK_INT;
-#define SWITCH_SETX0 true
+#define SWITCH_SETX0 false
 
 namespace SandHook {
 
