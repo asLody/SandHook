@@ -16,18 +16,14 @@
  * limitations under the License.
  */
 
-/**
- * 	art_6_0.h
- *
- * @author : sanping.li@alipay.com
- *
- */
-
 #ifndef ART_H
 #define ART_H
 
 #include <jni.h>
 #include "arch.h"
+
+//7.0 - 10.0
+#define GCRoot uint32_t
 
 namespace art {
 namespace mirror {
@@ -64,13 +60,13 @@ public:
     void setInterpreterCodeEntry(void* entry);
     void setDexCacheResolveList(void* list);
     void setDexCacheResolveItem(uint32_t index, void* item);
-    void setDeclaringClassPtr(void* classPtr);
+    void setDeclaringClass(GCRoot classPtr);
 
     void* getQuickCodeEntry();
     void* getInterpreterCodeEntry();
     uint32_t getAccessFlags();
     uint32_t getDexMethodIndex();
-    void* getDeclaringClassPtr();
+    GCRoot getDeclaringClass();
 
     bool compile(JNIEnv* env);
     bool deCompile();

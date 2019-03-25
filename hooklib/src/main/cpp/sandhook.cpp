@@ -45,6 +45,18 @@ void ensureMethodCached(art::mirror::ArtMethod *hookMethod, art::mirror::ArtMeth
     }
 }
 
+void ensureDeclareClass(JNIEnv *env, jclass type, jobject originMethod,
+                         jobject backupMethod) {
+    if (originMethod == NULL || backupMethod == NULL)
+        return;
+    art::mirror::ArtMethod* origin = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(originMethod));
+    art::mirror::ArtMethod* backup = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(backupMethod));
+    if (origin->getDeclaringClass() != backup->getDeclaringClass()) {
+        LOGW("declaring class has been moved!");
+        backup->setDeclaringClass(origin->getDeclaringClass());
+    }
+}
+
 bool doHookWithReplacement(JNIEnv* env,
                            art::mirror::ArtMethod *originMethod,
                            art::mirror::ArtMethod *hookMethod,
@@ -353,6 +365,11 @@ static JNINativeMethod jniSandHook[] = {
                 "ensureMethodCached",
                 "(Ljava/lang/reflect/Method;Ljava/lang/reflect/Method;)V",
                 (void *) Java_com_swift_sandhook_SandHook_ensureMethodCached
+        },
+        {
+                "ensureDeclareClass",
+                "(Ljava/lang/reflect/Member;Ljava/lang/reflect/Method;)V",
+                (void *) ensureDeclareClass
         },
         {
                 "compileMethod",

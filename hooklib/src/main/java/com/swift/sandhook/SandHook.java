@@ -3,6 +3,7 @@ package com.swift.sandhook;
 import android.os.Build;
 
 import com.swift.sandhook.annotation.HookMode;
+import com.swift.sandhook.blacklist.HookBlackList;
 import com.swift.sandhook.utils.ReflectionUtils;
 import com.swift.sandhook.utils.Unsafe;
 import com.swift.sandhook.wrapper.HookErrorException;
@@ -82,7 +83,10 @@ public class SandHook {
             throw new HookErrorException("null input");
 
         if (globalHookEntityMap.containsKey(entity.target))
-            throw new HookErrorException("method <" + entity.target.getName() + "> has been hooked!");
+            throw new HookErrorException("method <" + entity.target.toString() + "> has been hooked!");
+
+        if (HookBlackList.canNotHook(target))
+            throw new HookErrorException("method <" + entity.target.toString() + "> can not hook, because of in blacklist!");
 
         resolveStaticMethod(target);
         resolveStaticMethod(backup);
@@ -145,7 +149,12 @@ public class SandHook {
     }
 
     public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
-        backupMethod.setAccessible(true);
+        //holder in stack to avoid moving gc
+        Class originClassHolder = originMethod.getDeclaringClass();
+        //reset declaring class
+        if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.N) {
+            ensureDeclareClass(originMethod, backupMethod);
+        }
         if (Modifier.isStatic(originMethod.getModifiers())) {
             try {
                 return backupMethod.invoke(null, args);
@@ -170,6 +179,12 @@ public class SandHook {
     }
 
     public static void ensureBackupMethod(Method backupMethod) {
+        if (SandHookConfig.SDK_INT < Build.VERSION_CODES.N)
+            return;
+        HookWrapper.HookEntity entity = globalBackupMap.get(backupMethod);
+        if (entity != null) {
+            ensureDeclareClass(entity.target, backupMethod);
+        }
     }
 
     public static void resolveStaticMethod(Member method) {
@@ -312,6 +327,7 @@ public class SandHook {
     private static native int hookMethod(Member originMethod, Method hookMethod, Method backupMethod, int hookMode);
 
     public static native void ensureMethodCached(Method hook, Method backup);
+    public static native void ensureDeclareClass(Member origin, Method backup);
 
     public static native boolean compileMethod(Member member);
     public static native boolean deCompileMethod(Member member, boolean disableJit);

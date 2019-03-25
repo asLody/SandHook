@@ -109,7 +109,7 @@ void* ArtMethod::getInterpreterCodeEntry() {
     return CastArtMethod::entryPointFormInterpreter->get(this);
 }
 
-void* ArtMethod::getDeclaringClassPtr() {
+GCRoot ArtMethod::getDeclaringClass() {
     return CastArtMethod::declaringClass->get(this);
 }
 
@@ -132,7 +132,7 @@ void ArtMethod::setDexCacheResolveItem(uint32_t index, void* item) {
     CastArtMethod::dexCacheResolvedMethods->setElement(this, index, item);
 }
 
-void ArtMethod::setDeclaringClassPtr(void *classPtr) {
+void ArtMethod::setDeclaringClass(GCRoot classPtr) {
     CastArtMethod::declaringClass->set(this, classPtr);
 }
 

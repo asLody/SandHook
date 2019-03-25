@@ -18,7 +18,7 @@ namespace SandHook {
         static ArrayMember<art::mirror::ArtMethod,void*>* dexCacheResolvedMethods;
         static IMember<art::mirror::ArtMethod, uint32_t>* dexMethodIndex;
         static IMember<art::mirror::ArtMethod, uint32_t>* accessFlag;
-        static IMember<art::mirror::ArtMethod, void*>* declaringClass;
+        static IMember<art::mirror::ArtMethod, GCRoot>* declaringClass;
         static void* quickToInterpreterBridge;
         static void* genericJniStub;
         static void* staticResolveStub;
