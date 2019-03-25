@@ -211,6 +211,8 @@ https://github.com/ganyao114/SandVXposed
 
 Unofficial xposed framework >= 8.0
 
+See release above
+
 https://github.com/ElderDrivers/EdXposed/tree/sandhook
 
 # Android Q(10.0)
