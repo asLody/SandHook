@@ -138,21 +138,25 @@ public class SandHook {
         HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
         if (hookEntity == null || hookEntity.backup == null)
             return null;
-        return callOriginMethod(originMethod, hookEntity.backup, thiz, args);
+        return callOriginMethod(hookEntity.backupIsStub, originMethod, hookEntity.backup, thiz, args);
     }
 
     public static Object callOriginByBackup(Method backupMethod, Object thiz, Object... args) throws Throwable {
         HookWrapper.HookEntity hookEntity = globalBackupMap.get(backupMethod);
         if (hookEntity == null)
             return null;
-        return callOriginMethod(hookEntity.target, backupMethod, thiz, args);
+        return callOriginMethod(hookEntity.backupIsStub, hookEntity.target, backupMethod, thiz, args);
     }
 
     public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
-        //holder in stack to avoid moving gc
-        Class originClassHolder = originMethod.getDeclaringClass();
+        return callOriginMethod(false, originMethod, backupMethod, thiz, args);
+    }
+
+    public static Object callOriginMethod(boolean backupIsStub, Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
         //reset declaring class
-        if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.N) {
+        if (!backupIsStub && SandHookConfig.SDK_INT >= Build.VERSION_CODES.N) {
+            //holder in stack to avoid moving gc
+            Class originClassHolder = originMethod.getDeclaringClass();
             ensureDeclareClass(originMethod, backupMethod);
         }
         if (Modifier.isStatic(originMethod.getModifiers())) {
