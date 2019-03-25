@@ -34,6 +34,8 @@ public final class Unsafe {
 
     private volatile static boolean supported = false;
 
+    private static Class objectArrayClass = Object[].class;
+
     static {
         try {
             unsafeClass = Class.forName("sun.misc.Unsafe");
@@ -111,10 +113,10 @@ public final class Unsafe {
     public static long getObjectAddress(Object obj) {
         try {
             Object[] array = new Object[]{obj};
-            if (arrayIndexScale(Object[].class) == 8) {
-                return getLong(array, arrayBaseOffset(Object[].class));
+            if (arrayIndexScale(objectArrayClass) == 8) {
+                return getLong(array, arrayBaseOffset(objectArrayClass));
             } else {
-                return 0xffffffffL & getInt(array, arrayBaseOffset(Object[].class));
+                return 0xffffffffL & getInt(array, arrayBaseOffset(objectArrayClass));
             }
         } catch (Exception e) {
             Log.w(TAG, e);
