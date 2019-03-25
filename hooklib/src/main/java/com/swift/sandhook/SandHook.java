@@ -149,7 +149,7 @@ public class SandHook {
     }
 
     public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
-        return callOriginMethod(false, originMethod, backupMethod, thiz, args);
+        return callOriginMethod(true, originMethod, backupMethod, thiz, args);
     }
 
     public static Object callOriginMethod(boolean backupIsStub, Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
