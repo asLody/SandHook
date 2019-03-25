@@ -113,7 +113,7 @@ namespace SandHook {
             }
             int offset = findOffset(p, getParentSize(), 2, accessFlag);
             if (offset < 0) {
-                if (SDK_INT >= ANDROID_Q) {
+                if (SDK_INT >= ANDROID_N) {
                     return 4;
                 } else if (SDK_INT == ANDROID_L2) {
                     return 20;
