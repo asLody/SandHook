@@ -400,7 +400,7 @@ public class HookStubManager {
         }
     }
 
-    public static long callOrigin(HookMethodEntity entity, Member origin, Object thiz, Object[] args) throws Throwable {
+    public final static long callOrigin(HookMethodEntity entity, Member origin, Object thiz, Object[] args) throws Throwable {
         Object res = SandHook.callOriginMethod(origin, thiz, args);
         return entity.getResultAddress(res);
     }

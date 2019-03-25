@@ -69,14 +69,15 @@ public class HookWrapper {
             for (HookEntity hookEntity:hookEntityMap.values()) {
                 if (TextUtils.equals(hookEntity.isCtor() ? "<init>" : hookEntity.target.getName(), hookMethodBackup.value()) && samePars(classLoader, field, hookEntity.pars)) {
                     field.setAccessible(true);
-                    if (hookEntity.backup == null)
+                    if (hookEntity.backup == null) {
                         hookEntity.backup = BackupMethodStubs.getStubMethod();
+                        hookEntity.hookIsStub = true;
+                        hookEntity.resolveDexCache = false;
+                    }
                     if (hookEntity.backup == null)
                         continue;
                     try {
                         field.set(null, hookEntity.backup);
-                        hookEntity.hookIsStub = true;
-                        hookEntity.resolveDexCache = false;
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }
