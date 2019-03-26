@@ -14,6 +14,7 @@ public class HookBlackList {
     static {
         methodBlackList.add("java.lang.reflect.Member.getDeclaringClass");
         methodBlackList.add("java.lang.reflect.Method.invoke");
+        methodBlackList.add("java.lang.Class.getDeclaredField");
         methodBlackList.add("java.util.Map.get");
         methodBlackList.add("java.util.concurrent.ConcurrentHashMap.get");
         methodBlackList.add("java.lang.reflect.AccessibleObject.setAccessible");
