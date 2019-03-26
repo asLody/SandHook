@@ -69,7 +69,6 @@ bool doHookWithReplacement(JNIEnv* env,
     if (backupMethod != nullptr) {
         originMethod->backup(backupMethod);
         backupMethod->disableCompilable();
-        backupMethod->disableInterpreterForO();
         if (!backupMethod->isStatic()) {
             backupMethod->setPrivate();
         }
@@ -110,10 +109,7 @@ bool doHookWithInline(JNIEnv* env,
         hookMethod->disableCompilable();
     }
 
-    if (SDK_INT >= ANDROID_N) {
-        originMethod->disableCompilable();
-    }
-
+    originMethod->disableCompilable();
     originMethod->flushCache();
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
@@ -126,11 +122,7 @@ bool doHookWithInline(JNIEnv* env,
         //backup
         originMethod->backup(backupMethod);
         backupMethod->setQuickCodeEntry(hookTrampoline->callOrigin->getCode());
-
-        if (SDK_INT >= ANDROID_N) {
-            backupMethod->disableCompilable();
-        }
-        backupMethod->disableInterpreterForO();
+        backupMethod->disableCompilable();
         if (!backupMethod->isStatic()) {
             backupMethod->setPrivate();
         }
