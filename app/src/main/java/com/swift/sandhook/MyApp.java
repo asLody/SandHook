@@ -2,6 +2,7 @@ package com.swift.sandhook;
 
 import android.app.Activity;
 import android.app.Application;
+import android.os.Build;
 import android.util.Log;
 
 import com.swift.sandhook.test.TestClass;
@@ -35,7 +36,10 @@ public class MyApp extends Application {
         }
 
         SandHook.disableVMInline();
-        SandHook.passApiCheck();
+
+        if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.P) {
+            SandHook.passApiCheck();
+        }
 
         try {
             SandHook.addHookClass(JniHooker.class,

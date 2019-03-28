@@ -38,7 +38,11 @@ public class CtrHook {
     @HookMode(HookMode.INLINE)
     public static void onAdd1(TestClass thiz) throws Throwable {
         Log.e("TestClassHook", "add1 been hooked");
-        SandHook.callOriginByBackup(add1backup, thiz);
+        try {
+            SandHook.callOriginByBackup(add1backup, thiz);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @HookMethod("add2")
