@@ -49,11 +49,11 @@ implementation 'com.swift.sandhook:hooklib:3.1.0'
 ```java
 @HookClass(Activity.class)
 //@HookReflectClass("android.app.Activity")
+@HookClass(Activity.class)
 public class ActivityHooker {
-    
-    // can invoke to call origin
+
     @HookMethodBackup("onCreate")
-    @SkipParamCheck
+    @MethodParams(Bundle.class)
     static Method onCreateBackup;
 
     @HookMethodBackup("onPause")
@@ -61,32 +61,19 @@ public class ActivityHooker {
 
     @HookMethod("onCreate")
     @MethodParams(Bundle.class)
-    //@MethodReflectParams("android.os.Bundle")
-    public static void onCreate(Activity thiz, Bundle bundle) {
+    public static void onCreate(Activity thiz, Bundle bundle) throws Throwable {
         Log.e("ActivityHooker", "hooked onCreate success " + thiz);
-        onCreateBackup(thiz, bundle);
-    }
-
-    @HookMethodBackup("onCreate")
-    @MethodParams(Bundle.class)
-    public static void onCreateBackup(Activity thiz, Bundle bundle) {
-        //invoke self to kill inline
-        onCreateBackup(thiz, bundle);
+        SandHook.callOriginByBackup(onCreateBackup, thiz, bundle);
     }
 
     @HookMethod("onPause")
-    public static void onPause(Activity thiz) {
+    public static void onPause(@ThisObject Activity thiz) throws Throwable {
         Log.e("ActivityHooker", "hooked onPause success " + thiz);
-        onPauseBackup(thiz);
-    }
-
-    @HookMethodBackup("onPause")
-    public static void onPauseBackup(Activity thiz) {
-        //invoke self to kill inline
-        onPauseBackup(thiz);
+        SandHook.callOriginByBackup(onPauseBackup, thiz);
     }
 
 }
+
 
 
 //or like this:
