@@ -49,7 +49,6 @@ implementation 'com.swift.sandhook:hooklib:3.1.0'
 ```java
 @HookClass(Activity.class)
 //@HookReflectClass("android.app.Activity")
-@HookClass(Activity.class)
 public class ActivityHooker {
 
     @HookMethodBackup("onCreate")
