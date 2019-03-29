@@ -324,7 +324,7 @@ public class SandHook {
 
     //disable JIT/AOT Profile
     public static boolean tryDisableProfile(String selfPackageName) {
-        if (SandHookConfig.SDK_INT <= Build.VERSION_CODES.N)
+        if (SandHookConfig.SDK_INT < Build.VERSION_CODES.N)
             return false;
         try {
             File profile = new File("/data/misc/profiles/cur/" + SandHookConfig.curUse + "/" + selfPackageName + "/primary.prof");
