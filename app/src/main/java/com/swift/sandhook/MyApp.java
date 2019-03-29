@@ -36,6 +36,7 @@ public class MyApp extends Application {
         }
 
         SandHook.disableVMInline();
+        SandHook.tryDisableProfile(getPackageName());
 
         if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.P) {
             SandHook.passApiCheck();

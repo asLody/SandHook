@@ -4,11 +4,13 @@ import android.os.Build;
 
 import com.swift.sandhook.annotation.HookMode;
 import com.swift.sandhook.blacklist.HookBlackList;
+import com.swift.sandhook.utils.FileUtils;
 import com.swift.sandhook.utils.ReflectionUtils;
 import com.swift.sandhook.utils.Unsafe;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
@@ -318,6 +320,24 @@ public class SandHook {
 
     public static boolean passApiCheck() {
         return ReflectionUtils.passApiCheck();
+    }
+
+    //disable JIT/AOT Profile
+    public static boolean tryDisableProfile(String selfPackageName) {
+        if (SandHookConfig.SDK_INT <= Build.VERSION_CODES.N)
+            return false;
+        try {
+            File profile = new File("/data/misc/profiles/cur/" + SandHookConfig.curUse + "/" + selfPackageName + "/primary.prof");
+            if (!profile.getParentFile().exists()) return false;
+            try {
+                profile.delete();
+                profile.createNewFile();
+            } catch (Throwable throwable) {}
+            FileUtils.chmod(profile.getAbsolutePath(), FileUtils.FileMode.MODE_IRUSR);
+            return true;
+        } catch (Throwable throwable) {
+            return false;
+        }
     }
 
     private static native boolean initNative(int sdk, boolean debug);

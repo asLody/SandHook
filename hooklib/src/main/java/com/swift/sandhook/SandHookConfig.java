@@ -11,6 +11,7 @@ public class SandHookConfig {
     public volatile static boolean DEBUG = BuildConfig.DEBUG;
     public volatile static boolean compiler = true;
     public volatile static ClassLoader initClassLoader;
+    public volatile static int curUse = 0;
 
     public volatile static String libSandHookPath;
     public volatile static LibLoader libLoader = new LibLoader() {
