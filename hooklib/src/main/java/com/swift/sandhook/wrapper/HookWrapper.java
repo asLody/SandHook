@@ -59,8 +59,6 @@ public class HookWrapper {
         if (hookEntityMap.isEmpty())
             return;
         for (Field field:fields) {
-            if (!field.getType().equals(Method.class))
-                continue;
             if (!Modifier.isStatic(field.getModifiers()))
                 continue;
             HookMethodBackup hookMethodBackup = field.getAnnotation(HookMethodBackup.class);
@@ -77,7 +75,11 @@ public class HookWrapper {
                     if (hookEntity.backup == null)
                         continue;
                     try {
-                        field.set(null, hookEntity.backup);
+                        if (field.getType() == Method.class) {
+                            field.set(null, hookEntity.backup);
+                        } else if (field.getType() == HookEntity.class) {
+                            field.set(null, hookEntity);
+                        }
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }
@@ -430,6 +432,10 @@ public class HookWrapper {
 
         public boolean isCtor() {
             return target instanceof Constructor;
+        }
+
+        public Object callOrigin(Object thiz, Object... args) throws Throwable {
+            return SandHook.callOriginMethod(backupIsStub, target, backup, thiz, args);
         }
     }
 

@@ -40,6 +40,7 @@ public class HookStubManager {
 
     public static Member[] originMethods;
     public static HookMethodEntity[] hookMethodEntities;
+    public static XposedBridge.AdditionalHookInfo[] additionalHookInfos;
 
     private static final Map<Member, XposedBridge.CopyOnWriteSortedSet<XC_MethodHook>> hookCallbacks
             = sHookedMethodCallbacks;
@@ -59,11 +60,12 @@ public class HookStubManager {
             }
             originMethods = new Member[ALL_STUB];
             hookMethodEntities = new HookMethodEntity[ALL_STUB];
+            additionalHookInfos = new XposedBridge.AdditionalHookInfo[ALL_STUB];
         }
     }
 
 
-    public static HookMethodEntity getHookMethodEntity(Member origin) {
+    public static HookMethodEntity getHookMethodEntity(Member origin, XposedBridge.AdditionalHookInfo additionalHookInfo) {
 
         if (!support()) {
             return null;
@@ -111,13 +113,14 @@ public class HookStubManager {
             HookMethodEntity entity = new HookMethodEntity(origin, stubMethodInfo.hook, stubMethodInfo.backup);
             entity.retType = retType;
             entity.parType = parType;
-            int id = getMethodId(stubMethodInfo.args, stubMethodInfo.index);
-            originMethods[id] = origin;
-            hookMethodEntities[id] = entity;
             if (hasStubBackup && !tryCompileAndResolveCallOriginMethod(entity.backup, stubMethodInfo.args, stubMethodInfo.index)) {
                 DexLog.w("internal stub <" + entity.hook.getName() + "> call origin compile failure, skip use internal stub");
                 return null;
             } else {
+                int id = getMethodId(stubMethodInfo.args, stubMethodInfo.index);
+                originMethods[id] = origin;
+                hookMethodEntities[id] = entity;
+                additionalHookInfos[id] = additionalHookInfo;
                 return entity;
             }
         }
@@ -257,7 +260,8 @@ public class HookStubManager {
 
         DexLog.printMethodHookIn(originMethod);
 
-        Object[] snapshot = hookCallbacks.get(originMethod).getSnapshot();
+        Object[] snapshot = additionalHookInfos[id].callbacks.getSnapshot();
+
         if (snapshot == null || snapshot.length == 0) {
             if (hasStubBackup) {
                 return callOrigin.call(stubArgs);
@@ -329,16 +333,17 @@ public class HookStubManager {
         }
     }
 
-    public static Object hookBridge(Member origin, Object thiz, Object... args) throws Throwable {
+    public static Object hookBridge(Member origin, Method backup, XposedBridge.AdditionalHookInfo additionalHookInfo, Object thiz, Object... args) throws Throwable {
 
 
         if (XposedBridge.disableHooks) {
-            return SandHook.callOriginMethod(origin, thiz, args);
+            return SandHook.callOriginMethod(origin, backup, thiz, args);
         }
 
         DexLog.printMethodHookIn(origin);
 
-        Object[] snapshot = hookCallbacks.get(origin).getSnapshot();
+        Object[] snapshot = additionalHookInfo.callbacks.getSnapshot();
+
         if (snapshot == null || snapshot.length == 0) {
             return SandHook.callOriginMethod(origin, thiz, args);
         }
@@ -370,7 +375,7 @@ public class HookStubManager {
         // call original method if not requested otherwise
         if (!param.returnEarly) {
             try {
-                param.setResult(SandHook.callOriginMethod(origin, thiz, param.args));
+                param.setResult(SandHook.callOriginMethod(origin, backup, thiz, param.args));
             } catch (Throwable e) {
                 XposedBridge.log(e);
                 param.setThrowable(e);
@@ -401,7 +406,7 @@ public class HookStubManager {
     }
 
     public final static long callOrigin(HookMethodEntity entity, Member origin, Object thiz, Object[] args) throws Throwable {
-        Object res = SandHook.callOriginMethod(origin, thiz, args);
+        Object res = SandHook.callOriginMethod(origin, entity.backup, thiz, args);
         return entity.getResultAddress(res);
     }
 

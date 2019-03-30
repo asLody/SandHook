@@ -136,25 +136,25 @@ public class SandHook {
         HookLog.d("method <" + entity.target.toString() + "> hook <" + (res == HookMode.INLINE ? "inline" : "replacement") + "> success!");
     }
 
-    public static Object callOriginMethod(Member originMethod, Object thiz, Object... args) throws Throwable {
+    public final static Object callOriginMethod(Member originMethod, Object thiz, Object... args) throws Throwable {
         HookWrapper.HookEntity hookEntity = globalHookEntityMap.get(originMethod);
         if (hookEntity == null || hookEntity.backup == null)
             return null;
         return callOriginMethod(hookEntity.backupIsStub, originMethod, hookEntity.backup, thiz, args);
     }
 
-    public static Object callOriginByBackup(Method backupMethod, Object thiz, Object... args) throws Throwable {
+    public final static Object callOriginByBackup(Method backupMethod, Object thiz, Object... args) throws Throwable {
         HookWrapper.HookEntity hookEntity = globalBackupMap.get(backupMethod);
         if (hookEntity == null)
             return null;
         return callOriginMethod(hookEntity.backupIsStub, hookEntity.target, backupMethod, thiz, args);
     }
 
-    public static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
+    public final static Object callOriginMethod(Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
         return callOriginMethod(true, originMethod, backupMethod, thiz, args);
     }
 
-    public static Object callOriginMethod(boolean backupIsStub, Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
+    public final static Object callOriginMethod(boolean backupIsStub, Member originMethod, Method backupMethod, Object thiz, Object[] args) throws Throwable {
         //reset declaring class
         if (!backupIsStub && SandHookConfig.SDK_INT >= Build.VERSION_CODES.N) {
             //holder in stack to avoid moving gc
@@ -184,7 +184,7 @@ public class SandHook {
         }
     }
 
-    public static void ensureBackupMethod(Method backupMethod) {
+    public final static void ensureBackupMethod(Method backupMethod) {
         if (SandHookConfig.SDK_INT < Build.VERSION_CODES.N)
             return;
         HookWrapper.HookEntity entity = globalBackupMap.get(backupMethod);

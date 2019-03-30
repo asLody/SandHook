@@ -56,7 +56,7 @@ public class ActivityHooker {
     static Method onCreateBackup;
 
     @HookMethodBackup("onPause")
-    static Method onPauseBackup;
+    static HookWrapper.HookEntity onPauseBackup;
 
     @HookMethod("onCreate")
     @MethodParams(Bundle.class)
@@ -68,7 +68,7 @@ public class ActivityHooker {
     @HookMethod("onPause")
     public static void onPause(@ThisObject Activity thiz) throws Throwable {
         Log.e("ActivityHooker", "hooked onPause success " + thiz);
-        SandHook.callOriginByBackup(onPauseBackup, thiz);
+        onPauseBackup.callOrigin(thiz);
     }
 
 }
