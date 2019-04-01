@@ -241,6 +241,45 @@ static inline ArtMethod* DecodeArtMethod(jmethodID method_id) {
 
 ---
 
+#### 方法入口
+
+在 class link 时初步确定
+
+```cpp
+//获取该 OAT 方法 Code 的入口地址，表示该方法已编译成机器码
+  // Install entry point from interpreter.
+  const void* quick_code = method->GetEntryPointFromQuickCompiledCode();
+  //获取该 Dex 方法 Code 的入口地址，表示该方法尚未编译，需要解释执行
+  bool enter_interpreter = class_linker->ShouldUseInterpreterEntrypoint(method, quick_code);
+
+  if (!method->IsInvokable()) {
+    EnsureThrowsInvocationError(class_linker, method);
+    return;
+  }
+
+  //如果是静态方法，并且不是构造函数，则把代码入口设置成一个桩函数的地址
+  //这个函数是通用的，应为所有 static 方法都要在类初始化时候去 resolve。
+  //那么先把这个方法设置成一个通用的跳板，当有其他方法调用到的时候，跳板方法将出发该类的初始化
+  //在该类初始化的时候，这些跳板方法才会被替换成真正的地址 ClassLinker::InitializeClass -> ClassLinker::FixupStaticTrampolines
+  if (method->IsStatic() && !method->IsConstructor()) {
+    // For static methods excluding the class initializer, install the trampoline.
+    // It will be replaced by the proper entry point by ClassLinker::FixupStaticTrampolines
+    // after initializing class (see ClassLinker::InitializeClass method).
+    method->SetEntryPointFromQuickCompiledCode(GetQuickResolutionStub());
+  }
+  //如果是 JNI 方法，设置成通用的 JNI 函数跳板
+  else if (quick_code == nullptr && method->IsNative()) {
+    method->SetEntryPointFromQuickCompiledCode(GetQuickGenericJniStub());
+  }
+  //如果方法需要解释执行，则设置成解释执行的跳板
+  else if (enter_interpreter) {
+    // Set entry point from compiled code if there's no code or in interpreter only mode.
+    method->SetEntryPointFromQuickCompiledCode(GetQuickToInterpreterBridge());
+  }
+```
+
+---
+
 ### Quick & Optimizing
 ART 中的 Compiler 有两种 Backend：
 - Quick
@@ -630,4 +669,226 @@ ldr x5, [x19, #PeerOffset]
 
 ## 基本实现
 
--
+- 确定 ArtMethod 内存布局
+- Hooker 项解析
+- resolve 静态方法
+- resolve cache dex
+- 禁用某方法JIT & 手动 JIT 编译
+- Hook 线程安全
+- 原方法备份
+- inline hook
+- 入口替换
+
+---
+
+### ArtMethod 内存布局
+
+由于版本众多，以及 Android 平台的碎片化，Method 的内存布局往往是千变万化的。简单的根据版本写死 Offset 风险还是比较高的。
+
+----
+
+#### ArtMethod 的大小
+
+首先最重要的的一点是确定 ArtMethod 的大小，前面我们知道，ArtMethod 被存放在线性内存区域，并且不会 Moving GC，那么，相邻的两个方法他们的 ArtMethod 也是相邻的，所以 size = ArtMethod2 - ArtMethod1
+
+----
+
+#### 内部元素偏移
+
+- 我们可以在 Java 层反射得到一些值，或者说我们可以根据指定方法的属性确定预测值(accessFlag)，然后我们根据预测值在 ArtMethod 中搜索偏移
+- 根据元素在 ArtMethod 中的相对位置确定(code_entry 在最后)
+
+---
+
+### Hooker 项解析
+
+- 首先 Hook 项承载了目标方法的信息，我们根据这些信息找到目标方法。
+- 因为被 Hook 的方法会直接调到我们的 Hook 入口，Hook 入口本身也是一个 java 方法，所以参数需要和原方法匹配。
+
+---
+
+### resolve 静态方法
+
+- 静态方法是懒加载的。
+- 如果一个类没有被加载，那么其中的静态方法的入口统一为 art_quick_proxy_invoke_handler
+- 第一次调用时，art_quick_proxy_invoke_handler 会走到类初始化流程
+
+---
+
+#### resolve 静态方法
+
+那么很简单，只要手动调用就行了，但是要注意保证调用失败，这里使用不匹配的参数。
+
+```java
+    public static void resolveStaticMethod(Member method) {
+        //ignore result, just call to trigger resolve
+        if (method == null)
+            return;
+        try {
+            if (method instanceof Method && Modifier.isStatic(method.getModifiers())) {
+                ((Method) method).setAccessible(true);
+                ((Method) method).invoke(new Object(), getFakeArgs((Method) method));
+            }
+        } catch (Throwable throwable) {
+        }
+    }
+
+    private static Object[] getFakeArgs(Method method) {
+        Class[] pars = method.getParameterTypes();
+        if (pars == null || pars.length == 0) {
+            return new Object[]{new Object()};
+        } else {
+            return null;
+        }
+    }
+```
+
+---
+
+### resolve dex cache
+
+为了节省资源并且加快调用速度，和 ELF 的 got.plt 表类似，Caller 去搜索 Callee 的位置时，Callee 带着 index 去 DexCache 中找到对应位置的 Callee 的 ArtMethod 结构体。
+
+但是，DexCache 是懒加载的，我们从 Hook 入口方法调用原方法这一行为 ART 是不知道的，所以无法自动完成这一动作，这里就需要我们手动完成这一操作。
+
+当然后面我们我们也可以使用反射调用原方法来解决这一问题。
+
+---
+
+#### resolve 实现
+
+- 6.0 以其以下 DexCache 相关的字段并没有被 ART 隐藏，所以可以直接通过反射在 Java 层完成
+- 6.0 以上则需要在 Native 实现
+- 8.1 以上 DexCache 最大为 1024，index 实际为真实 index % 1024 再去取，则有可能在运行期间被覆盖
+- 所以 8.1 以后建议通过反射 invoke 调用原方法
+
+---
+
+### 手动 JIT
+#### 编译策略
+
+- 6.0 以其以下，默认在安装 apk 过程中会将 Dex 整体 OAT。
+- 而 6.0 以上，默认策略是 quick_profile。即根据 profile 文件编译已知的热点方法，则大部分方法都不会被编译
+- 则我们如果想使用 inline hook 的话，则必须手动将目标方法编译
+- 除此之外，将 hook 入口方法编译可以避免一些意想不到的问题
+
+---
+
+#### 如何编译
+
+- ART 的主体是 libart.so，但是 Compiler 后端被单独编译到了 libart-compiler.so
+- 我们只需要 dlsym libart-compiler.so 的导出方法 jit_compile_method 调用即可
+- 需要注意 Android N 以上对 dlsym 的限制
+
+---
+
+```cpp
+extern "C" void* jit_load(bool* generate_debug_info) {
+  VLOG(jit) << "loading jit compiler";
+  auto* const jit_compiler = JitCompiler::Create();
+  CHECK(jit_compiler != nullptr);
+  *generate_debug_info = jit_compiler->GetCompilerOptions()->GetGenerateDebugInfo();
+  VLOG(jit) << "Done loading jit compiler";
+  return jit_compiler;
+}
+
+extern "C" bool jit_compile_method(
+    void* handle, ArtMethod* method, Thread* self, bool osr)
+    REQUIRES_SHARED(Locks::mutator_lock_) {
+  auto* jit_compiler = reinterpret_cast<JitCompiler*>(handle);
+  DCHECK(jit_compiler != nullptr);
+  return jit_compiler->CompileMethod(self, method, osr);
+}
+```
+
+---
+
+#### 其他需要注意的
+
+- 手动编译 JNI 方法将发生未知错误
+- 在某些系统进程(zygote, system_server)里面，Compiler 是不需要初始化的，所以手动编译将会报错，很好理解，默认这些进程早就被 OAT 了
+
+---
+
+#### 禁用某个方法的 JIT
+
+- 如果我们通过替换入口替换了原方法的 code_entry 来 hook，自然不希望当方法热度高的时候触发 JIT，那么，入口就会被替换掉了，Hook 失效。
+- 除此之外，当 backup ArtMethod 被我们魔改后，profile 触发 hook 入口方法的 JIT 时，在编译 invoke backup 方法的字节码，将会遇到错误
+
+```java
+ResolveCompilingMethodsClass -> ClassLinker::ResolveMethod -> CheckIncompatibleClassChange -> ThrowIncompatibleClassChangeError
+```
+
+---
+
+#### 如何禁用？
+
+ART 的判断逻辑
+```cpp
+  bool IsCompilable() {
+    if (IsIntrinsic()) {
+      // kAccCompileDontBother overlaps with kAccIntrinsicBits.
+      return true;
+    }
+    return (GetAccessFlags() & kAccCompileDontBother) == 0;
+  }
+```
+
+那么加上 kAccCompileDontBother 即可。
+
+---
+
+#### Hook 线程安全
+
+由于在 Hook 时需要修改 ArtMethod 中多个字段，ART 在运行时，众多线程会依赖 ArtMethod，则因此可能导致错误状态。
+
+- 正在 JIT 你修改的方法时
+- GC 时，GC 将会搜索栈，栈中有修改的 ArtMethod
+- 正好其他线程调到了正在被修改的方法
+- 其他线程发生栈回朔(异常)，回朔到了正在修改的 ArtMethod
+
+---
+
+#### StopTheWord
+
+那么我们需要暂停所有线程，并且等待 GC 完成
+幸运的是，ART 等待调试器也需要这一操作，不仅仅是暂停所有线程，还需要等待 GC。
+
+```cpp
+void Dbg::SuspendVM() {
+  // Avoid a deadlock between GC and debugger where GC gets suspended during GC. b/25800335.
+  gc::ScopedGCCriticalSection gcs(Thread::Current(),
+                                  gc::kGcCauseDebugger,
+                                  gc::kCollectorTypeDebugger);
+  Runtime::Current()->GetThreadList()->SuspendAllForDebugger();
+}
+void Dbg::ResumeVM() {
+  Runtime::Current()->GetThreadList()->ResumeAllForDebugger();
+}
+```
+
+---
+
+### 备份原方法
+
+我们需要一个 "容器" 来备份原 ArtMethod。这里有两种方法:
+
+- New 出来
+- 写一堆空方法作为 stub
+
+这里我选择写 Stub，因为 New 有致命缺陷
+
+---
+
+#### New 的缺点
+
+- New 出来的 ArtMethod 不在 Linear 区，也就是说这个 "ArtMethod" 会被 Moving GC，那么每次调用原方法的时候，得去跳板中重新设置 ArtMethod 的地址。
+- 虽然可以通过 dlsym 使用 ART 内部的函数 "art::LinearAlloc::Alloc" 在 Linear 区分配 "ArtMethod"
+- 但是 ArtMethod 中的 declaring_class 是 GCRoot，是回 Moving GC 的，ART 并不知道他的存在，显然 GC 不会帮你更新假 "ArtMethod" 中的 declaring_class。
+- 那么还是一样，调用前手动更新吧
+
+---
+
+### inline hook
+
+![inline_flow.png](res/inline_flow.png)
