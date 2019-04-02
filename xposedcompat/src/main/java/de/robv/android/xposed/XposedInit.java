@@ -1,7 +1,5 @@
 package de.robv.android.xposed;
 
-import android.annotation.SuppressLint;
-import android.os.Build;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -9,32 +7,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import dalvik.system.DexClassLoader;
 import dalvik.system.DexFile;
-import de.robv.android.xposed.services.BaseService;
 
 import static de.robv.android.xposed.XposedHelpers.closeSilently;
 
 public final class XposedInit {
     private static final String TAG = XposedBridge.TAG;
-    private static boolean startsSystemServer = false;
-    private static final String startClassName = ""; // ed: no support for tool process anymore
-
-    public static final String INSTALLER_PACKAGE_NAME = "com.solohsu.android.edxp.manager";
-    public static final String INSTALLER_LEGACY_PACKAGE_NAME = "de.robv.android.xposed.installer";
-    @SuppressLint("SdCardPath")
-    public static final String INSTALLER_DATA_BASE_DIR = Build.VERSION.SDK_INT >= 24
-            ? "/data/user_de/0/" + INSTALLER_PACKAGE_NAME + "/"
-            : "/data/data/" + INSTALLER_PACKAGE_NAME + "/";
     private static final String INSTANT_RUN_CLASS = "com.android.tools.fd.runtime.BootstrapApplication";
     // TODO not supported yet
     private static boolean disableResources = true;
-    private static final String[] XRESOURCES_CONFLICTING_PACKAGES = {"com.sygic.aura"};
 
     private XposedInit() {
     }
@@ -44,27 +30,6 @@ public final class XposedInit {
     /**
      * Hook some methods which we want to create an easier interface for developers.
      */
-    /*package*/
-//    public static void initForZygote(boolean isSystem) throws Throwable {
-//        if (!bootstrapHooked.compareAndSet(false, true)) {
-//            return;
-//        }
-//        startsSystemServer = isSystem;
-//        Router.startBootstrapHook(isSystem);
-//        // MIUI
-//        if (findFieldIfExists(ZygoteInit.class, "BOOT_START_TIME") != null) {
-//            setStaticLongField(ZygoteInit.class, "BOOT_START_TIME", XposedBridge.BOOT_START_TIME);
-//        }
-//
-//        // Samsung
-//        if (Build.VERSION.SDK_INT >= 24) {
-//            Class<?> zygote = findClass("com.android.internal.os.Zygote", null);
-//            try {
-//                setStaticBooleanField(zygote, "isEnhancedZygoteASLREnabled", false);
-//            } catch (NoSuchFieldError ignored) {
-//            }
-//        }
-//    }
 
     /*package*/
     static void hookResources() throws Throwable {
@@ -80,32 +45,6 @@ public final class XposedInit {
      * Try to load all modules defined in <code>INSTALLER_DATA_BASE_DIR/conf/modules.list</code>
      */
     private static volatile AtomicBoolean modulesLoaded = new AtomicBoolean(false);
-
-    public static void loadModules() throws IOException {
-        if (!modulesLoaded.compareAndSet(false, true)) {
-            return;
-        }
-        final String filename = INSTALLER_DATA_BASE_DIR + "conf/modules.list";
-        BaseService service = SELinuxHelper.getAppDataFileService();
-        if (!service.checkFileExists(filename)) {
-            Log.e(TAG, "Cannot load any modules because " + filename + " was not found");
-            return;
-        }
-
-        ClassLoader topClassLoader = XposedBridge.BOOTCLASSLOADER;
-        ClassLoader parent;
-        while ((parent = topClassLoader.getParent()) != null) {
-            topClassLoader = parent;
-        }
-
-        InputStream stream = service.getFileInputStream(filename);
-        BufferedReader apks = new BufferedReader(new InputStreamReader(stream));
-        String apk;
-        while ((apk = apks.readLine()) != null) {
-            loadModule(apk, null, null, topClassLoader);
-        }
-        apks.close();
-    }
 
 
     /**
@@ -201,17 +140,12 @@ public final class XposedInit {
                         //so off
                         if (moduleInstance instanceof IXposedHookInitPackageResources) {
                             throw new UnsupportedOperationException("can not hook resource!");
-                            //XposedBridge.hookInitPackageResources(new IXposedHookInitPackageResources.Wrapper((IXposedHookInitPackageResources) moduleInstance));
                         }
                     } else {
                         //not support now
                         //so off
                         if (moduleInstance instanceof IXposedHookCmdInit) {
                             throw new UnsupportedOperationException("can not hook cmd!");
-//                            IXposedHookCmdInit.StartupParam param = new IXposedHookCmdInit.StartupParam();
-//                            param.modulePath = apk;
-//                            param.startClassName = startClassName;
-//                            ((IXposedHookCmdInit) moduleInstance).initCmdApp(param);
                         }
                     }
                 } catch (Throwable t) {
@@ -225,6 +159,4 @@ public final class XposedInit {
             closeSilently(zipFile);
         }
     }
-
-    public final static HashSet<String> loadedPackagesInProcess = new HashSet<>(1);
 }

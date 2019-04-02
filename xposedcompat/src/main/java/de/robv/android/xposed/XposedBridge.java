@@ -3,7 +3,6 @@ package de.robv.android.xposed;
 import android.annotation.SuppressLint;
 import android.util.Log;
 
-
 import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
 
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -50,7 +48,7 @@ public final class XposedBridge {
 
 	/*package*/ static boolean isZygote = true; // ed: RuntimeInit.main() tool process not supported yet
 
-	private static int runtime = 2; // ed: only support art
+	private static int runtime = 2;
 	private static final int RUNTIME_DALVIK = 1;
 	private static final int RUNTIME_ART = 2;
 
@@ -74,43 +72,20 @@ public final class XposedBridge {
 	 */
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args) {
-		// ed: moved
 	}
 
-	/** @hide */
-//	protected static final class ToolEntryPoint {
-//		protected static void main(String[] args) {
-//			isZygote = false;
-//			XposedBridge.main(args);
-//		}
-//	}
-
 	private static void initXResources() throws IOException {
-		// ed: no support for now
 	}
 
 	@SuppressLint("SetWorldReadable")
 	private static File ensureSuperDexFile(String clz, Class<?> realSuperClz, Class<?> topClz) throws IOException {
-		XposedBridge.removeFinalFlagNative(realSuperClz);
-		File dexFile = DexCreator.ensure(clz, realSuperClz, topClz);
-		dexFile.setReadable(true, false);
-		return dexFile;
+		return null;
 	}
-
-//	private static boolean hadInitErrors() {
-//		// ed: assuming never had errors
-//		return false;
-//	}
-//	private static native int getRuntime();
-//	/*package*/ static native boolean startsSystemServer();
-//	/*package*/ static native String getStartClassName();
-//	/*package*/ native static boolean initXResourcesNative();
 
 	/**
 	 * Returns the currently installed version of the Xposed framework.
 	 */
 	public static int getXposedVersion() {
-		// ed: fixed value for now
 		return 90;
 	}
 
@@ -263,95 +238,6 @@ public final class XposedBridge {
 	}
 
 	/**
-	 * This method is called as a replacement for hooked methods.
-	 */
-	private static Object handleHookedMethod(Member method, int originalMethodId, Object additionalInfoObj,
-			Object thisObject, Object[] args) throws Throwable {
-		AdditionalHookInfo additionalInfo = (AdditionalHookInfo) additionalInfoObj;
-
-		if (disableHooks) {
-			try {
-				return invokeOriginalMethodNative(method, originalMethodId, additionalInfo.parameterTypes,
-						additionalInfo.returnType, thisObject, args);
-			} catch (InvocationTargetException e) {
-				throw e.getCause();
-			}
-		}
-
-		Object[] callbacksSnapshot = additionalInfo.callbacks.getSnapshot();
-		final int callbacksLength = callbacksSnapshot.length;
-		if (callbacksLength == 0) {
-			try {
-				return invokeOriginalMethodNative(method, originalMethodId, additionalInfo.parameterTypes,
-						additionalInfo.returnType, thisObject, args);
-			} catch (InvocationTargetException e) {
-				throw e.getCause();
-			}
-		}
-
-		MethodHookParam param = new MethodHookParam();
-		param.method = method;
-		param.thisObject = thisObject;
-		param.args = args;
-
-		// call "before method" callbacks
-		int beforeIdx = 0;
-		do {
-			try {
-				((XC_MethodHook) callbacksSnapshot[beforeIdx]).beforeHookedMethod(param);
-			} catch (Throwable t) {
-				XposedBridge.log(t);
-
-				// reset result (ignoring what the unexpectedly exiting callback did)
-				param.setResult(null);
-				param.returnEarly = false;
-				continue;
-			}
-
-			if (param.returnEarly) {
-				// skip remaining "before" callbacks and corresponding "after" callbacks
-				beforeIdx++;
-				break;
-			}
-		} while (++beforeIdx < callbacksLength);
-
-		// call original method if not requested otherwise
-		if (!param.returnEarly) {
-			try {
-				param.setResult(invokeOriginalMethodNative(method, originalMethodId,
-						additionalInfo.parameterTypes, additionalInfo.returnType, param.thisObject, param.args));
-			} catch (InvocationTargetException e) {
-				param.setThrowable(e.getCause());
-			}
-		}
-
-		// call "after method" callbacks
-		int afterIdx = beforeIdx - 1;
-		do {
-			Object lastResult =  param.getResult();
-			Throwable lastThrowable = param.getThrowable();
-
-			try {
-				((XC_MethodHook) callbacksSnapshot[afterIdx]).afterHookedMethod(param);
-			} catch (Throwable t) {
-				XposedBridge.log(t);
-
-				// reset to last result (ignoring what the unexpectedly exiting callback did)
-				if (lastThrowable == null)
-					param.setResult(lastResult);
-				else
-					param.setThrowable(lastThrowable);
-			}
-		} while (--afterIdx >= 0);
-
-		// return
-		if (param.hasThrowable())
-			throw param.getThrowable();
-		else
-			return param.getResult();
-	}
-
-	/**
 	 * Adds a callback to be executed when an app ("Android package") is loaded.
 	 *
 	 * <p class="note">You probably don't need to call this. Simply implement {@link IXposedHookLoadPackage}
@@ -377,9 +263,6 @@ public final class XposedBridge {
 	 */
 	public static void hookInitPackageResources(XC_InitPackageResources callback) {
 		// TODO not supported yet
-//		synchronized (sInitPackageResourcesCallbacks) {
-//			sInitPackageResourcesCallbacks.add(callback);
-//		}
 	}
 
 	/**
@@ -391,14 +274,6 @@ public final class XposedBridge {
 		DynamicBridge.hookMethod(method, (AdditionalHookInfo) additionalInfoObj);
 
 	}
-
-    private static Object invokeOriginalMethodNative(Member method, int methodId,
-                                                     Class<?>[] parameterTypes,
-                                                     Class<?> returnType,
-                                                     Object thisObject, Object[] args)
-			throws Throwable {
-        return DynamicBridge.invokeOriginalMethod(method, thisObject, args);
-    }
 
 	/**
 	 * Basically the same as {@link Method#invoke}, but calls the original method
@@ -425,58 +300,6 @@ public final class XposedBridge {
 	 * @throws InvocationTargetException
 	 *             if an exception was thrown by the invoked method
 	 */
-	public static Object invokeOriginalMethod(Member method, Object thisObject, Object[] args)
-			throws Throwable {
-		if (args == null) {
-			args = EMPTY_ARRAY;
-		}
-
-		Class<?>[] parameterTypes;
-		Class<?> returnType;
-		if (runtime == RUNTIME_ART && (method instanceof Method || method instanceof Constructor)) {
-			parameterTypes = null;
-			returnType = null;
-		} else if (method instanceof Method) {
-			parameterTypes = ((Method) method).getParameterTypes();
-			returnType = ((Method) method).getReturnType();
-		} else if (method instanceof Constructor) {
-			parameterTypes = ((Constructor<?>) method).getParameterTypes();
-			returnType = null;
-		} else {
-			throw new IllegalArgumentException("method must be of type Method or Constructor");
-		}
-
-		return invokeOriginalMethodNative(method, 0, parameterTypes, returnType, thisObject, args);
-	}
-
-	/*package*/ static void setObjectClass(Object obj, Class<?> clazz) {
-		if (clazz.isAssignableFrom(obj.getClass())) {
-			throw new IllegalArgumentException("Cannot transfer object from " + obj.getClass() + " to " + clazz);
-		}
-		setObjectClassNative(obj, clazz);
-	}
-
-	private static native void setObjectClassNative(Object obj, Class<?> clazz);
-	/*package*/ static native void dumpObjectNative(Object obj);
-
-	/*package*/ static Object cloneToSubclass(Object obj, Class<?> targetClazz) {
-		if (obj == null)
-			return null;
-
-		if (!obj.getClass().isAssignableFrom(targetClazz))
-			throw new ClassCastException(targetClazz + " doesn't extend " + obj.getClass());
-
-		return cloneToSubclassNative(obj, targetClazz);
-	}
-
-	private static native Object cloneToSubclassNative(Object obj, Class<?> targetClazz);
-
-	private static native void removeFinalFlagNative(Class<?> clazz);
-
-//	/*package*/ static native void closeFilesBeforeForkNative();
-//	/*package*/ static native void reopenFilesAfterForkNative();
-//
-//	/*package*/ static native void invalidateCallersNative(Member[] methods);
 
 	/** @hide */
 	public static final class CopyOnWriteSortedSet<E> {

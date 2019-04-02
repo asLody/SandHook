@@ -106,33 +106,6 @@ public final class DynamicBridge {
             return false;
         }
     }
-
-    public static Object invokeOriginalMethod(Member method, Object thisObject, Object[] args)
-            throws Throwable {
-        Method callBackup = hookedInfo.get(method);
-        if (callBackup == null) {
-            //method hook use internal stub
-            return SandHook.callOriginMethod(method, thisObject, args);
-        }
-        if (!Modifier.isStatic(callBackup.getModifiers())) {
-            throw new IllegalStateException("original method is not static, something must be wrong!");
-        }
-        callBackup.setAccessible(true);
-        if (args == null) {
-            args = new Object[0];
-        }
-        final int argsSize = args.length;
-        if (Modifier.isStatic(method.getModifiers())) {
-            return callBackup.invoke(null, args);
-        } else {
-            Object[] newArgs = new Object[argsSize + 1];
-            newArgs[0] = thisObject;
-            for (int i = 1; i < newArgs.length; i++) {
-                newArgs[i] = args[i - 1];
-            }
-            return callBackup.invoke(null, newArgs);
-        }
-    }
 }
 
 
