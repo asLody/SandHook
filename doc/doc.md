@@ -130,6 +130,12 @@ XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() 
       }
 });
 ```
+---
+### Edxposed
+
+非官方 Xposed 框架，支持 8.0 - 9.0
+
+https://github.com/ElderDrivers/EdXposed/tree/sandhook
 
 ----
 
@@ -542,7 +548,7 @@ switch (invoke->GetCodePtrLocation()) {
 static constexpr uint32_t kAccSingleImplementation =  0x08000000;  // method (runtime)
 ```
 
-##### CHA 优化
+##### devirtualization
 
 ```cpp
 ArtMethod* single_impl = interface_method->GetSingleImplementation(pointer_size);
@@ -582,6 +588,15 @@ CHA 优化属于内联优化
 ```
 
 如果 ART 发现是单实现，则将指令修改为 direct calls
+
+---
+
+```java
+  private void test() {
+    IDog dog = new DogImpl();
+    dog.dosth();
+  }
+```
 
 ---
 
@@ -676,8 +691,8 @@ ldr x5, [x19, #PeerOffset]
 - 禁用某方法JIT & 手动 JIT 编译
 - Hook 线程安全
 - 原方法备份
-- inline hook
-- 入口替换
+- 选择寄存器
+- 开始 hook
 
 ---
 
@@ -885,10 +900,236 @@ void Dbg::ResumeVM() {
 - New 出来的 ArtMethod 不在 Linear 区，也就是说这个 "ArtMethod" 会被 Moving GC，那么每次调用原方法的时候，得去跳板中重新设置 ArtMethod 的地址。
 - 虽然可以通过 dlsym 使用 ART 内部的函数 "art::LinearAlloc::Alloc" 在 Linear 区分配 "ArtMethod"
 - 但是 ArtMethod 中的 declaring_class 是 GCRoot，是回 Moving GC 的，ART 并不知道他的存在，显然 GC 不会帮你更新假 "ArtMethod" 中的 declaring_class。
-- 那么还是一样，调用前手动更新吧
+- 那么还是一样，只要不使用 stub 都需要频繁手动更新地址
 
 ---
 
-### inline hook
+### 选择寄存器
+
+- 为了不破环栈结构，我们在 hook 时，需要使用纯汇编作为跳板，同时使用尽量少的寄存器完成工作
+- 如果通过保存恢复现场来保护寄存器和栈，在 ART 中也是不可行的(或者说仅仅在解释器模式下有希望)
+- 因为无论是 GC 还是栈回朔，以及其他的一些 ART 的动态行为，都依赖于栈和一些约定寄存器
+
+---
+
+#### ART 寄存器 的使用
+
+- X0 保存着 Callee 的 ArtMethod
+- X1 保存 this
+- X2 - X7 保存前 6 个非浮点参数
+- D0 - D7 前 8 个浮点参数
+- X19 当前 Thread
+- X20 GC 标记
+- X16/X17 IP0 IP1
+
+最终选择 X17，X16 在跳板中有用到。
+
+----
+
+### 开始 Hook
+#### Inline 与否
+
+SandHook 支持两种 Hook "截获" 方案，inline 以及入口替换
+
+- 当 OS >= Android O 时，仅仅需要入口替换
+- 当 OS < Android O 时，考虑到大量存在的直接跳转情况，我们选择优先使用 Inline
+- 当条件不符合时，例如代码太短，放不下跳板等(后面指令检查细说),只能使用入口替换
+- 当然也可以自己选择
+
+---
+
+#### hook 流程
+
+- 首先需要获取 origin/hook/backup(可能没有) 三个 ArtMethod
+- 选择 hook 模式
+- 备份原方法
+- 安装跳板
+- 禁止 origin JIT
+- 当 OS >= O 并且 debug 模式下，将 origin 设为 native
+
+---
+
+#### 备份原方法
+
+- 整体 mmcopy origin 到 backup 即可
+- 如果是 inline，由于原入口已经被塞入跳板，所以我们需要另外一块 call origin 的跳板
+- 禁止 backup JIT
+- 如果原方法非静态方法，要保证其是 private
+
+---
+
+#### 为何？
+
+```cpp
+if (!m->IsStatic()) {
+    // Replace calls to String.<init> with equivalent StringFactory call.
+    if (declaring_class->IsStringClass() && m->IsConstructor()) {
+      m = WellKnownClasses::StringInitToStringFactory(m);
+      CHECK(javaReceiver == nullptr);
+    } else {
+      // Check that the receiver is non-null and an instance of the field's declaring class.
+      receiver = soa.Decode<mirror::Object>(javaReceiver);
+      if (!VerifyObjectIsClass(receiver, declaring_class)) {
+        return nullptr;
+      }
+
+      // Find the actual implementation of the virtual method.
+      m = receiver->GetClass()->FindVirtualMethodForVirtualOrInterface(m, kRuntimePointerSize);
+    }
+  }
+
+inline ArtMethod* Class::FindVirtualMethodForVirtualOrInterface(ArtMethod* method,
+                                                                PointerSize pointer_size) {
+  if (method->IsDirect()) {
+    return method;
+  }
+  if (method->GetDeclaringClass()->IsInterface() && !method->IsCopied()) {
+    return FindVirtualMethodForInterface(method, pointer_size);
+  }
+  return FindVirtualMethodForVirtual(method, pointer_size);
+}
+```
+
+所以就不会直接调用原方法的 CodeEntry
+
+---
+
+#### 跳板安装
+##### 入口替换
+入口替换的跳板比较简单，主要就是安装在 origin 的 CodeEntry 上，完成两个任务
+
+- 将 X0 替换成 hook 的 ArtMethod，因为原来是 origin 的 ArtMethod
+- 跳转到 hook 的 CodeEntry
+
+---
+
+##### inline
+inline 稍显复杂
+
+- 首先一段跳板替换了 origin CodeEntry 的前几行指令，直接跳转到二段跳板
+- 将原前几行指令备份到二段跳板中
+- 二段跳板首先判断 Callee 是否是需要 Hook 的方法
+- 是则设置 X0 跳转到 Hook 入口，不是则跳到备份的指令继续执行原方法
+
+---
+#### 跳转图
 
 ![inline_flow.png](res/inline_flow.png)
+
+---
+
+#### 入口相同的情况
+
+- 未编译的 JNI 方法
+- 逻辑相同的代码
+- 入口相同的方法依然可以重复 inline，因为其组成了责任链模式
+
+---
+
+### 跳板
+
+跳板是一个个模版代码
+
+---
+
+#### 入口替换跳板
+
+```asm
+FUNCTION_START(REPLACEMENT_HOOK_TRAMPOLINE)
+    ldr RegMethod, addr_art_method
+    ldr Reg0, addr_code_entry
+    ldr Reg0, [Reg0]
+    br Reg0
+addr_art_method:
+    .long 0
+    .long 0
+addr_code_entry:
+    .long 0
+    .long 0
+FUNCTION_END(REPLACEMENT_HOOK_TRAMPOLINE)
+```
+
+---
+
+#### inline 跳板
+##### 一段
+
+```asm
+FUNCTION_START(REPLACEMENT_HOOK_TRAMPOLINE)
+    ldr RegMethod, addr_art_method
+    ldr Reg0, addr_code_entry
+    ldr Reg0, [Reg0]
+    br Reg0
+addr_art_method:
+    .long 0
+    .long 0
+addr_code_entry:
+    .long 0
+    .long 0
+FUNCTION_END(REPLACEMENT_HOOK_TRAMPOLINE)
+```
+
+---
+
+##### 二段
+
+```asm
+FUNCTION_START(INLINE_HOOK_TRAMPOLINE)
+    ldr Reg0, origin_art_method
+    cmp RegMethod, Reg0
+    bne origin_code
+    ldr RegMethod, hook_art_method
+    ldr Reg0, addr_hook_code_entry
+    ldr Reg0, [Reg0]
+    br Reg0
+origin_code:
+    .long 0
+    .long 0
+    .long 0
+    .long 0
+    ldr Reg0, addr_origin_code_entry
+    ldr Reg0, [Reg0]
+    add Reg0, Reg0, SIZE_JUMP
+    br Reg0
+origin_art_method:
+    .long 0
+    .long 0
+addr_origin_code_entry:
+    .long 0
+    .long 0
+hook_art_method:
+    .long 0
+    .long 0
+addr_hook_code_entry:
+    .long 0
+    .long 0
+FUNCTION_END(INLINE_HOOK_TRAMPOLINE)
+```
+
+---
+
+##### call origin
+
+```asm
+FUNCTION_START(CALL_ORIGIN_TRAMPOLINE)
+    ldr RegMethod, call_origin_art_method
+    ldr Reg0, addr_call_origin_code
+    br Reg0
+call_origin_art_method:
+    .long 0
+    .long 0
+addr_call_origin_code:
+    .long 0
+    .long 0
+FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
+```
+
+---
+
+### O & debug
+
+- Android O 及以上的 debug 模式会强制走解释器模式
+- 当 ART 发现你的方法已经被编译的时候，就不会走 CodeEntry
+- ArtInterpreterToInterpreterBridge 直接解释 CodeItem
+
+---
