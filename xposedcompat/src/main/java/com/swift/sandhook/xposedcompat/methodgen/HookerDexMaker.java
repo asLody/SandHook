@@ -1,7 +1,6 @@
 package com.swift.sandhook.xposedcompat.methodgen;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.android.dx.BinaryOp;
 import com.android.dx.Code;

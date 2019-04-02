@@ -13,14 +13,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
-
-import static de.robv.android.xposed.XposedBridge.sHookedMethodCallbacks;
 
 public class HookStubManager {
 
@@ -41,9 +38,6 @@ public class HookStubManager {
     public static Member[] originMethods;
     public static HookMethodEntity[] hookMethodEntities;
     public static XposedBridge.AdditionalHookInfo[] additionalHookInfos;
-
-    private static final Map<Member, XposedBridge.CopyOnWriteSortedSet<XC_MethodHook>> hookCallbacks
-            = sHookedMethodCallbacks;
 
     static {
         is64Bit = SandHook.is64Bit();
