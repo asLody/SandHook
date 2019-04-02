@@ -137,6 +137,14 @@ XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() 
 
 https://github.com/ElderDrivers/EdXposed/tree/sandhook
 
+---
+
+### with VA
+
+免 Root Xposed 环境
+
+https://github.com/ganyao114/SandVXposed
+
 ----
 
 ## ART Invoke 代码生成
