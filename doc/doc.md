@@ -1157,6 +1157,8 @@ FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
 
 如果我们需要 inline 一个已经编译的方法，我们就必须知道该方法 Code 的长度能否放下我们的跳转指令，否则就会破坏其他 Code。
 
+---
+
 #### 获取指令长度
 
 某个方法的 Code 在 Code Cache 中的布局为 CodeHeader + Code, 其中 CodeHeader 中存有 Code 的长度。
@@ -1383,8 +1385,6 @@ ART 的 inline 类似其他语言的编译器优化，在 Runtime(JIT) 或者 de
 ### 阻止 JIT 期间的 Inline
 
 观察 JIT Inline 的条件：  
-当被 inline 方法的 code units 大于设置的阈值的时候，方法 Inline 失败。
-这个阈值是 CompilerOptions -> inline_max_code_units_
 
 ```cpp
 
@@ -1410,6 +1410,11 @@ const CompilerOptions& compiler_options = compiler_driver_->GetCompilerOptions()
     return false;
   }
 ```
+---
+
+当被 inline 方法的 code units 大于设置的阈值的时候，方法 Inline 失败。
+这个阈值是 CompilerOptions -> inline_max_code_units_
+
 ---
 
 经过搜索，CompilerOptions 一般与 JitCompiler 绑定：
@@ -1467,4 +1472,12 @@ ok，那么我们就得到了  “static void* jit_compiler_handle_” 的 C++ �
 
 ### 阻止 dex2oat Inline
 
-除了 JIT 期间的内联 
+- Android N 以上默认的 ART 编译策略为 speed-profile
+- 除了 JIT 期间的内联，系统在空闲实践会根据这个所谓的 profile 进行 speed 模式的 dex2oat
+- speed 模式包含 Inline 优化
+
+---
+
+#### 如何阻止
+
+
