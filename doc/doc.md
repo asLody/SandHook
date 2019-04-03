@@ -1717,9 +1717,7 @@ static {
     }
 ```
 
-----
-
-## 架构图
+---
 
 ![sandhook_arch.png](res/sandhook_arch.png)
 
@@ -1729,3 +1727,64 @@ static {
 
 到上面为止，Hook 的大部分细节已经介绍完了，但是本进程的 Hook 不是我们想要的。我们想要将 Hook 作用于其他进程则必须将 Hook 逻辑注入到目标进程。
 
+- Root 注入
+- 非 Root 注入，沙箱环境
+- 非 Root 插件加载
+- 代码植入
+
+----
+
+### Root 注入
+
+Root 注入基本分为：
+
+- 全局注入，一般选择注入 Zygote 进程
+- 单进程注入，ptrace
+
+----
+
+#### Zygote 注入
+
+- 原版 Xposed 修改了 app_process 的源码，在其中加入加载 Xposed 框架的逻辑
+- Edxp 依赖 “Riru”，Riru 伪造了 libmemtrack.so，在其中加入了加载 “模块” 逻辑，libmemtrack 是 Zygote 的必备库，这个库比较简单，所以成为了目标
+- 使用 Zygote 的注入，所有 android 进程都将附带 Xposed 的 lib，所以为 “全局注入”
+
+----
+
+#### 单进程注入
+
+- 使用 ptrace，核心在于找到 mmap/dlopen/dlsym 等函数在目标进程的地址
+- 依据本进程计算偏移即可
+- 要注意 N 以上对 dlopen 的限制
+- 问题在于无法绕过目标进程的反调试保护，另外容易错过 Hook 时机
+- 另外这种方法也可以注入 Zygote
+
+----
+
+### 非 Root 注入
+
+- 需要沙箱环境，核心在于利用同 UID 免 Root 使用 ptrace，步骤和上面相同
+- 类似 GG 助手
+
+https://github.com/ganyao114/SandBoxHookPlugin
+
+----
+
+### 非 Root 插件加载
+
+- 同样需要沙箱环境，不同的是需要沙箱在加载内部 app 进程时主动加载 Xposed 插件
+- 这样不会错过 Hook 时机，也不存在反调试问题
+- 然而稳定性取决于沙箱本身的稳定性
+- 类似 VirtualXposed
+
+https://github.com/ganyao114/SandVXposed
+
+----
+
+### 代码植入
+
+- 解包目标 apk，植入 Xposed 代码，重打包
+- 需要 Hook 处理 apk 完整性检查，签名验证
+- 处理加壳
+- 容易被封号
+- 类似太极
