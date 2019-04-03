@@ -183,8 +183,28 @@ https://github.com/ganyao114/SandVXposed
 
 #### ArtMethod
 
-- 在大约 6.0 及之前，java 层中有隐藏类 ArtMethod，Method 与之一对一，而 mirror::ArtMethod 就是 java 层 ArtMethod 的映射。
-- 6.0 之后，java ArtMethod 不复存在，Method 与 mirror::ArtMethod 一对一映射，只不过大部分 Field 被 "隐藏" 了。
+- java 层中有类 ArtMethod，Method 与之一对一, Method 中含有 ArtMethod 的引用，而 mirror::ArtMethod 就是 java 层 ArtMethod 的映射。
+- 6.0 之后，java ArtMethod 不复存在，被完全隐藏。
+
+----
+
+```cpp
+// C++ mirror of java.lang.reflect.Method.
+class MANAGED Method : public Executable {
+  ....
+}
+// C++ mirror of java.lang.reflect.Executable.
+class MANAGED Executable : public AccessibleObject {
+  uint16_t has_real_parameter_data_;
+  HeapReference<mirror::Class> declaring_class_;
+  HeapReference<mirror::Class> declaring_class_of_overridden_method_;
+  HeapReference<mirror::Array> parameters_;
+  // ArtMethod 地址
+  uint64_t art_method_;
+  uint32_t access_flags_;
+  uint32_t dex_method_index_;
+}
+```
 
 ----
 
