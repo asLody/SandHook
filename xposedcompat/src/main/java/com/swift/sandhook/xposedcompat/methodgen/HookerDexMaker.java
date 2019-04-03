@@ -1,5 +1,6 @@
 package com.swift.sandhook.xposedcompat.methodgen;
 
+import android.os.Build;
 import android.text.TextUtils;
 
 import com.android.dx.BinaryOp;
@@ -12,18 +13,22 @@ import com.android.dx.Local;
 import com.android.dx.MethodId;
 import com.android.dx.TypeId;
 import com.swift.sandhook.SandHook;
+import com.swift.sandhook.SandHookConfig;
 import com.swift.sandhook.SandHookMethodResolver;
 import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.xposedcompat.XposedCompat;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.ByteBuffer;
 import java.util.Map;
 
+import dalvik.system.InMemoryDexClassLoader;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 
@@ -213,12 +218,29 @@ public class HookerDexMaker implements HookMaker {
         generateCallBackupMethod();
         generateHookMethod();
 
-        ClassLoader loader;
+        ClassLoader loader = null;
+
         if (TextUtils.isEmpty(mDexDirPath)) {
-            throw new IllegalArgumentException("dexDirPath should not be empty!!!");
+            if (SandHookConfig.SDK_INT < Build.VERSION_CODES.O) {
+                throw new IllegalArgumentException("dexDirPath should not be empty!!!");
+            } else {
+                byte[] dexBytes = mDexMaker.generate();
+                loader = new InMemoryDexClassLoader(ByteBuffer.wrap(dexBytes), mAppClassLoader);
+            }
+        } else {
+            // Create the dex file and load it.
+            try {
+                loader = mDexMaker.generateAndLoad(mAppClassLoader, new File(mDexDirPath), dexName);
+            } catch (IOException e) {
+                //can not write file
+                if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.O) {
+                    byte[] dexBytes = mDexMaker.generate();
+                    loader = new InMemoryDexClassLoader(ByteBuffer.wrap(dexBytes), mAppClassLoader);
+                }
+            }
         }
-        // Create the dex file and load it.
-        loader = mDexMaker.generateAndLoad(mAppClassLoader, new File(mDexDirPath), dexName);
+        if (loader == null)
+            return null;
         return loadHookerClass(loader, className);
     }
 

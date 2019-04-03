@@ -35,7 +35,6 @@ import com.android.dx.rop.type.StdTypeList;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -45,8 +44,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
-
-import dalvik.system.PathClassLoader;
 
 import static com.android.dx.rop.code.AccessFlags.ACC_CONSTRUCTOR;
 import static java.lang.reflect.Modifier.PRIVATE;
@@ -537,8 +534,6 @@ public final class DexMaker {
             } catch (Throwable throwable) {}
         }
 
-        byte[] dex = generate();
-
         /*
          * This implementation currently dumps the dex to the filesystem. It
          * jars the emitted .dex for the benefit of Gingerbread and earlier
@@ -555,6 +550,7 @@ public final class DexMaker {
         result.createNewFile();
         JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(result));
         JarEntry entry = new JarEntry(DexFormat.DEX_IN_JAR_NAME);
+        byte[] dex = generate();
         entry.setSize(dex.length);
         jarOut.putNextEntry(entry);
         jarOut.write(dex);
