@@ -170,17 +170,18 @@ https://github.com/ganyao114/SandVXposed
 ----
 
 ### ArtMethod
+#### Mirror
 
 在了解 ArtMethod 之前先了解一下这个概念：
 
 - Java 对象在内存中的布局可以看成一个结构体，父类的变量在开头，本身的变量紧随其后。
 - 这些对象结构体在 ART 中被映射成 mirror::Object cpp 类。
-- 有一些虚拟机比较在意的类型，例如 Class，Method，Thread 这些 Art 内部所需要的类型，他们在 mirror 中是有对应的类型的
+- 有一些虚拟机比较在意的类型，例如 Class，Method 这些 Art 内部所需要的类型，他们在 mirror 中是有对应的类型的
 - 成员变量的内存布局也是对应映射的
 
 ----
 
-#### Mirror
+#### ArtMethod
 
 - 在大约 6.0 及之前，java 层中有隐藏类 ArtMethod，Method 与之一对一，而 mirror::ArtMethod 就是 java 层 ArtMethod 的映射。
 - 6.0 之后，java ArtMethod 不复存在，Method 与 mirror::ArtMethod 一对一映射，只不过大部分 Field 被 "隐藏" 了。
@@ -735,7 +736,7 @@ ldr x5, [x19, #PeerOffset]
 ### resolve 静态方法
 
 - 静态方法是懒加载的。
-- 如果一个类没有被加载，那么其中的静态方法的入口统一为 art_quick_proxy_invoke_handler
+- 如果一个类没有被初始化，那么其中的静态方法的入口统一为 art_quick_proxy_invoke_handler
 - 第一次调用时，art_quick_proxy_invoke_handler 会走到类初始化流程
 
 ----
@@ -870,7 +871,7 @@ ART 的判断逻辑
 - 正在 JIT 你修改的方法时
 - GC 时，GC 将会搜索栈，栈中有修改的 ArtMethod
 - 正好其他线程调到了正在被修改的方法
-- 其他线程发生栈回朔(异常)，回朔到了正在修改的 ArtMethod
+- 其他线程发生栈回溯(异常)，回溯到了正在修改的 ArtMethod
 
 ----
 
@@ -1561,7 +1562,7 @@ SandHook.disableVMInline()
 ### 阻止 dex2oat Inline
 
 - Android N 以上默认的 ART 编译策略为 speed-profile
-- 除了 JIT 期间的内联，系统在空闲实践会根据这个所谓的 profile 进行 speed 模式的 dex2oat
+- 除了 JIT 期间的内联，系统在空闲时会根据这个所谓的 profile 进行 speed 模式的 dex2oat
 - speed 模式包含 Inline 优化
 - 现象是 App 多打开几次发现 Hook 不到了
 
@@ -1630,7 +1631,7 @@ bool ProfileCompilationInfo::Load(const std::string& filename, bool clear_if_inv
 
 - 这两个跳板不在动态链接表中，(fake)dlsym 无法搜索到
 - 但是这个符号是被保留的，在 SHT_SYMTAB 中，这个表存储了所有的符号，所以我重新实现了符号搜索
-- 除此之外也可以从从未调用的方法中获取，但是可能遇到被强制 dex2oat 的情况
+- 除此之外也可以从未调用的方法中获取，但是可能遇到被强制 dex2oat 的情况
 
 https://github.com/ganyao114/AndroidELF
 
