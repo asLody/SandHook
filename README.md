@@ -7,7 +7,9 @@ Android ART Hook
 
 ## Chinese
 
-[中文文档以及实现](https://blog.csdn.net/ganyao939543405/article/details/86661040)
+[中文文档以及实现](https://github.com/ganyao114/SandHook/blob/master/doc/doc.md)
+
+[中文 Blog](https://blog.csdn.net/ganyao939543405/article/details/86661040)
 
 # arch support 
 
