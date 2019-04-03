@@ -9,7 +9,7 @@ Android Art Hook
 
 Swift Gan
 
-----
+---
 
 ## Agenda
 
@@ -20,17 +20,18 @@ Swift Gan
 - Xposed 支持
 - inline 处理
 - Android Q
-- Demo
+- 架构图
+- 进程注入
 
-----
+---
 
 ## 简介
 
-SandHook 是作用在 Android ART 虚拟机上的 Java 层 Hook 框架
+SandHook 是作用在 Android ART 虚拟机上的 Java 层 Hook 框架，作用于进程内是不需要 Root 的
 
 https://github.com/ganyao114/SandHook
 
----
+----
 
 ### OS
 - 4.4(JNI 不支持 call 原方法)
@@ -41,7 +42,7 @@ https://github.com/ganyao114/SandHook
 - 9.0
 - 10.0
 
----
+----
 
 ### ARCH
 
@@ -49,7 +50,7 @@ https://github.com/ganyao114/SandHook
 - THUMb32
 - AARCH64
 
----
+----
 
 ### 方法范围
 
@@ -60,22 +61,22 @@ https://github.com/ganyao114/SandHook
 - JNI Methods
 - 不支持 abstract 方法
 
----
+----
 
 ### 如何使用
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:3.3.8'
-implementation 'com.swift.sandhook:xposedcompat:3.3.8'
+implementation 'com.swift.sandhook:hooklib:3.4.0'
+// 不使用 Xposed API 则不需要引入
+implementation 'com.swift.sandhook:xposedcompat:3.4.0'
 ```
 
 - Annotation API
 - Xposed API
 
----
+----
 
 #### Annotation API
-
 
 ```java
 @HookClass(Activity.class)
@@ -84,6 +85,7 @@ public class ActivityHooker {
 
     @HookMethodBackup("onCreate")
     @MethodParams(Bundle.class)
+    //@SkipParamCheck //忽略参数匹配，如果 Hooker 里面没有同名 Hook 函数
     static Method onCreateBackup;
 
     @HookMethodBackup("onPause")
@@ -105,7 +107,7 @@ public class ActivityHooker {
 }
 ```
 
----
+----
 
 #### Xposed API
 
@@ -130,14 +132,14 @@ XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() 
       }
 });
 ```
----
+----
 ### Edxposed
 
 非官方 Xposed 框架，支持 8.0 - 9.0
 
 https://github.com/ElderDrivers/EdXposed/tree/sandhook
 
----
+----
 
 ### with VA
 
@@ -145,7 +147,7 @@ https://github.com/ElderDrivers/EdXposed/tree/sandhook
 
 https://github.com/ganyao114/SandVXposed
 
-----
+---
 
 ## ART Invoke 代码生成
 
@@ -158,14 +160,14 @@ https://github.com/ganyao114/SandVXposed
 - 8.0 之后
 - 结论
 
----
+----
 
 ### 前言
 在正式聊 Hook 方案之前，我们需要先了解一下 ART 对 invoke 字节码的实现，因为这会决定 Hook 的部分实现。
 这里的实现理论上分为：解释器实现和编译实现(JIT/AOT)
 实际上解释器的实现比较稳定和单一，我们仅仅需要关注编译器实现即可。
 
----
+----
 
 ### ArtMethod
 
@@ -176,21 +178,21 @@ https://github.com/ganyao114/SandVXposed
 - 有一些虚拟机比较在意的类型，例如 Class，Method，Thread 这些 Art 内部所需要的类型，他们在 mirror 中是有对应的类型的
 - 成员变量的内存布局也是对应映射的
 
----
+----
 
 #### Mirror
 
 - 在大约 6.0 及之前，java 层中有隐藏类 ArtMethod，Method 与之一对一，而 mirror::ArtMethod 就是 java 层 ArtMethod 的映射。
 - 6.0 之后，java ArtMethod 不复存在，Method 与 mirror::ArtMethod 一对一映射，只不过大部分 Field 被 "隐藏" 了。
 
----
+----
 
 #### GC
 
 - ArtMethod 以及类似的 ArtField 在 Linear 堆区，是不会 Moving GC 的。
 - 原因很简单，ArtMethod/ArtField 是有可能 JIT/AOT 在 native code 中的，如果随时变化则不好同步。
 
----
+----
 
 #### jmethodId -> ArtMethod
 
@@ -218,7 +220,7 @@ static inline ArtMethod* DecodeArtMethod(jmethodID method_id) {
 
 可以看到只是简单的 cast，jmethodId 是 ArtMethod 的透明引用。
 
----
+----
 
 #### ArtMethod 结构
 
@@ -253,7 +255,7 @@ static inline ArtMethod* DecodeArtMethod(jmethodID method_id) {
 
 ```
 
----
+----
 
 #### 方法入口
 
@@ -292,7 +294,7 @@ static inline ArtMethod* DecodeArtMethod(jmethodID method_id) {
   }
 ```
 
----
+----
 
 ### Quick & Optimizing
 ART 中的 Compiler 有两种 Backend：
@@ -307,8 +309,7 @@ ART 中的 Compiler 有两种 Backend：
 
 下面以 Optimizing Compiler 为例分析 ART 方法调用的生成。
 
-
----
+----
 
 ### Optimizing
 Optimizing比Quick生成速度慢，但是会附带各种优化:
@@ -322,20 +323,21 @@ Optimizing比Quick生成速度慢，但是会附带各种优化:
 - Intrinsic 函数替换 。。。
 
 其中包括 Invoke 代码生成：
----
+
+----
 
 ### Sharpening
 
 **invoke-static/invoke-direct 代码生成默认使用 Sharpening 优化**。
 
----
+----
 
 #### Sharpening 做了两件事情
 
 - 确定加载 ArtMethod 的方式和位置
 - 确定直接 blr 入口调用方法还是查询 ArtMethod -> CodeEntry 调用方法
 
----
+----
 
 #### 结果保存在两个 enum 中
 
@@ -344,7 +346,7 @@ Optimizing比Quick生成速度慢，但是会附带各种优化:
 
 我们重点关注 CodePtrLocation，但是 CodePtrLocation 在 8.0 有重大变化。
 
----
+----
 
 ### 8.0 之前
 
@@ -370,7 +372,7 @@ Optimizing比Quick生成速度慢，但是会附带各种优化:
   };
 ```
 
----
+----
 
 ### 代码生成
 
@@ -412,7 +414,7 @@ switch (invoke->GetCodePtrLocation()) {
 }
 ```
 
----
+----
 
 #### 汇编
 
@@ -438,7 +440,7 @@ ldr lr [RegMethod(X0), #CodeEntryOffset]
 blr lr
 ```
 
----
+----
 
 ### 8.0 之后
 
@@ -450,7 +452,7 @@ ldr lr [RegMethod(X0), #CodeEntryOffset]
 
 这一步。
 
----
+----
 
 #### CodePtrLocation
 
@@ -462,7 +464,7 @@ ldr lr [RegMethod(X0), #CodeEntryOffset]
   };
 ```
 
----
+----
 
 #### 代码生成
 
@@ -496,7 +498,7 @@ switch (invoke->GetCodePtrLocation()) {
   }
 ```
 
----
+----
 
 ### invoke-virtual/interface
 
@@ -531,7 +533,7 @@ switch (invoke->GetCodePtrLocation()) {
   }
 ```
 
----
+----
 
 #### 伪代码
 
@@ -540,13 +542,13 @@ switch (invoke->GetCodePtrLocation()) {
 - ldr lr method->CodeEntry
 - blr lr
 
----
+----
 
 #### 为何不 Hook Abstract
 
 修改 VTable 是否可行？
 
----
+----
 
 #### SingleImplementation
 
@@ -581,7 +583,7 @@ ArtMethod {
 
 ```
 
----
+----
 
 ##### 优化步骤
 
@@ -597,7 +599,7 @@ CHA 优化属于内联优化
 
 如果 ART 发现是单实现，则将指令修改为 direct calls
 
----
+----
 
 ```java
   private void test() {
@@ -606,14 +608,14 @@ CHA 优化属于内联优化
   }
 ```
 
----
+----
 
 ### InvokeRuntime
 
 一些特殊方法，主要服务于需要在 Runtime 时期才能确定的 Invoke，例如类初始化 <cinit> 函数。(kQuickInitializeType)
 InvokeRuntime 会从当前 Thread 中查找 CodeEntry：
 
----
+----
 
 #### 代码生成
 
@@ -630,7 +632,7 @@ void CodeGeneratorARM64::InvokeRuntime(int32_t entry_point_offset,
 }
 ```
 
----
+----
 
 #### 汇编代码
 
@@ -645,7 +647,7 @@ ldr        x20, [x0, #0x310]
 blr        x20
 ```
 
----
+----
 
 ### Intrinsics 优化
 
@@ -665,7 +667,7 @@ ART 额外维护了一批系统函数的高效实现，这些高效实现利用�
 
 ```
 
----
+----
 
 #### Thread.currentThread()
 
@@ -682,13 +684,13 @@ void IntrinsicCodeGeneratorARM64::VisitThreadCurrentThread(HInvoke* invoke) {
 ldr x5, [x19, #PeerOffset]
 ```
 
----
+----
 
 ### 结论
 
 当 8.0 以上时，我们使用 ArtMethod 入口替换即可基本满足 Hook 需求。但如果 8.0 以下，如果不开启 debug 或者 deoptimize 的话，则必须使用 inline hook，否则会漏掉很多调用。
 
-----
+---
 
 ## 基本实现
 
@@ -702,7 +704,7 @@ ldr x5, [x19, #PeerOffset]
 - 选择寄存器
 - 开始 hook
 
----
+----
 
 ### ArtMethod 内存布局
 
@@ -721,14 +723,14 @@ ldr x5, [x19, #PeerOffset]
 - 我们可以在 Java 层反射得到一些值，或者说我们可以根据指定方法的属性确定预测值(accessFlag)，然后我们根据预测值在 ArtMethod 中搜索偏移
 - 根据元素在 ArtMethod 中的相对位置确定(code_entry 在最后)
 
----
+----
 
 ### Hooker 项解析
 
 - 首先 Hook 项承载了目标方法的信息，我们根据这些信息找到目标方法。
 - 因为被 Hook 的方法会直接调到我们的 Hook 入口，Hook 入口本身也是一个 java 方法，所以参数需要和原方法匹配。
 
----
+----
 
 ### resolve 静态方法
 
@@ -736,7 +738,7 @@ ldr x5, [x19, #PeerOffset]
 - 如果一个类没有被加载，那么其中的静态方法的入口统一为 art_quick_proxy_invoke_handler
 - 第一次调用时，art_quick_proxy_invoke_handler 会走到类初始化流程
 
----
+----
 
 #### resolve 静态方法
 
@@ -766,7 +768,7 @@ ldr x5, [x19, #PeerOffset]
     }
 ```
 
----
+----
 
 ### resolve dex cache
 
@@ -776,7 +778,7 @@ ldr x5, [x19, #PeerOffset]
 
 当然后面我们我们也可以使用反射调用原方法来解决这一问题。
 
----
+----
 
 #### resolve 实现
 
@@ -785,7 +787,7 @@ ldr x5, [x19, #PeerOffset]
 - 8.1 以上 DexCache 最大为 1024，index 实际为真实 index % 1024 再去取，则有可能在运行期间被覆盖
 - 所以 8.1 以后建议通过反射 invoke 调用原方法
 
----
+----
 
 ### 手动 JIT
 #### 编译策略
@@ -795,7 +797,7 @@ ldr x5, [x19, #PeerOffset]
 - 则我们如果想使用 inline hook 的话，则必须手动将目标方法编译
 - 除此之外，将 hook 入口方法编译可以避免一些意想不到的问题
 
----
+----
 
 #### 如何编译
 
@@ -803,7 +805,7 @@ ldr x5, [x19, #PeerOffset]
 - 我们只需要 dlsym libart-compiler.so 的导出方法 jit_compile_method 调用即可
 - 需要注意 Android N 以上对 dlsym 的限制
 
----
+----
 
 ```cpp
 extern "C" void* jit_load(bool* generate_debug_info) {
@@ -824,14 +826,14 @@ extern "C" bool jit_compile_method(
 }
 ```
 
----
+----
 
 #### 其他需要注意的
 
 - 手动编译 JNI 方法将发生未知错误
 - 在某些系统进程(zygote, system_server)里面，Compiler 是不需要初始化的，所以手动编译将会报错，很好理解，默认这些进程早就被 OAT 了
 
----
+----
 
 #### 禁用某个方法的 JIT
 
@@ -842,7 +844,7 @@ extern "C" bool jit_compile_method(
 ResolveCompilingMethodsClass -> ClassLinker::ResolveMethod -> CheckIncompatibleClassChange -> ThrowIncompatibleClassChangeError
 ```
 
----
+----
 
 #### 如何禁用？
 
@@ -870,9 +872,9 @@ ART 的判断逻辑
 - 正好其他线程调到了正在被修改的方法
 - 其他线程发生栈回朔(异常)，回朔到了正在修改的 ArtMethod
 
----
+----
 
-#### StopTheWord
+#### StopTheWorld
 
 那么我们需要暂停所有线程，并且等待 GC 完成
 幸运的是，ART 等待调试器也需要这一操作，不仅仅是暂停所有线程，还需要等待 GC。
@@ -891,7 +893,7 @@ void Dbg::ResumeVM() {
 }
 ```
 
----
+----
 
 ### 备份原方法
 
@@ -902,7 +904,7 @@ void Dbg::ResumeVM() {
 
 这里我选择写 Stub，因为 New 有致命缺陷
 
----
+----
 
 #### New 的缺点
 
@@ -911,7 +913,7 @@ void Dbg::ResumeVM() {
 - 但是 ArtMethod 中的 declaring_class 是 GCRoot，是回 Moving GC 的，ART 并不知道他的存在，显然 GC 不会帮你更新假 "ArtMethod" 中的 declaring_class。
 - 那么还是一样，只要不使用 stub 都需要频繁手动更新地址
 
----
+----
 
 ### 选择寄存器
 
@@ -919,7 +921,7 @@ void Dbg::ResumeVM() {
 - 如果通过保存恢复现场来保护寄存器和栈，在 ART 中也是不可行的(或者说仅仅在解释器模式下有希望)
 - 因为无论是 GC 还是栈回朔，以及其他的一些 ART 的动态行为，都依赖于栈和一些约定寄存器
 
----
+----
 
 #### ART 寄存器 的使用
 
@@ -933,7 +935,7 @@ void Dbg::ResumeVM() {
 
 最终选择 X17，X16 在跳板中有用到。
 
-----
+---
 
 ### 开始 Hook
 #### Inline 与否
@@ -945,7 +947,7 @@ SandHook 支持两种 Hook "截获" 方案，inline 以及入口替换
 - 当条件不符合时，例如代码太短，放不下跳板等(后面指令检查细说),只能使用入口替换
 - 当然也可以自己选择
 
----
+----
 
 #### hook 流程
 
@@ -956,7 +958,7 @@ SandHook 支持两种 Hook "截获" 方案，inline 以及入口替换
 - 禁止 origin JIT
 - 当 OS >= O 并且 debug 模式下，将 origin 设为 native
 
----
+----
 
 #### 备份原方法
 
@@ -966,7 +968,7 @@ SandHook 支持两种 Hook "截获" 方案，inline 以及入口替换
 - 如果原方法非静态方法，要保证其是 private
 - 调用原方法，只需要反射调用 backup 方法即可
 
----
+----
 
 #### 为何？
 
@@ -1002,7 +1004,7 @@ inline ArtMethod* Class::FindVirtualMethodForVirtualOrInterface(ArtMethod* metho
 
 所以就不会直接调用原方法的 CodeEntry
 
----
+----
 
 #### 跳板安装
 ##### 入口替换
@@ -1011,7 +1013,7 @@ inline ArtMethod* Class::FindVirtualMethodForVirtualOrInterface(ArtMethod* metho
 - 将 X0 替换成 hook 的 ArtMethod，因为原来是 origin 的 ArtMethod
 - 跳转到 hook 的 CodeEntry
 
----
+----
 
 ##### inline
 inline 稍显复杂
@@ -1021,12 +1023,13 @@ inline 稍显复杂
 - 二段跳板首先判断 Callee 是否是需要 Hook 的方法
 - 是则设置 X0 跳转到 Hook 入口，不是则跳到备份的指令继续执行原方法
 
----
+----
+
 #### 跳转图
 
 ![inline_flow.png](res/inline_flow.png)
 
----
+----
 
 #### 入口相同的情况
 
@@ -1034,13 +1037,13 @@ inline 稍显复杂
 - 逻辑相同的代码
 - 入口相同的方法依然可以重复 inline，因为其组成了责任链模式
 
----
+----
 
 ### 跳板
 
 跳板是一个个模版代码
 
----
+----
 
 #### 入口替换跳板
 
@@ -1059,7 +1062,7 @@ addr_code_entry:
 FUNCTION_END(REPLACEMENT_HOOK_TRAMPOLINE)
 ```
 
----
+----
 
 #### inline 跳板
 ##### 一段
@@ -1079,7 +1082,7 @@ addr_code_entry:
 FUNCTION_END(REPLACEMENT_HOOK_TRAMPOLINE)
 ```
 
----
+----
 
 ##### 二段
 
@@ -1116,7 +1119,7 @@ addr_hook_code_entry:
 FUNCTION_END(INLINE_HOOK_TRAMPOLINE)
 ```
 
----
+----
 
 ##### call origin
 
@@ -1134,7 +1137,7 @@ addr_call_origin_code:
 FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
 ```
 
----
+----
 
 ### O & debug
 
@@ -1144,6 +1147,87 @@ FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
 
 ----
 
+<font size=5>
+解释器 Switch -> DoInvoke -> DoCall -> DoCallCommon -> PerformCall
+</font>
+
+```cpp
+bool ClassLinker::ShouldUseInterpreterEntrypoint(ArtMethod* method, const void* quick_code) {
+  if (UNLIKELY(method->IsNative() || method->IsProxyMethod())) {
+    return false;
+  }
+
+  if (quick_code == nullptr) {
+    return true;
+  }
+
+  Runtime* runtime = Runtime::Current();
+  instrumentation::Instrumentation* instr = runtime->GetInstrumentation();
+  if (instr->InterpretOnly()) {
+    return true;
+  }
+
+  if (runtime->GetClassLinker()->IsQuickToInterpreterBridge(quick_code)) {
+    // Doing this check avoids doing compiled/interpreter transitions.
+    return true;
+  }
+
+  if (Dbg::IsForcedInterpreterNeededForCalling(Thread::Current(), method)) {
+    // Force the use of interpreter when it is required by the debugger.
+    return true;
+  }
+
+  if (Thread::Current()->IsAsyncExceptionPending()) {
+    // Force use of interpreter to handle async-exceptions
+    return true;
+  }
+
+  if (runtime->IsJavaDebuggable()) {
+    // For simplicity, we ignore precompiled code and go to the interpreter
+    // assuming we don't already have jitted code.
+    // We could look at the oat file where `quick_code` is being defined,
+    // and check whether it's been compiled debuggable, but we decided to
+    // only rely on the JIT for debuggable apps.
+    jit::Jit* jit = Runtime::Current()->GetJit();
+    return (jit == nullptr) || !jit->GetCodeCache()->ContainsPc(quick_code);
+  }
+
+  if (runtime->IsNativeDebuggable()) {
+    DCHECK(runtime->UseJitCompilation() && runtime->GetJit()->JitAtFirstUse());
+    // If we are doing native debugging, ignore application's AOT code,
+    // since we want to JIT it (at first use) with extra stackmaps for native
+    // debugging. We keep however all AOT code from the boot image,
+    // since the JIT-at-first-use is blocking and would result in non-negligible
+    // startup performance impact.
+    return !runtime->GetHeap()->IsInBootImageOatFile(quick_code);
+  }
+
+  return false;
+}
+
+inline void PerformCall(Thread* self,
+                        const CodeItemDataAccessor& accessor,
+                        ArtMethod* caller_method,
+                        const size_t first_dest_reg,
+                        ShadowFrame* callee_frame,
+                        JValue* result,
+                        bool use_interpreter_entrypoint)
+    REQUIRES_SHARED(Locks::mutator_lock_) {
+  if (LIKELY(Runtime::Current()->IsStarted())) {
+    if (use_interpreter_entrypoint) {
+      interpreter::ArtInterpreterToInterpreterBridge(self, accessor, callee_frame, result);
+    } else {
+      interpreter::ArtInterpreterToCompiledCodeBridge(
+          self, caller_method, callee_frame, first_dest_reg, result);
+    }
+  } else {
+    interpreter::UnstartedRuntime::Invoke(self, accessor, callee_frame, result, first_dest_reg);
+  }
+}
+```
+
+---
+
 ## 指令检查
 
 - Code 长度检查
@@ -1151,13 +1235,13 @@ FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
 - 指令对齐
 - PC 寄存器相关指令
 
----
+----
 
 ### 指令长度
 
 如果我们需要 inline 一个已经编译的方法，我们就必须知道该方法 Code 的长度能否放下我们的跳转指令，否则就会破坏其他 Code。
 
----
+----
 
 #### 获取指令长度
 
@@ -1174,7 +1258,7 @@ FUNCTION_END(CALL_ORIGIN_TRAMPOLINE)
   uint8_t code_[0];
 ```
 
----
+----
 
 #### 获取指令长度
 
@@ -1209,13 +1293,13 @@ JitCompile->CommitCode->CommitCodeInternal
                             reinterpret_cast<char*>(code_ptr + code_size));
 ```
 
----
+----
 
 #### 获取指令长度
 
 那么可得出 CodeEntry - 4 就是存放 Code Size 的地址
 
----
+----
 
 ### Thumb 指令
 
@@ -1228,7 +1312,7 @@ bool isThumbCode(Size codeAddr) {
             return (codeAddr & 0x1) == 0x1;
 }
 ```
----
+----
 
 ### 指令对齐
 
@@ -1237,7 +1321,7 @@ bool isThumbCode(Size codeAddr) {
 - 那么问题来了，我们一级跳板是 4 字节对齐的，原始指令是 2 字节对齐
 - 所以在备份原指令的时候一定要注意指令的完整性
 
----
+----
 
 ### PC 寄存器相关指令
 
@@ -1251,15 +1335,16 @@ public void setCloseOnTouchOutsideIfNotSet(boolean close) {
     }
 }  
 ```
----
+----
 
 #### 汇编代码
 
 ![pc_relate.png](res/pc_relate.png)
 
+CBNZ 依赖于当前 PC 值。  
 虽然这种情况不多，但是检查是必要的，如果我们发现这种指令，直接转用入口替换即可。
 
-----
+---
 
 ## Xposed 兼容
 
@@ -1268,7 +1353,7 @@ public void setCloseOnTouchOutsideIfNotSet(boolean close) {
 - 实现
 - 性能优化
 
----
+----
 
 ### 为何要兼容 Xposed？
 
@@ -1276,17 +1361,17 @@ public void setCloseOnTouchOutsideIfNotSet(boolean close) {
 - Xposed 特殊的(Callback)分发模式可支持多个模块同时 Hook 同一个函数
 - 原版 Xposed 需要 Root 并且替换定制 ART，并且 8.0 已经停止更新
 
----
+----
 
 ### 可选方案
 
 我们目前的方案需要手写一个签名与原方法类似的 Hook 方法，而 Xposed API 则使用 Callback，所以我们需要运行期间动态生成方法。
 
-- libffi 动态生成 Native 方法，将 origin 方法注册为 JNI 方法(Frida)
-- DexMaker 生成 Java 方法，性能略差
-- 或者自己根据调用约定从栈捞参数(epic)，兼容性存疑
+- libffi 动态生成 Native 方法，将 origin 方法注册为 JNI 方法(Frida/Whale),相当于入口替换
+- DexMaker 生成 Java 方法，第一次生成较慢，但不存在兼容性
+- 或者自己根据调用约定从栈捞参数(epic)，Hook 时较快，但运行时较慢(一次 Hook 调入需要调用很多方法解析参数)，兼容性存疑
 
----
+----
 
 ### DexMaker
 
@@ -1296,8 +1381,9 @@ public void setCloseOnTouchOutsideIfNotSet(boolean close) {
 - 性能可接受，使用缓存只需要生成一次
 - 只需要完成参数打包的工作，生成的代码及其有限
 - 稳定不会有兼容问题
+- 运行时是最快的
 
----
+----
 
 ### 性能优化
 
@@ -1308,7 +1394,7 @@ public void setCloseOnTouchOutsideIfNotSet(boolean close) {
 - 这样如果是基本类型参数，则可以简单转换得到值，Object 参数收到的则是内存地址
 - 参数多的 stub 可以兼容较少参数的情况
 
----
+----
 
 写了一个 python 脚本以自动生成
 ```java
@@ -1318,7 +1404,7 @@ public void setCloseOnTouchOutsideIfNotSet(boolean close) {
     } 
 ```
 
----
+----
 
 #### 参数转换
 
@@ -1348,7 +1434,7 @@ public static Object addressToObject64(Class objectType, long address) {
     }
 ```
 
----
+----
 
 #### 对象与地址互转
 
@@ -1356,15 +1442,14 @@ public static Object addressToObject64(Class objectType, long address) {
 - 地址 -> 对象, 使用 ART 内部的 AddWeakGlobalRef
 - 对象 -> 地址, 直接使用 Java 层的 Unsafe 类
 
-
----
+----
 
 #### 结果
 
 - 如此，几乎 9 成以上的函数 Hook 都走内部 Stub 的方式，Hook 耗时在 1ms 以内
-- DexMaker 方式第一次大约需要 80ms 左右，第二次直接加载约为 3 - 5ms，其实也能接受
+- DexMaker 方式第一次大约需要 80ms 左右，后面直接加载约为 3 - 5ms，其实也能接受
 
-----
+---
 
 ## Inline 处理
 
@@ -1373,14 +1458,14 @@ public static Object addressToObject64(Class objectType, long address) {
 - 阻止 dex2oat Inline(Profile)
 - 系统类中 Inline 的如何处理
 
----
+----
 
 ### ART Inline 优化
 
 ART 的 inline 类似其他语言的编译器优化，在 Runtime(JIT) 或者 dex2oat 期间, ART 将 “invoke 字节码指令” 替换成 callee 的方法体。  
 往往被 inline 的都是较为简单的方法。  
 
----
+----
 
 ### 阻止 JIT 期间的 Inline
 
@@ -1410,12 +1495,12 @@ const CompilerOptions& compiler_options = compiler_driver_->GetCompilerOptions()
     return false;
   }
 ```
----
+----
 
 当被 inline 方法的 code units 大于设置的阈值的时候，方法 Inline 失败。
 这个阈值是 CompilerOptions -> inline_max_code_units_
 
----
+----
 
 经过搜索，CompilerOptions 一般与 JitCompiler 绑定：
 
@@ -1436,7 +1521,7 @@ class JitCompiler {
 }  // namespace art
 ```
 
----
+----
 
 ART 的 JitCompiler 为全局单例：
 
@@ -1461,23 +1546,186 @@ extern "C" void* jit_load(bool* generate_debug_info) {
 }
 ```
 
----
+----
+
 #### 结论
 
 ok，那么我们就得到了  “static void* jit_compiler_handle_” 的 C++ 符号 “_ZN3art3jit3Jit20jit_compiler_handle_E“
 
 最后修改里面的值就可以了。
 
----
+SandHook.disableVMInline()
+
+----
 
 ### 阻止 dex2oat Inline
 
 - Android N 以上默认的 ART 编译策略为 speed-profile
 - 除了 JIT 期间的内联，系统在空闲实践会根据这个所谓的 profile 进行 speed 模式的 dex2oat
 - speed 模式包含 Inline 优化
+- 现象是 App 多打开几次发现 Hook 不到了
 
----
+----
 
 #### 如何阻止
 
+- 提前主动调用 dex2oat，附带 --inline-max-code-units=0 参数，要求 Dex 是动态加载的 (ArtDexOptimizer)
+- 如果上述条件无法满足，则需要干掉 profile 文件以阻止空闲时 dex2oat，当然会对性能造成一定影响 (SandHook.tryDisableProfile)
+
+----
+
+#### profile
+
+- 首先明确一点是 profile 是安装时创建的，并非由 ART 创建，ART 只负责读取以及写入
+- profile 存储了方法的热度，以指导 dex2oat 进程编译高热度方法
+- 如果你从 Google Play 下载某个热门 App，是有可能带有一份已经有内容的 profile 的
+- 综上，我们只需要删除这个文件，如果不保险，则可以修改权限使之不可写
+
+----
+
+#### profile path
+
+<font size=5>
+/data/misc/profiles/cur/" + userId + "/" + selfPackageName + "/primary.prof"
+</font>
+
+```cpp
+bool ProfileCompilationInfo::Load(const std::string& filename, bool clear_if_invalid) {
+  ScopedTrace trace(__PRETTY_FUNCTION__);
+  std::string error;
+
+  if (!IsEmpty()) {
+    return kProfileLoadWouldOverwiteData;
+  }
+
+  int flags = O_RDWR | O_NOFOLLOW | O_CLOEXEC;
+  ScopedFlock profile_file = LockedFile::Open(filename.c_str(), flags,
+                                              /*block*/false, &error);
+
+  if (profile_file.get() == nullptr) {
+    LOG(WARNING) << "Couldn't lock the profile file " << filename << ": " << error;
+    return false;
+  }
+```
+
+----
+
+### 系统类中被 Inline 的
+
+- 理论上非 root 的环境是没什么好的办法的
+- 只能特例一个个解决
+- dexOptimize Caller
+
+----
+
+#### dexOptimize
+
+- 我们 dexOptimize Caller 使 Caller 重返解释执行，那么就可以顺利的调入我们的 Hook 方法
+- dexOptimize 其实就是将 ArtMethod 的 CodeEntry 重新设置成解释 bridge
+- 依然是上面提到的 art_quick_to_interpreter_bridge/art_quick_generic_jni_trampoline
+
+----
+
+#### 跳板获取
+
+- 这两个跳板不在动态链接表中，(fake)dlsym 无法搜索到
+- 但是这个符号是被保留的，在 SHT_SYMTAB 中，这个表存储了所有的符号，所以我重新实现了符号搜索
+- 除此之外也可以从从未调用的方法中获取，但是可能遇到被强制 dex2oat 的情况
+
+https://github.com/ganyao114/AndroidELF
+
+---
+
+## Android Q
+
+- AccessFlag
+- Hidden API
+
+----
+
+### AccessFlag
+
+这个比较好解决，Android Q 上也是因为 Hidden Api 机制为每个方法增加了一个 Flag，导致我使用预测 Flag 值在 ArtMethod 中搜索 Offset 未能搜到。
+
+kAccPublicApi = 0x10000000 代表此方法/Field 为公开 API
+
+----
+
+```cpp
+uint32_t accessFlag = getIntFromJava(jniEnv, "com/swift/sandhook/SandHook",
+                                                 "testAccessFlag");
+            if (accessFlag == 0) {
+                accessFlag = 524313;
+                //kAccPublicApi
+                if (SDK_INT >= ANDROID_Q) {
+                    accessFlag |= 0x10000000;
+                }
+            }
+            int offset = findOffset(p, getParentSize(), 2, accessFlag);
+```
+
+----
+
+### hidden api
+
+这个是从 Android P 就开始引入的反射限制机制。
+目前来说有几种方案：
+
+- Hook 法，Hook 某些判断函数，修改 ART 对限制 API 的判断流程
+- Hidden API 在内部抽象为 Policy，修改全局的 Policy 策略，一般是 Runtime 中的某个 Flag
+- 系统函数调 Hidden API 是 OK 的，想办法让 ART 误以为是系统函数调用 API，一般是修改 ClassLoader
+
+----
+
+### P 与 Q 的区别
+
+P 上，判断函数较为集中，Policy 的 Flag 也较为好搜索，然而到了 Q 上就多了，至于在 Runtime 中搜索 Flag，由于 Runtime 是个巨大的结构体，这并不是一个健壮的方法。。。
+
+----
+
+### 另外一种解决办法
+
+- 最后是想办法让 ART 误以为是系统函数调用 API，还有一种办法是双重反射，即用反射调用 Class.getDeclareMethod 之类的 API 去使用反射，也能达到目的。(这个方法还是在贴吧偶然看到的，OpenJDK 也有这个问题)
+- 后面就简单了，依据此法找到 Hidden API 的开关方法，调用即可。
+
+----
+
+#### 实现
+
+```java
+static {
+        try {
+            getMethodMethod = Class.class.getDeclaredMethod("getDeclaredMethod", String.class, Class[].class);
+            forNameMethod = Class.class.getDeclaredMethod("forName", String.class);
+            vmRuntimeClass = (Class) forNameMethod.invoke(null, "dalvik.system.VMRuntime");
+            addWhiteListMethod = (Method) getMethodMethod.invoke(vmRuntimeClass, "setHiddenApiExemptions", new Class[]{String[].class});
+            Method getVMRuntimeMethod = (Method) getMethodMethod.invoke(vmRuntimeClass, "getRuntime", null);
+            vmRuntime = getVMRuntimeMethod.invoke(null);
+        } catch (Exception e) {
+            Log.e("ReflectionUtils", "error get methods", e);
+        }
+    }
+
+    public static boolean passApiCheck() {
+        try {
+            addReflectionWhiteList("Landroid/", "Lcom/android/");
+            return true;
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+            return false;
+        }
+    }
+```
+
+----
+
+## 架构图
+
+![sandhook_arch.png](res/sandhook_arch.png)
+
+---
+
+## 进程注入
+
+到上面为止，Hook 的大部分细节已经介绍完了，但是本进程的 Hook 不是我们想要的。我们想要将 Hook 作用于其他进程则必须将 Hook 逻辑注入到目标进程。
 
