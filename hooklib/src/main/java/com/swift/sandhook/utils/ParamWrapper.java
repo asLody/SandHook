@@ -4,8 +4,14 @@ import com.swift.sandhook.SandHook;
 
 public class ParamWrapper {
 
+    private static boolean is64Bit;
+
+    static {
+        is64Bit = SandHook.is64Bit();
+    }
+
     public static boolean support(Class objectType) {
-        if (SandHook.is64Bit()) {
+        if (is64Bit) {
             return objectType != float.class && objectType != double.class;
         } else {
             return objectType != float.class && objectType != double.class && objectType != long.class;
@@ -13,7 +19,7 @@ public class ParamWrapper {
     }
 
     public static Object addressToObject(Class objectType, long address) {
-        if (SandHook.is64Bit()) {
+        if (is64Bit) {
             return addressToObject64(objectType, address);
         } else {
             return addressToObject32(objectType, (int) address);
@@ -67,7 +73,7 @@ public class ParamWrapper {
     }
 
     public static long objectToAddress(Class objectType, Object object) {
-        if (SandHook.is64Bit()) {
+        if (is64Bit) {
             return objectToAddress64(objectType, object);
         } else {
             return objectToAddress32(objectType, object);
@@ -87,7 +93,7 @@ public class ParamWrapper {
             } else if (objectType == char.class) {
                 return (char)object;
             } else if (objectType == boolean.class) {
-                return object == Boolean.TRUE ? 1 : 0;
+                return Boolean.TRUE.equals(object) ? 1 : 0;
             } else {
                 throw new RuntimeException("unknown type: " + objectType.toString());
             }
@@ -111,7 +117,7 @@ public class ParamWrapper {
             } else if (objectType == char.class) {
                 return (char)object;
             } else if (objectType == boolean.class) {
-                return object == Boolean.TRUE ? 1 : 0;
+                return Boolean.TRUE.equals(object) ? 1 : 0;
             } else {
                 throw new RuntimeException("unknown type: " + objectType.toString());
             }
