@@ -185,6 +185,7 @@ https://github.com/ganyao114/SandVXposed
 
 - java 层中有类 ArtMethod，Method 与之一对一, Method 中含有 ArtMethod 的引用，而 mirror::ArtMethod 就是 java 层 ArtMethod 的映射。
 - 6.0 之后，java ArtMethod 不复存在，被完全隐藏。
+- ArtMethod 是 ART 对 java 方法的实现(核心结构体), Method 只是作用于反射。
 
 ----
 
@@ -882,7 +883,7 @@ ART 的判断逻辑
 
 那么加上 kAccCompileDontBother 即可。
 
----
+----
 
 #### Hook 线程安全
 
@@ -895,7 +896,7 @@ ART 的判断逻辑
 
 ----
 
-#### StopTheWorld
+##### StopTheWorld
 
 那么我们需要暂停所有线程，并且等待 GC 完成
 幸运的是，ART 等待调试器也需要这一操作，不仅仅是暂停所有线程，还需要等待 GC。
@@ -956,7 +957,7 @@ void Dbg::ResumeVM() {
 
 最终选择 X17，X16 在跳板中有用到。
 
----
+----
 
 ### 开始 Hook
 #### Inline 与否
