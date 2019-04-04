@@ -23,16 +23,14 @@ import de.robv.android.xposed.XposedBridge;
 
 public final class DynamicBridge {
 
-    private static final HashMap<Member, Method> hookedInfo = new HashMap<>();
     private static HookMaker hookMaker = XposedCompat.useNewCallBackup ? new HookerDexMakerNew() : new HookerDexMaker();
     private static final AtomicBoolean dexPathInited = new AtomicBoolean(false);
     private static File dexDir;
 
-    public static Map<Member,HookMethodEntity> entityMap = new HashMap<>();
-
-    public static void onForkPost() {
-        dexPathInited.set(false);
-    }
+    //use internal stubs
+    private final static Map<Member,HookMethodEntity> entityMap = new HashMap<>();
+    //use dex maker
+    private final static HashMap<Member, Method> hookedInfo = new HashMap<>();
 
     public static synchronized void hookMethod(Member hookMethod, XposedBridge.AdditionalHookInfo additionalHookInfo) {
 
@@ -70,9 +68,9 @@ public final class DynamicBridge {
                         XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
                 hookedInfo.put(hookMethod, hookMaker.getCallBackupMethod());
             }
-            DexLog.d("hook method <" + hookMethod.toString() + "> cost " + (System.currentTimeMillis() - timeStart) + " ms, by " + (stub != null ? "internal stub." : "dex maker"));
+            DexLog.d("hook method <" + hookMethod.toString() + "> cost " + (System.currentTimeMillis() - timeStart) + " ms, by " + (stub != null ? "internal stub" : "dex maker"));
             Trace.endSection();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             DexLog.e("error occur when hook method <" + hookMethod.toString() + ">", e);
         }
     }
