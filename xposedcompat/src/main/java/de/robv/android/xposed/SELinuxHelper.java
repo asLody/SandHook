@@ -1,7 +1,5 @@
 package de.robv.android.xposed;
 
-import com.swift.sandhook.xposedcompat.XposedCompat;
-
 import de.robv.android.xposed.services.BaseService;
 import de.robv.android.xposed.services.DirectAccessService;
 
@@ -9,10 +7,6 @@ import de.robv.android.xposed.services.DirectAccessService;
  * A helper to work with (or without) SELinux, abstracting much of its big complexity.
  */
 public final class SELinuxHelper {
-
-    static {
-        initForProcess(XposedCompat.processName);
-    }
 
 	private SELinuxHelper() {}
 
@@ -54,31 +48,12 @@ public final class SELinuxHelper {
 	public static BaseService getAppDataFileService() {
 		if (sServiceAppDataFile != null)
 			return sServiceAppDataFile;
-		throw new UnsupportedOperationException();
+		return new DirectAccessService();
 	}
 
 
 	// ----------------------------------------------------------------------------
 	private static boolean sIsSELinuxEnabled = false;
-	private static BaseService sServiceAppDataFile = null;
+	private static BaseService sServiceAppDataFile = new DirectAccessService();
 
-	/*package*/ static void initOnce() {
-		try {
-			//sIsSELinuxEnabled = SELinux.isSELinuxEnabled();
-		} catch (NoClassDefFoundError ignored) {}
-	}
-
-	/*package*/ static void initForProcess(String packageName) {
-		if (sIsSELinuxEnabled) {
-			if (packageName == null) {  // Zygote
-				//sServiceAppDataFile = new ZygoteService();
-			} else if (packageName.equals("android")) {  //system_server
-				//sServiceAppDataFile = BinderService.getService(BinderService.TARGET_APP);
-			} else {  // app
-				sServiceAppDataFile = new DirectAccessService();
-			}
-		} else {
-			sServiceAppDataFile = new DirectAccessService();
-		}
-	}
 }
