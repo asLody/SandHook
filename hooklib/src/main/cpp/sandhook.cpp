@@ -1,9 +1,12 @@
-#include <jni.h>
+#include "includes/sandhook.h"
 #include "includes/cast_art_method.h"
 #include "includes/trampoline_manager.h"
 #include "includes/hide_api.h"
 #include "includes/cast_compiler_options.h"
 #include "includes/log.h"
+#include "includes/native_hook.h"
+
+#include <jni.h>
 
 SandHook::TrampolineManager trampolineManager;
 
@@ -321,6 +324,12 @@ Java_com_swift_sandhook_SandHook_disableVMInline(JNIEnv *env, jclass type) {
 }
 
 extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_swift_sandhook_SandHook_disableDex2oatInline(JNIEnv *env, jclass type, jboolean disableDex2oat) {
+    return static_cast<jboolean>(SandHook::NativeHook::hookDex2oat(disableDex2oat));
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_ClassNeverCall_neverCallNative(JNIEnv *env, jobject instance) {
     int a = 1 + 1;
@@ -340,6 +349,20 @@ JNIEXPORT void JNICALL
 Java_com_swift_sandhook_test_TestClass_jni_1test(JNIEnv *env, jobject instance) {
     int a = 1 + 1;
     int b = a + 1;
+}
+
+//native hook
+
+extern "C"
+JNIEXPORT bool nativeHookNoBackup(void* origin, void* hook) {
+
+    if (origin == nullptr || hook == nullptr)
+        return false;
+
+    SandHook::StopTheWorld stopTheWorld;
+
+    return trampolineManager.installNativeHookTrampolineNoBackup(origin, hook) != nullptr;
+
 }
 
 static JNINativeMethod jniSandHook[] = {
@@ -407,6 +430,11 @@ static JNINativeMethod jniSandHook[] = {
                 "disableVMInline",
                 "()Z",
                 (void *) Java_com_swift_sandhook_SandHook_disableVMInline
+        },
+        {
+                "disableDex2oatInline",
+                "(Z)Z",
+                (void *) Java_com_swift_sandhook_SandHook_disableDex2oatInline
         }
 };
 

@@ -30,6 +30,8 @@ namespace SandHook {
         Trampoline* inlineJump = nullptr;
         Trampoline* inlineSecondory = nullptr;
         Trampoline* callOrigin = nullptr;
+        Trampoline* hookNative = nullptr;
+
         Code originCode = nullptr;
     };
 
@@ -43,8 +45,12 @@ namespace SandHook {
 
         Code allocExecuteSpace(Size size);
 
+        //java hook
         HookTrampoline* installReplacementTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
         HookTrampoline* installInlineTrampoline(mirror::ArtMethod* originMethod, mirror::ArtMethod* hookMethod, mirror::ArtMethod* backupMethod);
+
+        //native hook
+        HookTrampoline* installNativeHookTrampolineNoBackup(void* origin, void* hook);
 
         bool canSafeInline(mirror::ArtMethod* method);
 

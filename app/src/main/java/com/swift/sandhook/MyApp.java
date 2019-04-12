@@ -37,6 +37,7 @@ public class MyApp extends Application {
 
         SandHook.disableVMInline();
         SandHook.tryDisableProfile(getPackageName());
+        SandHook.disableDex2oatInline(true);
 
         if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.P) {
             SandHook.passApiCheck();

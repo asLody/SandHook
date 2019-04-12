@@ -282,4 +282,33 @@ namespace SandHook {
         return nullptr;
     }
 
+    HookTrampoline* TrampolineManager::installNativeHookTrampolineNoBackup(void *origin,
+                                                                           void *hook) {
+        HookTrampoline* hookTrampoline = new HookTrampoline();
+        DirectJumpTrampoline* directJumpTrampoline = new DirectJumpTrampoline();
+
+        if (!memUnprotect(reinterpret_cast<Size>(origin), directJumpTrampoline->getCodeLen())) {
+            LOGE("hook error due to can not write origin code!");
+            goto label_error;
+        }
+
+        directJumpTrampoline->init();
+        checkThumbCode(directJumpTrampoline, reinterpret_cast<Code>(origin));
+        if (directJumpTrampoline->isThumbCode()) {
+            origin = directJumpTrampoline->getThumbCodeAddress(reinterpret_cast<Code>(origin));
+        }
+
+        directJumpTrampoline->setExecuteSpace(reinterpret_cast<Code>(origin));
+        directJumpTrampoline->setJumpTarget(reinterpret_cast<Code>(hook));
+        hookTrampoline->inlineJump = directJumpTrampoline;
+        directJumpTrampoline->flushCache(reinterpret_cast<Size>(origin), directJumpTrampoline->getCodeLen());
+        hookTrampoline->hookNative = directJumpTrampoline;
+        return hookTrampoline;
+
+    label_error:
+        delete hookTrampoline;
+        delete directJumpTrampoline;
+        return nullptr;
+    }
+
 }
