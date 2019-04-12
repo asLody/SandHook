@@ -198,6 +198,12 @@ SandHook.passApiCheck();
 
 To bypass hidden api on P & Q
 
+# Native Hook
+
+#include "includes/sandhook.h"
+
+// can not call origin method now
+bool nativeHookNoBackup(void* origin, void* hook);
 
 # Demo
 
