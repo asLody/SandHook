@@ -202,7 +202,7 @@ To bypass hidden api on P & Q
 
 #include "includes/sandhook.h"
 
-// can not call origin method now
+// can not call origin method now  
 bool nativeHookNoBackup(void* origin, void* hook);
 
 # Demo
