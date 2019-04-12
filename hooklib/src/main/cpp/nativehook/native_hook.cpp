@@ -20,6 +20,19 @@ int inline getArrayItemCount(char *const array[]) {
     return i;
 }
 
+bool isSandHooker(char *const args[]) {
+    int orig_arg_count = getArrayItemCount(args);
+
+    for (int i = 0; i < orig_arg_count; i++) {
+        if (SDK_INT >= ANDROID_N && strstr(args[i], "SandHooker")) {
+            LOGE("skip dex2oat hooker!");
+            return true;
+        }
+    }
+
+    return false;
+}
+
 char **build_new_env(char *const envp[]) {
     char *provided_ld_preload = NULL;
     int provided_ld_preload_index = -1;
@@ -58,8 +71,11 @@ char **build_new_env(char *const envp[]) {
 }
 
 extern "C" int fake_execve_disable_inline(const char *pathname, char *argv[], char *const envp[]) {
-    LOGE("dex2oat by disable inline!");
     if (strstr(pathname, "dex2oat")) {
+        if (SDK_INT >= ANDROID_N && isSandHooker(argv)) {
+            LOGE("skip dex2oat!");
+            return -1;
+        }
         char **new_envp = build_new_env(envp);
         LOGE("dex2oat by disable inline!");
         int ret = static_cast<int>(syscall(__NR_execve, pathname, argv, new_envp));
@@ -71,7 +87,6 @@ extern "C" int fake_execve_disable_inline(const char *pathname, char *argv[], ch
 }
 
 extern "C" int fake_execve_disable_oat(const char *pathname, char *argv[], char *const envp[]) {
-    LOGE("skip dex2oat!");
     if (strstr(pathname, "dex2oat")) {
         LOGE("skip dex2oat!");
         return -1;
