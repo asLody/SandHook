@@ -2,7 +2,7 @@ package com.swift.sandhook.xposedcompat.utils;
 
 import android.util.Log;
 
-import com.swift.sandhook.SandHookConfig;
+import com.swift.sandhook.HookLog;
 
 import java.lang.reflect.Member;
 
@@ -11,7 +11,7 @@ public class DexLog {
 
     public static final String TAG = "SandXposed";
 
-    public static boolean DEBUG = SandHookConfig.DEBUG;
+    public static boolean DEBUG = HookLog.DEBUG;
 
     public static int v(String s) {
         return Log.v(TAG, s);

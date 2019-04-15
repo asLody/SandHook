@@ -16,6 +16,8 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedInit;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
+import static com.swift.sandhook.xposedcompat.utils.DexMakerUtils.MD5;
+
 public class XposedCompat {
 
     public static File cacheDir;
@@ -79,10 +81,22 @@ public class XposedCompat {
         }
     }
 
+    public static File getCacheDir() {
+        if (cacheDir == null) {
+            if (context == null) {
+                context = ApplicationUtils.currentApplication();
+            }
+            if (context != null) {
+                cacheDir = new File(context.getCacheDir(), MD5(processName != null ? processName : ProcessUtils.getProcessName(context)));
+            }
+        }
+        return cacheDir;
+    }
+
     public static boolean clearCache() {
         try {
-            FileUtils.delete(cacheDir);
-            cacheDir.mkdirs();
+            FileUtils.delete(getCacheDir());
+            getCacheDir().mkdirs();
             return true;
         } catch (Throwable throwable) {
             return false;

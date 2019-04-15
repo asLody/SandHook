@@ -3,6 +3,7 @@ package com.swift.sandhook.xposedcompat.methodgen;
 import android.os.Trace;
 
 import com.swift.sandhook.SandHook;
+import com.swift.sandhook.blacklist.HookBlackList;
 import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.xposedcompat.XposedCompat;
 import com.swift.sandhook.xposedcompat.hookstub.HookMethodEntity;
@@ -23,7 +24,7 @@ import de.robv.android.xposed.XposedBridge;
 
 public final class DynamicBridge {
 
-    private static HookMaker hookMaker = XposedCompat.useNewCallBackup ? new HookerDexMakerNew() : new HookerDexMaker();
+    private static HookMaker defaultHookMaker = XposedCompat.useNewCallBackup ? new HookerDexMakerNew() : new HookerDexMaker();
     private static final AtomicBoolean dexPathInited = new AtomicBoolean(false);
     private static File dexDir;
 
@@ -46,7 +47,7 @@ public final class DynamicBridge {
         try {
             if (dexPathInited.compareAndSet(false, true)) {
                 try {
-                    String fixedAppDataDir = XposedCompat.cacheDir.getAbsolutePath();
+                    String fixedAppDataDir = XposedCompat.getCacheDir().getAbsolutePath();
                     dexDir = new File(fixedAppDataDir, "/sandxposed/");
                     if (!dexDir.exists())
                         dexDir.mkdirs();
@@ -57,13 +58,19 @@ public final class DynamicBridge {
             Trace.beginSection("SandHook-Xposed");
             long timeStart = System.currentTimeMillis();
             HookMethodEntity stub = null;
-            if (XposedCompat.useInternalStub) {
+            if (XposedCompat.useInternalStub && !HookBlackList.canNotHookByStub(hookMethod) && !HookBlackList.canNotHookByBridge(hookMethod)) {
                 stub = HookStubManager.getHookMethodEntity(hookMethod, additionalHookInfo);
             }
             if (stub != null) {
                 SandHook.hook(new HookWrapper.HookEntity(hookMethod, stub.hook, stub.backup, false));
                 entityMap.put(hookMethod, stub);
             } else {
+                HookMaker hookMaker;
+                if (HookBlackList.canNotHookByBridge(hookMethod)) {
+                    hookMaker = new HookerDexMaker();
+                } else {
+                    hookMaker = defaultHookMaker;
+                }
                 hookMaker.start(hookMethod, additionalHookInfo,
                         XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
                 hookedInfo.put(hookMethod, hookMaker.getCallBackupMethod());
@@ -76,7 +83,7 @@ public final class DynamicBridge {
     }
 
     public static void clearOatFile() {
-        String fixedAppDataDir = XposedCompat.cacheDir.getAbsolutePath();
+        String fixedAppDataDir = XposedCompat.getCacheDir().getAbsolutePath();
         File dexOatDir = new File(fixedAppDataDir, "/sandxposed/oat/");
         if (!dexOatDir.exists())
             return;

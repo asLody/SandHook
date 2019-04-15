@@ -9,19 +9,18 @@ public class HookBlackList {
     public static Set<String> methodBlackList = new HashSet<>();
     public static Set<Class> classBlackList = new HashSet<>();
 
+    public static Set<String> methodUseInHookBridge = new HashSet<>();
+    public static Set<String> methodUseInHookStub = new HashSet<>();
+
     static {
-        methodBlackList.add("java.lang.reflect.Member.getDeclaringClass");
         methodBlackList.add("java.lang.reflect.Method.invoke");
-        methodBlackList.add("java.lang.Class.getDeclaredField");
-        methodBlackList.add("java.util.Map.get");
-        methodBlackList.add("java.util.concurrent.ConcurrentHashMap.get");
-        methodBlackList.add("java.lang.reflect.AccessibleObject.setAccessible");
-        methodBlackList.add("java.lang.reflect.Member.getModifiers");
-        methodBlackList.add("java.lang.reflect.InvocationTargetException.getCause");
-        methodBlackList.add("java.lang.reflect.Method.hashCode");
-        methodBlackList.add("java.lang.reflect.Class.getName");
-        methodBlackList.add("java.lang.String.hashCode");
-        methodBlackList.add("java.lang.String.length");
+
+        methodUseInHookBridge.add("java.lang.reflect.Member.getDeclaringClass");
+        methodUseInHookBridge.add("java.lang.Class.getDeclaredField");
+        methodUseInHookBridge.add("java.lang.reflect.InvocationTargetException.getCause");
+
+        methodUseInHookStub.add("java.lang.Object.equals");
+        methodUseInHookStub.add("java.lang.Class.isPrimitive");
     }
 
     public final static boolean canNotHook(Member origin) {
@@ -29,6 +28,16 @@ public class HookBlackList {
             return true;
         String name = origin.getDeclaringClass().getName() + "." + origin.getName();
         return methodBlackList.contains(name);
+    }
+
+    public final static boolean canNotHookByBridge(Member origin) {
+        String name = origin.getDeclaringClass().getName() + "." + origin.getName();
+        return methodUseInHookBridge.contains(name);
+    }
+
+    public final static boolean canNotHookByStub(Member origin) {
+        String name = origin.getDeclaringClass().getName() + "." + origin.getName();
+        return methodUseInHookStub.contains(name);
     }
 
 }

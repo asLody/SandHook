@@ -18,6 +18,8 @@ package com.swift.sandhook.utils;
 
 import android.util.Log;
 
+import com.swift.sandhook.HookLog;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -75,7 +77,6 @@ public final class Unsafe {
         try {
             return (int) arrayBaseOffsetMethod.invoke(unsafe, cls);
         } catch (Exception e) {
-            Log.w(TAG, e);
             return 0;
         }
     }
@@ -85,7 +86,6 @@ public final class Unsafe {
         try {
             return (int) arrayIndexScaleMethod.invoke(unsafe, cls);
         } catch (Exception e) {
-            Log.w(TAG, e);
             return 0;
         }
     }
@@ -95,7 +95,6 @@ public final class Unsafe {
         try {
             return (int) getIntMethod.invoke(unsafe, array, offset);
         } catch (Exception e) {
-            Log.w(TAG, e);
             return 0;
         }
     }
@@ -105,7 +104,6 @@ public final class Unsafe {
         try {
             return (long) getLongMethod.invoke(unsafe, array, offset);
         } catch (Exception e) {
-            Log.w(TAG, e);
             return 0;
         }
     }
@@ -119,7 +117,7 @@ public final class Unsafe {
                 return 0xffffffffL & getInt(array, arrayBaseOffset(objectArrayClass));
             }
         } catch (Exception e) {
-            Log.w(TAG, e);
+            HookLog.e("get object address error", e);
             return -1;
         }
     }
