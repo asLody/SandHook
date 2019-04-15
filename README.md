@@ -166,19 +166,31 @@ you must call backup method in hook method, if you want call it in other method,
 because when ART trigger JIT from profiling, JIT will invoke -> ResolveCompilingMethodsClass -> ClassLinker::ResolveMethod -> CheckIncompatibleClassChange -> ThrowIncompatibleClassChangeError finally!!!
 
 
-## Inline
+## Disable Inline
 
-### disable JIT inline
+### JIT inline
 
 We can do nothing to prevent some methods been inlined before app start, but we can try to disable VM Jit Inline after launch.
 
 if you will hook some method that could be inlined, please call SandHook.disableVMInline()(OS >= 7.0) in Application.OnCreate()
 
+### Inline by dex2oat
 
-### Deoptimize
+#### Background dex2oat
+
+SandHook.tryDisableProfile(getPackageName());
+
+#### dex2oat by DexClassLoader
+
+SandHook.disableDex2oatInline(fullyDisableDex2oat);
+
+or
+
+ArtDexOptimizer.dexoatAndDisableInline to dex2oat manuly 
+
+### Deoptimize(Boot Image)
 
 You can also deoptimize a caller that inlined your hook method by SandHook.deCompile(caller), just implement >= 7.0
-
 
 ## Hidden API
 
@@ -186,6 +198,12 @@ SandHook.passApiCheck();
 
 To bypass hidden api on P & Q
 
+# Native Hook
+
+#include "includes/sandhook.h"
+
+// can not call origin method now  
+bool nativeHookNoBackup(void* origin, void* hook);
 
 # Demo
 

@@ -283,8 +283,7 @@ namespace SandHook {
     }
 
     HookTrampoline* TrampolineManager::installNativeHookTrampolineNoBackup(void *origin,
-                                                                           void *hook) {
-        HookTrampoline* hookTrampoline = new HookTrampoline();
+                                                                           void *hook) { HookTrampoline* hookTrampoline = new HookTrampoline();
         DirectJumpTrampoline* directJumpTrampoline = new DirectJumpTrampoline();
 
         if (!memUnprotect(reinterpret_cast<Size>(origin), directJumpTrampoline->getCodeLen())) {
@@ -293,10 +292,16 @@ namespace SandHook {
         }
 
         directJumpTrampoline->init();
+
+        #if defined(__arm__)
         checkThumbCode(directJumpTrampoline, reinterpret_cast<Code>(origin));
         if (directJumpTrampoline->isThumbCode()) {
             origin = directJumpTrampoline->getThumbCodeAddress(reinterpret_cast<Code>(origin));
         }
+        if (isThumbCode(reinterpret_cast<Size>(hook))) {
+            hook = directJumpTrampoline->getThumbCodePcAddress(reinterpret_cast<Code>(hook));
+        }
+        #endif
 
         directJumpTrampoline->setExecuteSpace(reinterpret_cast<Code>(origin));
         directJumpTrampoline->setJumpTarget(reinterpret_cast<Code>(hook));
