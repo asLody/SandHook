@@ -1,0 +1,8 @@
+//
+// Created by SwiftGan on 2019/4/15.
+//
+
+#ifndef SANDHOOK_SANDHOOK_NATIVE_H
+#define SANDHOOK_SANDHOOK_NATIVE_H
+
+#endif //SANDHOOK_SANDHOOK_NATIVE_H
