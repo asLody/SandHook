@@ -3,6 +3,7 @@ package de.robv.android.xposed;
 import android.annotation.SuppressLint;
 import android.util.Log;
 
+import com.swift.sandhook.SandHook;
 import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
 
@@ -273,6 +274,27 @@ public final class XposedBridge {
                                                       int slot, final Object additionalInfoObj) {
 		DynamicBridge.hookMethod(method, (AdditionalHookInfo) additionalInfoObj);
 
+	}
+
+
+	@SuppressWarnings("unused")
+	public static Object invokeOriginalMethod(final Member method, final Object thisObject,
+											  final Object[] args)
+			throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+		try {
+			return SandHook.callOriginMethod(method, thisObject, args);
+		} catch (NullPointerException e) {
+			throw e;
+		} catch (IllegalAccessException e) {
+			throw e;
+		} catch (IllegalArgumentException e) {
+			throw e;
+		} catch (InvocationTargetException e) {
+			throw e;
+		} catch (Throwable throwable) {
+			throw new InvocationTargetException(throwable);
+		}
 	}
 
 	/**
