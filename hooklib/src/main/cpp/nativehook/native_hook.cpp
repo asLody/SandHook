@@ -47,7 +47,7 @@ char **build_new_argv(char *const argv[]) {
     if (SDK_INT >= ANDROID_L2 && SDK_INT < ANDROID_Q) {
         new_argv[cur++] = (char *) "--compile-pic";
     }
-    if (SDK_INT >= 23) {
+    if (SDK_INT >= ANDROID_M) {
         new_argv[cur++] = (char *) (SDK_INT > ANDROID_N2 ? "--inline-max-code-units=0" : "--inline-depth-limit=0");
     }
 
