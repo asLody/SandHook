@@ -296,7 +296,7 @@ public class HookStubManager {
                     long[] newArgs = entity.getArgsAddress(stubArgs, param.args);
                     param.setResult(entity.getResult(callOrigin.call(newArgs)));
                 } else {
-                    param.setResult(callOrigin(entity, originMethod, thiz, param.args));
+                    param.setResult(SandHook.callOriginMethod(originMethod, entity.backup, thiz, param.args));
                 }
             } catch (Throwable e) {
                 XposedBridge.log(e);
