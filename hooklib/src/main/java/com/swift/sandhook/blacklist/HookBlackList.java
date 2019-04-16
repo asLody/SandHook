@@ -15,12 +15,8 @@ public class HookBlackList {
     static {
         methodBlackList.add("java.lang.reflect.Method.invoke");
 
-        methodUseInHookBridge.add("java.lang.reflect.Member.getDeclaringClass");
         methodUseInHookBridge.add("java.lang.Class.getDeclaredField");
         methodUseInHookBridge.add("java.lang.reflect.InvocationTargetException.getCause");
-
-        methodUseInHookBridge.add("java.lang.Throwable.getStackTrace");
-        methodUseInHookBridge.add("java.lang.Thread.getStackTrace");
 
         methodUseInHookStub.add("java.lang.Object.equals");
         methodUseInHookStub.add("java.lang.Class.isPrimitive");
