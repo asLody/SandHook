@@ -19,6 +19,9 @@ public class HookBlackList {
         methodUseInHookBridge.add("java.lang.Class.getDeclaredField");
         methodUseInHookBridge.add("java.lang.reflect.InvocationTargetException.getCause");
 
+        methodUseInHookBridge.add("java.lang.Throwable.getStackTrace");
+        methodUseInHookBridge.add("java.lang.Thread.getStackTrace");
+
         methodUseInHookStub.add("java.lang.Object.equals");
         methodUseInHookStub.add("java.lang.Class.isPrimitive");
     }
