@@ -25,7 +25,13 @@ public class ReflectionUtils {
             getMethodMethod = Class.class.getDeclaredMethod("getDeclaredMethod", String.class, Class[].class);
             forNameMethod = Class.class.getDeclaredMethod("forName", String.class);
             vmRuntimeClass = (Class) forNameMethod.invoke(null, "dalvik.system.VMRuntime");
-            addWhiteListMethod = (Method) getMethodMethod.invoke(vmRuntimeClass, "setHiddenApiExemptions", new Class[]{String[].class});
+            try{
+                addWhiteListMethod = (Method) getMethodMethod.invoke(vmRuntimeClass, "setHiddenApiExemptions", new Class[]{String[].class});
+            }
+            catch (Throwable e)
+            {
+                e.printStackTrace();
+            }
             Method getVMRuntimeMethod = (Method) getMethodMethod.invoke(vmRuntimeClass, "getRuntime", null);
             vmRuntime = getVMRuntimeMethod.invoke(null);
         } catch (Exception e) {
