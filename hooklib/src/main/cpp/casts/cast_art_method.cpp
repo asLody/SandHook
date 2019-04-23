@@ -141,8 +141,11 @@ namespace SandHook {
     class CastDexMethodIndex : public IMember<art::mirror::ArtMethod, uint32_t> {
     protected:
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod *p) override {
-            if (SDK_INT >= ANDROID_P)
-                return getParentSize() + 1;
+            if (SDK_INT >= ANDROID_P) {
+                return CastArtMethod::accessFlag->getOffset()
+                + CastArtMethod::accessFlag->size()
+                + sizeof(uint32_t);
+            }
             int offset = 0;
             jint index = getIntFromJava(jniEnv, "com/swift/sandhook/SandHookMethodResolver",
                                         "dexMethodIndex");
@@ -153,6 +156,17 @@ namespace SandHook {
                 }
             }
             return getParentSize() + 1;
+        }
+    };
+
+    class CastHotnessCount : public IMember<art::mirror::ArtMethod, uint16_t> {
+    protected:
+        Size calOffset(JNIEnv *jniEnv, mirror::ArtMethod *p) override {
+            if (SDK_INT <= ANDROID_N)
+                return getParentSize() + 1;
+            return CastArtMethod::dexMethodIndex->getOffset()
+            + CastArtMethod::dexMethodIndex->size()
+            + sizeof(uint16_t);
         }
     };
 
@@ -186,6 +200,9 @@ namespace SandHook {
 
         declaringClass = new CastShadowClass();
         declaringClass->init(env, m1, size);
+
+        hotnessCount = new CastHotnessCount();
+        hotnessCount->init(env, m1, size);
 
         jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
 
@@ -240,6 +257,7 @@ namespace SandHook {
     IMember<art::mirror::ArtMethod, uint32_t> *CastArtMethod::dexMethodIndex = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t> *CastArtMethod::accessFlag = nullptr;
     IMember<art::mirror::ArtMethod, GCRoot> *CastArtMethod::declaringClass = nullptr;
+    IMember<art::mirror::ArtMethod, uint16_t> *CastArtMethod::hotnessCount = nullptr;
     void *CastArtMethod::quickToInterpreterBridge = nullptr;
     void *CastArtMethod::genericJniStub = nullptr;
     void *CastArtMethod::staticResolveStub = nullptr;

@@ -35,6 +35,8 @@ extern "C" {
 
     bool replaceUpdateCompilerOptionsQ();
 
+    bool forceProcessProfiles();
+
 }
 
 #endif //SANDHOOK_HIDE_API_H

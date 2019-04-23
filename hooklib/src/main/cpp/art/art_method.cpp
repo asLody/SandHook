@@ -113,6 +113,10 @@ GCRoot ArtMethod::getDeclaringClass() {
     return CastArtMethod::declaringClass->get(this);
 }
 
+uint16_t ArtMethod::getHotnessCount() {
+    return CastArtMethod::hotnessCount->get(this);
+}
+
 void ArtMethod::setQuickCodeEntry(void *entry) {
     CastArtMethod::entryPointQuickCompiled->set(this, entry);
 }
@@ -134,6 +138,10 @@ void ArtMethod::setDexCacheResolveItem(uint32_t index, void* item) {
 
 void ArtMethod::setDeclaringClass(GCRoot classPtr) {
     CastArtMethod::declaringClass->set(this, classPtr);
+}
+
+void ArtMethod::setHotnessCount(uint16_t count) {
+    CastArtMethod::hotnessCount->set(this, count);
 }
 
 bool ArtMethod::compile(JNIEnv* env) {

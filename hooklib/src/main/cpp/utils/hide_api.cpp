@@ -27,6 +27,8 @@ extern "C" {
     //for Android Q
     void (**origin_jit_update_options)(void *) = nullptr;
 
+    void (*profileSaver_ForceProcessProfiles)() = nullptr;
+
     const char* art_lib_path;
     const char* jit_lib_path;
 
@@ -95,6 +97,10 @@ extern "C" {
 
         if (SDK_INT >= ANDROID_Q) {
             origin_jit_update_options = reinterpret_cast<void (**)(void *)>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_update_options_E"));
+        }
+
+        if (SDK_INT > ANDROID_N) {
+            profileSaver_ForceProcessProfiles = reinterpret_cast<void (*)()>(getSymCompat(art_lib_path, "_ZN3art12ProfileSaver20ForceProcessProfilesEv"));
         }
 
     }
@@ -212,6 +218,12 @@ extern "C" {
             || *origin_jit_update_options <= 0)
             return false;
         *origin_jit_update_options = fake_jit_update_options;
+    }
+
+    bool forceProcessProfiles() {
+        if (profileSaver_ForceProcessProfiles == nullptr)
+            return false;
+        profileSaver_ForceProcessProfiles();
     }
 
 }

@@ -5,6 +5,7 @@
 #include "includes/cast_compiler_options.h"
 #include "includes/log.h"
 #include "includes/native_hook.h"
+#include "includes/elf_util.h"
 
 #include <jni.h>
 
@@ -69,6 +70,14 @@ bool doHookWithReplacement(JNIEnv* env,
         hookMethod->disableCompilable();
     }
 
+    if (SDK_INT > ANDROID_N) {
+        forceProcessProfiles();
+    }
+    if ((SDK_INT >= ANDROID_N && SDK_INT <= ANDROID_P)
+        || (SDK_INT >= ANDROID_Q && !originMethod->isAbstract())) {
+        originMethod->setHotnessCount(0);
+    }
+
     if (backupMethod != nullptr) {
         originMethod->backup(backupMethod);
         backupMethod->disableCompilable();
@@ -113,6 +122,13 @@ bool doHookWithInline(JNIEnv* env,
     }
 
     originMethod->disableCompilable();
+    if (SDK_INT > ANDROID_N) {
+        forceProcessProfiles();
+    }
+    if ((SDK_INT >= ANDROID_N && SDK_INT <= ANDROID_P)
+        || (SDK_INT >= ANDROID_Q && !originMethod->isAbstract())) {
+        originMethod->setHotnessCount(0);
+    }
     originMethod->flushCache();
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installInlineTrampoline(originMethod, hookMethod, backupMethod);
@@ -352,7 +368,6 @@ Java_com_swift_sandhook_test_TestClass_jni_1test(JNIEnv *env, jobject instance) 
 }
 
 //native hook
-
 extern "C"
 JNIEXPORT bool nativeHookNoBackup(void* origin, void* hook) {
 
@@ -363,6 +378,12 @@ JNIEXPORT bool nativeHookNoBackup(void* origin, void* hook) {
 
     return trampolineManager.installNativeHookTrampolineNoBackup(origin, hook) != nullptr;
 
+}
+
+extern "C"
+JNIEXPORT void* findSym(const char *elf, const char *sym_name) {
+    SandHook::ElfImg elfImg(elf);
+    return reinterpret_cast<void *>(elfImg.getSymbAddress(sym_name));
 }
 
 static JNINativeMethod jniSandHook[] = {
