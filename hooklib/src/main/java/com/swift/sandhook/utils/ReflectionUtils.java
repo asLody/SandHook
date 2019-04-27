@@ -41,7 +41,11 @@ public class ReflectionUtils {
 
     public static boolean passApiCheck() {
         try {
-            addReflectionWhiteList("Landroid/", "Lcom/android/");
+            addReflectionWhiteList("Landroid/",
+                    "Lcom/android/",
+                    "Ljava/lang/",
+                    "Ldalvik/system/",
+                    "Llibcore/io/");
             return true;
         } catch (Throwable throwable) {
             throwable.printStackTrace();

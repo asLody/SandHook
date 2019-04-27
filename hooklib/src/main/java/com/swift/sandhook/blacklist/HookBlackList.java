@@ -14,6 +14,7 @@ public class HookBlackList {
 
     static {
         methodBlackList.add("java.lang.reflect.Method.invoke");
+        methodBlackList.add("java.lang.reflect.AccessibleObject.setAccessible");
 
         methodUseInHookBridge.add("java.lang.Class.getDeclaredField");
         methodUseInHookBridge.add("java.lang.reflect.InvocationTargetException.getCause");

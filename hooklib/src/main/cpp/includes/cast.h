@@ -37,6 +37,10 @@ namespace SandHook {
             offset = calOffset(jniEnv, p);
         }
 
+        Size size() {
+            return sizeof(MType);
+        }
+
         virtual Size getOffset() {
             return offset;
         }
@@ -54,7 +58,7 @@ namespace SandHook {
         virtual void set(PType* p, MType t) {
             if (offset > parentSize)
                 return;
-            memcpy(reinterpret_cast<void *>((Size)p + getOffset()), &t, sizeof(MType));
+            memcpy(reinterpret_cast<void *>((Size)p + getOffset()), &t, size());
         };
 
         template<typename T>

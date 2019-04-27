@@ -7,12 +7,12 @@
 
 #define BYTE_POINT sizeof(void*)
 
+typedef size_t Size;
+
 //32bit
 #if defined(__i386__) || defined(__arm__)
-#define Size uint32_t
 //64bit
 #elif defined(__aarch64__) || defined(__x86_64__)
-#define Size uint64_t
 #else
 #endif
 

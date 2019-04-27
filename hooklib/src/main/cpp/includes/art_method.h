@@ -61,12 +61,14 @@ public:
     void setDexCacheResolveList(void* list);
     void setDexCacheResolveItem(uint32_t index, void* item);
     void setDeclaringClass(GCRoot classPtr);
+    void setHotnessCount(uint16_t count);
 
     void* getQuickCodeEntry();
     void* getInterpreterCodeEntry();
     uint32_t getAccessFlags();
     uint32_t getDexMethodIndex();
     GCRoot getDeclaringClass();
+    uint16_t getHotnessCount();
 
     bool compile(JNIEnv* env);
     bool deCompile();
