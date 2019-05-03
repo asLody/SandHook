@@ -260,6 +260,7 @@ void *getSymCompat(const char *filename, const char *name) {
             return dlsym(handle, name);
         }
     }
+    return nullptr;
 }
 
 }

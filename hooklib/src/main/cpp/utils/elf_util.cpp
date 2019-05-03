@@ -31,10 +31,10 @@ ElfImg::ElfImg(const char *elf) {
 
     Elf_Off symtab_entsize = 0;
 
-    section_header = reinterpret_cast<Elf_Shdr *>(((void *) header) + header->e_shoff);
+    section_header = reinterpret_cast<Elf_Shdr *>(((uint8_t *) header) + header->e_shoff);
 
-    void* shoff = section_header;
-    char* section_str = reinterpret_cast<char *>(section_header[header->e_shstrndx].sh_offset + ((void *) header));
+    uint8_t* shoff = reinterpret_cast<uint8_t *>(section_header);
+    char* section_str = reinterpret_cast<char *>(section_header[header->e_shstrndx].sh_offset + ((uint8_t *) header));
 
     bool has_strtab = false;
     bool has_dynsym = false;
@@ -75,10 +75,10 @@ ElfImg::ElfImg(const char *elf) {
         LOGW("can't find symtab from sections\n");
     }
 
-    sym_start = reinterpret_cast<Elf_Sym *>(((void *) header) + symtab_offset);
+    sym_start = reinterpret_cast<Elf_Sym *>(((uint8_t *) header) + symtab_offset);
 
     //load module base
-    base = getModuleBase(elf);
+    base = reinterpret_cast<uint8_t *>(getModuleBase(elf));
 }
 
 ElfImg::~ElfImg() {
@@ -97,7 +97,7 @@ Elf_Addr ElfImg::getSymbOffset(const char *name) {
     Elf_Addr _offset = 0;
     for(int i = 0 ; i < symtab_count; i++) {
         unsigned int st_type = ELF_ST_TYPE(sym_start[i].st_info);
-        char* st_name = static_cast<char *>(((void *) header) + symstr_offset + sym_start[i].st_name);
+        char* st_name = reinterpret_cast<char *>(((uint8_t *) header) + symstr_offset + sym_start[i].st_name);
         if (st_type == STT_FUNC && sym_start[i].st_size) {
             if(strcmp(st_name, name) == 0) {
                 _offset = sym_start[i].st_value;
@@ -111,7 +111,7 @@ Elf_Addr ElfImg::getSymbOffset(const char *name) {
 
 Elf_Addr ElfImg::getSymbAddress(const char *name) {
     Elf_Addr offset = getSymbOffset(name);
-    if (offset > 0 && base > 0) {
+    if (offset > 0 && base != nullptr) {
         return reinterpret_cast<Elf_Addr>(base + offset - bias);
     } else {
         return 0;
