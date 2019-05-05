@@ -13,7 +13,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments '-DBUILD_TESTING=OFF', '-DANDROID_TOOLCHAIN=gcc'
+                arguments '-DBUILD_TESTING=OFF'
                 cppFlags "-frtti -fexceptions"
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
@@ -22,7 +22,7 @@ android {
 
     externalNativeBuild {
         cmake {
-            path "CMakeLists.txt"
+            path "src/main/cpp/CMakeLists.txt"
         }
     }
 
