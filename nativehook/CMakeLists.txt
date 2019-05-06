@@ -18,7 +18,18 @@ add_library( # Sets the name of the library.
 
              # Provides a relative path to your source file(s).
              src/main/cpp/sandhook_native.cpp
-            )
+             src/main/cpp/decoder/decoder.cpp
+             src/main/cpp/archs/arm64/inst_arm64.cpp
+             src/main/cpp/archs/arm64/decoder_arm64.cpp
+        )
+
+
+include_directories(
+        src/main/cpp/asm
+        src/main/cpp/decoder
+        src/main/cpp/elf
+        src/main/cpp/includes
+)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
