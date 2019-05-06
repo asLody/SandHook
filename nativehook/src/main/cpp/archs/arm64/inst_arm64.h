@@ -17,12 +17,20 @@ namespace SandHook {
         class InstructionA64 : public Instruction<InstStruct> {
         public:
 
-            InstStruct mask(InstStruct raw) {
+            inline InstStruct mask(InstStruct raw) {
                 return raw & (InstStruct) *this;
             }
 
-            bool IsPCRelAddressing() {
+            inline bool IsPCRelAddressing() {
                 return mask(PCRelAddressingFMask) == PCRelAddressingFixed;
+            }
+
+            inline InstType instType() override {
+                return A64;
+            }
+
+            inline Arch arch() override {
+                return arm64;
             }
 
             int getImmBranch() {
@@ -46,7 +54,7 @@ namespace SandHook {
         class A64_ADR_ADRP : public A64_INST_PC_REL {
         public:
 
-            bool isADRP() {
+            inline bool isADRP() {
                 return get().op == 1;
             }
 

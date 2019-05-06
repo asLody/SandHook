@@ -26,14 +26,16 @@ const ADDR PAGE_SIZE = 2 << PAGE_OFFSET;
 
 enum Arch {
     arm32,
-    arm64
+    arm64,
+    unkownArch
 };
 
 enum InstType {
     A32,
     thumb16,
     thumb32,
-    A64
+    A64,
+    unkownInst
 };
 
 template <int SizeInBits>

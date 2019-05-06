@@ -27,6 +27,14 @@ namespace SandHook {
                 return (void *) this;
             }
 
+            virtual InstType instType() {
+                return unkownInst;
+            }
+
+            virtual Arch arch() {
+                return unkownArch;
+            }
+
             bool pcRelate() {
                 return false;
             }
