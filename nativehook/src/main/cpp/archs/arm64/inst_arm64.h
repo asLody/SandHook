@@ -17,23 +17,27 @@ namespace SandHook {
         class InstructionA64 : public Instruction<InstStruct> {
         public:
 
-            inline InstStruct mask(InstStruct raw) {
-                return raw & (InstStruct) *this;
+            InstructionA64() {}
+
+            InstructionA64(InstStruct *inst) : Instruction<InstStruct>(inst) {}
+
+            InstStruct mask(InstStruct raw) {
+                return raw & *(this->get());
             }
 
-            inline bool IsPCRelAddressing() {
+            bool IsPCRelAddressing() {
                 return mask(PCRelAddressingFMask) == PCRelAddressingFixed;
             }
 
-            inline InstType instType() override {
+            InstType instType() {
                 return A64;
             }
 
-            inline Arch arch() override {
+            Arch arch() {
                 return arm64;
             }
 
-            int getImmBranch() {
+            virtual int getImmBranch() {
                 //TODO
                 return 0;
             }
@@ -43,19 +47,27 @@ namespace SandHook {
         class A64_INST_PC_REL : public InstructionA64<aarch64_pcrel_insts> {
         public:
 
-            int getImmPCRel();
+            A64_INST_PC_REL();
 
-            ADDR getImmPCOffset();
+            A64_INST_PC_REL(aarch64_pcrel_insts *inst);
 
-            ADDR getImmPCOffsetTarget();
+            virtual int getImmPCRel();
+
+            virtual ADDR getImmPCOffset();
+
+            virtual ADDR getImmPCOffsetTarget();
 
         };
 
         class A64_ADR_ADRP : public A64_INST_PC_REL {
         public:
 
+            A64_ADR_ADRP();
+
+            A64_ADR_ADRP(aarch64_pcrel_insts *inst);
+
             inline bool isADRP() {
-                return get().op == 1;
+                return get()->op == 1;
             }
 
             ADDR getImmPCOffset();

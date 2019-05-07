@@ -133,10 +133,7 @@ V(57) V(58) V(59) V(60) V(61) V(62) V(63)
     return TruncateToUint##N(x);                                   \
   }
 
-
-
 INT_1_TO_32_LIST(DECLARE_TRUNCATE_TO_UINT_32)
-
 #undef DECLARE_TRUNCATE_TO_INT_N
 
 // Bit field extraction.
@@ -162,6 +159,23 @@ inline int32_t ExtractSignedBitfield32(int msb, int lsb, int32_t x) {
     int32_t result;
     memcpy(&result, &temp, sizeof(result));
     return result;
+}
+
+
+static inline int16_t BITS16L(int32_t value) {
+    return static_cast<int16_t>(value);
+}
+
+static inline int16_t BITS16H(int32_t value) {
+    return static_cast<int16_t>(value >> 16);
+}
+
+static inline int32_t BITS32L(int64_t value) {
+    return static_cast<int32_t>(value);
+}
+
+static inline int32_t BITS32H(int64_t value) {
+    return static_cast<int32_t>(value >> 32);
 }
 
 #endif //SANDHOOK_BASE_H
