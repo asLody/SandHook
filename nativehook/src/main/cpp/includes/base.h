@@ -72,7 +72,6 @@ T AlignDown(T pointer,
 #define OFFSET(TYPE, MEMBER) ((size_t) & ((TYPE *)0)->MEMBER)
 
 
-
 //data covert
 
 // Macros for compile-time format checking.
@@ -177,5 +176,9 @@ static inline int32_t BITS32L(int64_t value) {
 static inline int32_t BITS32H(int64_t value) {
     return static_cast<int32_t>(value >> 32);
 }
+
+// left/right shift
+#define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)
+#define RHT(a, b, c) ((a >> c) & ((1 << b) - 1))
 
 #endif //SANDHOOK_BASE_H

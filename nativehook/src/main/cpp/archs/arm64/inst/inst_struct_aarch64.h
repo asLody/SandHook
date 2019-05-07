@@ -6,7 +6,7 @@
 #define SANDHOOK_NH_INST_AARCH64_H
 
 
-#include "../../asm/instruction.h"
+#include "../../../asm/instruction.h"
 
 enum InstructionFields {
 
@@ -85,5 +85,16 @@ struct aarch64_pcrel_insts {
 };
 
 struct aarch64_adr_adrp : public aarch64_pcrel_insts {};
+
+
+#define MOV_WIDE_OPCODE 0b100101
+struct aarch64_mov_wide {
+    InstA64 sf:1;
+    InstA64 opc:2;
+    InstA64 opcode:6;
+    InstA64 hw:2;
+    InstA64 imm16:16;
+    InstA64 rd:5;
+};
 
 #endif //SANDHOOK_NH_INST_AARCH64_H

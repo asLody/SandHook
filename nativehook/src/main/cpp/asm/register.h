@@ -9,19 +9,47 @@
 
 namespace SandHook {
     namespace Asm {
+
+
+        enum RegVariant {
+            Reg32Bit = 32,
+            Reg64Bit = 64,
+            Reg128Bit = 128
+        };
+
         class Register {
         public:
-            bool isFP() {
+
+            Register() {}
+
+            Register(U8 code) : code(code) {}
+
+            inline U8 getCode() {
+                return code;
+            }
+
+            virtual bool isFP() {
                 return false;
             };
 
+            virtual U8 getWide() {
+                return 0;
+            };
+
+            inline bool is32Bit() {
+                return getWide() == Reg32Bit;
+            }
+
+            inline bool is64Bit() {
+                return getWide() == Reg64Bit;
+            }
+
+            inline bool is128Bit() {
+                return getWide() == Reg128Bit;
+            }
+
         private:
-            U8 num;
-            //byte
-            U8 wide;
-            U32 code;
-            Arch arch;
-            InstType instType;
+            U8 code;
         };
     }
 }

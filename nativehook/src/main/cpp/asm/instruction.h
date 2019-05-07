@@ -8,9 +8,13 @@
 #include <malloc.h>
 #include "../includes/base.h"
 
+//aarch64
 typedef U32 InstA64;
+//arm32
 typedef U32 InstA32;
+//thumb16
 typedef U16 InstT16;
+//thumb32
 typedef U32 InstT32;
 
 #if defined(__aarch64__)
@@ -86,6 +90,10 @@ namespace SandHook {
             virtual bool pcRelate() {
                 return false;
             }
+
+            virtual void decode(Inst* decode) {}
+
+            virtual void assembler() {}
         };
 
         class Data16 : public Unit<U16> {

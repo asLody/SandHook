@@ -3,6 +3,7 @@
 //
 
 #include "inst_arm64.h"
+#include "../register/register_a64.h"
 
 using namespace SandHook::Asm;
 
@@ -55,3 +56,36 @@ int A64_ADR_ADRP::getImm()  {
     return getImmPCRel();
 }
 
+
+//Mov Wide
+
+A64_MOV_WIDE::A64_MOV_WIDE() {}
+
+A64_MOV_WIDE::A64_MOV_WIDE(aarch64_mov_wide *inst) : InstructionA64(inst) {
+    decode(inst);
+}
+
+A64_MOV_WIDE::A64_MOV_WIDE(A64_MOV_WIDE::MOV_WideOp op,RegisterA64* rd, U16 imme, U8 shift)
+        : shift(shift), op(op), imme(imme), rd(rd) {
+    assembler();
+}
+
+void A64_MOV_WIDE::assembler() {
+    get()->opcode = MOV_WIDE_OPCODE;
+    get()->imm16 = imme;
+    get()->hw = static_cast<InstA64>(shift / 16);
+    get()->opc = op;
+    get()->sf = rd->is64Bit() ? 1 : 0;
+    get()->rd = rd->getCode();
+}
+
+void A64_MOV_WIDE::decode(aarch64_mov_wide *inst) {
+    imme = static_cast<U16>(inst->imm16);
+    shift = static_cast<U8>(inst->hw * 16);
+    op = static_cast<MOV_WideOp>(inst->opc);
+    if (inst->sf == 0) {
+        rd = XRegister::get(static_cast<U8>(inst->rd));
+    } else {
+        rd = WRegister::get(static_cast<U8>(inst->rd));
+    }
+}
