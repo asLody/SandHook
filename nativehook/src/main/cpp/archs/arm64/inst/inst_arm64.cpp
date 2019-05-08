@@ -22,12 +22,6 @@ A64_INST_PC_REL<Inst>::A64_INST_PC_REL(Inst *inst):InstructionA64<Inst>(inst) {
 template<typename Inst>
 A64_INST_PC_REL<Inst>::A64_INST_PC_REL() {}
 
-
-template<typename Inst>
-ADDR A64_INST_PC_REL<Inst>::getImmPCOffset() {
-    return static_cast<ADDR>(this->getImmBranch() * this->size());
-}
-
 template<typename Inst>
 ADDR A64_INST_PC_REL<Inst>::getImmPCOffsetTarget() {
     return reinterpret_cast<ADDR>(this->getImmPCOffset() + (ADDR) this->getPC());
@@ -41,16 +35,10 @@ A64_ADR_ADRP::A64_ADR_ADRP(aarch64_adr_adrp *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-int A64_ADR_ADRP::getImmPCRel() {
-    U32 hi = static_cast<U32>(get()->immhi);
-    U32 lo = get()->immlo;
-    U32 offset = (hi << IMM_LO_W) | lo;
-    int width = IMM_HI_W + IMM_LO_W;
-    return ExtractSignedBitfield32(width - 1, 0, offset);
-}
-
 ADDR A64_ADR_ADRP::getImmPCOffset() {
-    ADDR offset = static_cast<ADDR>(getImmPCRel());
+    U32 hi = get()->immhi;
+    U32 lo = get()->immlo;
+    ADDR offset = signExtend64(12, COMBINE(hi, lo, IMM_LO_W));
     if (isADRP()) {
         offset *= PAGE_SIZE;
     }
@@ -58,12 +46,12 @@ ADDR A64_ADR_ADRP::getImmPCOffset() {
 }
 
 ADDR A64_ADR_ADRP::getImmPCOffsetTarget() {
-    aarch64_adr_adrp* base = AlignDown(get(), PAGE_SIZE);
+    void * base = AlignDown(getPC(), PAGE_SIZE);
     return reinterpret_cast<ADDR>(getImmPCOffset() + (ADDR) base);
 }
 
 int A64_ADR_ADRP::getImm()  {
-    return getImmPCRel();
+    return getImmPCOffset();
 }
 
 A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, RegisterA64 *rd, int imme) : op(op), rd(rd),
@@ -123,21 +111,21 @@ A64_B_BL::A64_B_BL(aarch64_b_bl *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-A64_B_BL::A64_B_BL(A64_B_BL::OP op, U32 imme) : op(op), imme(imme) {
+A64_B_BL::A64_B_BL(A64_B_BL::OP op, ADDR offset) : op(op), offset(offset) {
     assembler();
+}
+
+ADDR A64_B_BL::getImmPCOffset() {
+    return signExtend64(26 + 2, COMBINE(get()->imm26, 0b00, 2));
 }
 
 void A64_B_BL::decode(aarch64_b_bl *inst) {
     op = static_cast<OP>(inst->op);
-    imme = inst->imm26;
+    offset = getImmPCOffset();
 }
 
 void A64_B_BL::assembler() {
     get()->opcode = B_BL_OPCODE;
     get()->op = op;
-    get()->imm26 = imme;
-}
-
-int A64_B_BL::getImmBranch() {
-
+    get()->imm26 = TruncateToUint32(offset);
 }

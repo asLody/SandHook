@@ -29,12 +29,12 @@ namespace SandHook {
 
             U8 size() override;
 
-            static inline U32 SignExtend64(unsigned int bits, U64 value) {
-                U32 C = (U32) ((-1) << (bits - (U32) 1)); // NOLINT
-                return (value + C) ^ C;
+            static inline U32 signExtend64(unsigned int bits, U64 value) {
+                U32 C = (U32) ((-1) << (bits - (U32) 1));
+                return static_cast<U32>((value + C) ^ C);
             }
 
-            bool IsPCRelAddressing() {
+            bool isPCRelAddressing() {
                 return mask(PCRelAddressingFMask) == PCRelAddressingFixed;
             }
 
@@ -44,11 +44,6 @@ namespace SandHook {
 
             Arch arch() override {
                 return arm64;
-            }
-
-            virtual int getImmBranch() {
-                //TODO
-                return 0;
             }
 
         };
@@ -62,7 +57,7 @@ namespace SandHook {
 
             A64_INST_PC_REL(Inst *inst);
 
-            virtual ADDR getImmPCOffset();
+            virtual ADDR getImmPCOffset() = 0;
 
             virtual ADDR getImmPCOffsetTarget();
 
@@ -91,8 +86,6 @@ namespace SandHook {
             bool isADRP() {
                 return get()->op == OP::ADRP;
             }
-
-            int getImmPCRel();
 
             ADDR getImmPCOffset() override;
 
@@ -187,13 +180,21 @@ namespace SandHook {
 
             A64_B_BL(aarch64_b_bl *inst);
 
-            A64_B_BL(OP op, U32 imme);
+            A64_B_BL(OP op, ADDR offset);
+
+            inline ADDR getOffset() {
+                return offset;
+            }
+
+            inline OP getOP() {
+                return op;
+            }
 
             inline U32 instCode() override {
                 return op == B ? UnconditionalBranchOp::B : UnconditionalBranchOp ::BL;
             };
 
-            int getImmBranch() override;
+            ADDR getImmPCOffset() override;
 
             void decode(aarch64_b_bl *decode) override;
 
@@ -202,7 +203,7 @@ namespace SandHook {
 
         private:
             OP op;
-            U32 imme;
+            ADDR offset;
         };
 
     }
