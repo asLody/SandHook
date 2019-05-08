@@ -215,7 +215,7 @@ namespace SandHook {
         bool beAot = entryPointQuickCompiled->get(neverCall) != entryPointQuickCompiled->get(neverCall2);
         if (beAot) {
             quickToInterpreterBridge = getInterpreterBridge(false);
-            if (quickToInterpreterBridge == nullptr || quickToInterpreterBridge <= 0) {
+            if (quickToInterpreterBridge == nullptr) {
                 quickToInterpreterBridge = entryPointQuickCompiled->get(neverCall);
                 canGetInterpreterBridge = false;
             }
@@ -232,7 +232,7 @@ namespace SandHook {
         beAot = entryPointQuickCompiled->get(neverCallNative) != entryPointQuickCompiled->get(neverCallNative2);
         if (beAot) {
             genericJniStub = getInterpreterBridge(true);
-            if (genericJniStub == nullptr || genericJniStub <= 0) {
+            if (genericJniStub == nullptr) {
                 genericJniStub = entryPointQuickCompiled->get(neverCallNative);
                 canGetJniBridge = false;
             }

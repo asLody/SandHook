@@ -90,6 +90,7 @@ extern "C" void REPLACEMENT_HOOK_TRAMPOLINE();
 extern "C" void CALL_ORIGIN_TRAMPOLINE();
 
 #if defined(__arm__)
+#include <unistd.h>
 extern "C" void DIRECT_JUMP_TRAMPOLINE_T();
 extern "C" void INLINE_HOOK_TRAMPOLINE_T();
 extern "C" void CALL_ORIGIN_TRAMPOLINE_T();

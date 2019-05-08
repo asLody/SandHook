@@ -15,6 +15,7 @@ x: \
 .syntax unified; \
 .text; \
 .align 4; \
+.thumb; \
 .thumb_func; \
 .global x; \
 x: \
