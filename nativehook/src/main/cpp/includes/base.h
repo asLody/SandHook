@@ -161,24 +161,27 @@ inline int32_t ExtractSignedBitfield32(int msb, int lsb, int32_t x) {
 }
 
 
-static inline int16_t BITS16L(int32_t value) {
+inline int16_t BITS16L(int32_t value) {
     return static_cast<int16_t>(value);
 }
 
-static inline int16_t BITS16H(int32_t value) {
+inline int16_t BITS16H(int32_t value) {
     return static_cast<int16_t>(value >> 16);
 }
 
-static inline int32_t BITS32L(int64_t value) {
+inline int32_t BITS32L(int64_t value) {
     return static_cast<int32_t>(value);
 }
 
-static inline int32_t BITS32H(int64_t value) {
+inline int32_t BITS32H(int64_t value) {
     return static_cast<int32_t>(value >> 32);
 }
 
 // left/right shift
 #define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)
 #define RHT(a, b, c) ((a >> c) & ((1 << b) - 1))
+
+//big little edd
+
 
 #endif //SANDHOOK_BASE_H

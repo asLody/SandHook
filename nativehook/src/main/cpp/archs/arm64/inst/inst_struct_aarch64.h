@@ -39,15 +39,13 @@ enum ImmBranchType {
 
 #define IMM_LO_W 2
 #define IMM_HI_W 19
-struct aarch64_pcrel_insts {
+struct aarch64_adr_adrp {
     InstA64 op:1;
     InstA64 immlo:IMM_LO_W;
     InstA64 opcode:5;
     InstA64 immhi:IMM_HI_W;
     InstA64 rd:5;
 };
-
-struct aarch64_adr_adrp : public aarch64_pcrel_insts {};
 
 
 #define MOV_WIDE_OPCODE 0b100101
@@ -60,10 +58,10 @@ struct aarch64_mov_wide {
     InstA64 rd:5;
 };
 
-
+#define B_BL_OPCODE 0b00101
 struct aarch64_b_bl {
     InstA64 op:1;
-    InstA64 opc:5;
+    InstA64 opcode:5;
     InstA64 imm26:26;
 };
 

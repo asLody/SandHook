@@ -8,37 +8,46 @@
 using namespace SandHook::Asm;
 
 
+template<typename InstStruct>
+U8 InstructionA64<InstStruct>::size() {
+    return sizeof(InstA64);
+}
+
 //PC Rel Inst
 
-A64_INST_PC_REL::A64_INST_PC_REL() {}
+template<typename Inst>
+A64_INST_PC_REL<Inst>::A64_INST_PC_REL(Inst *inst):InstructionA64<Inst>(inst) {
+}
 
-A64_INST_PC_REL::A64_INST_PC_REL(aarch64_pcrel_insts *inst) : InstructionA64(inst) {}
+template<typename Inst>
+A64_INST_PC_REL<Inst>::A64_INST_PC_REL() {}
 
-int A64_INST_PC_REL::getImmPCRel() {
+
+template<typename Inst>
+ADDR A64_INST_PC_REL<Inst>::getImmPCOffset() {
+    return static_cast<ADDR>(this->getImmBranch() * this->size());
+}
+
+template<typename Inst>
+ADDR A64_INST_PC_REL<Inst>::getImmPCOffsetTarget() {
+    return reinterpret_cast<ADDR>(this->getImmPCOffset() + (ADDR) this->getPC());
+}
+
+//ADR ADRP
+
+A64_ADR_ADRP::A64_ADR_ADRP() {}
+
+A64_ADR_ADRP::A64_ADR_ADRP(aarch64_adr_adrp *inst) : A64_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+int A64_ADR_ADRP::getImmPCRel() {
     U32 hi = static_cast<U32>(get()->immhi);
     U32 lo = get()->immlo;
     U32 offset = (hi << IMM_LO_W) | lo;
     int width = IMM_HI_W + IMM_LO_W;
     return ExtractSignedBitfield32(width - 1, 0, offset);
 }
-
-ADDR A64_INST_PC_REL::getImmPCOffset() {
-    return static_cast<ADDR>(getImmBranch() * size());
-}
-
-ADDR A64_INST_PC_REL::getImmPCOffsetTarget() {
-    return reinterpret_cast<ADDR>(getImmPCOffset() + (ADDR) getPC());
-}
-
-
-//ADR ADRP
-
-A64_ADR_ADRP::A64_ADR_ADRP() {}
-
-A64_ADR_ADRP::A64_ADR_ADRP(aarch64_pcrel_insts *inst) : A64_INST_PC_REL(inst) {
-    decode(inst);
-}
-
 
 ADDR A64_ADR_ADRP::getImmPCOffset() {
     ADDR offset = static_cast<ADDR>(getImmPCRel());
@@ -49,7 +58,7 @@ ADDR A64_ADR_ADRP::getImmPCOffset() {
 }
 
 ADDR A64_ADR_ADRP::getImmPCOffsetTarget() {
-    Instruction* base = AlignDown(this, PAGE_SIZE);
+    aarch64_adr_adrp* base = AlignDown(get(), PAGE_SIZE);
     return reinterpret_cast<ADDR>(getImmPCOffset() + (ADDR) base);
 }
 
@@ -62,7 +71,7 @@ A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, RegisterA64 *rd, int imme) : op(
     assembler();
 }
 
-void A64_ADR_ADRP::decode(aarch64_pcrel_insts *decode) {
+void A64_ADR_ADRP::decode(aarch64_adr_adrp *decode) {
 
 }
 
@@ -110,4 +119,25 @@ void A64_MOV_WIDE::decode(aarch64_mov_wide *inst) {
 
 A64_B_BL::A64_B_BL() {}
 
-A64_B_BL::A64_B_BL(aarch64_b_bl *inst) : InstructionA64(inst) {}
+A64_B_BL::A64_B_BL(aarch64_b_bl *inst) : A64_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+A64_B_BL::A64_B_BL(A64_B_BL::OP op, U32 imme) : op(op), imme(imme) {
+    assembler();
+}
+
+void A64_B_BL::decode(aarch64_b_bl *inst) {
+    op = static_cast<OP>(inst->op);
+    imme = inst->imm26;
+}
+
+void A64_B_BL::assembler() {
+    get()->opcode = B_BL_OPCODE;
+    get()->op = op;
+    get()->imm26 = imme;
+}
+
+int A64_B_BL::getImmBranch() {
+
+}

@@ -15,27 +15,34 @@ namespace SandHook {
 
     namespace Asm {
 
-        template<typename InstStruct>
-        class InstructionA64 : public Instruction<InstStruct> {
+        template<typename Inst>
+        class InstructionA64 : public Instruction<Inst> {
         public:
 
             InstructionA64() {}
 
-            InstructionA64(InstStruct *inst) : Instruction<InstStruct>(inst) {}
+            InstructionA64(Inst *inst) : Instruction<Inst>(inst) {}
 
-            InstStruct mask(InstStruct raw) {
+            Inst mask(Inst raw) {
                 return raw & *(this->get());
+            }
+
+            U8 size() override;
+
+            static inline U32 SignExtend64(unsigned int bits, U64 value) {
+                U32 C = (U32) ((-1) << (bits - (U32) 1)); // NOLINT
+                return (value + C) ^ C;
             }
 
             bool IsPCRelAddressing() {
                 return mask(PCRelAddressingFMask) == PCRelAddressingFixed;
             }
 
-            InstType instType() {
+            InstType instType() override {
                 return A64;
             }
 
-            Arch arch() {
+            Arch arch() override {
                 return arm64;
             }
 
@@ -47,15 +54,13 @@ namespace SandHook {
         };
 
 
-
-        class A64_INST_PC_REL : public InstructionA64<aarch64_pcrel_insts> {
+        template <typename Inst>
+        class A64_INST_PC_REL : public InstructionA64<Inst> {
         public:
 
             A64_INST_PC_REL();
 
-            A64_INST_PC_REL(aarch64_pcrel_insts *inst);
-
-            virtual int getImmPCRel();
+            A64_INST_PC_REL(Inst *inst);
 
             virtual ADDR getImmPCOffset();
 
@@ -65,7 +70,7 @@ namespace SandHook {
 
 
 
-        class A64_ADR_ADRP : public A64_INST_PC_REL {
+        class A64_ADR_ADRP : public A64_INST_PC_REL<aarch64_adr_adrp> {
         public:
 
             enum OP {
@@ -75,25 +80,27 @@ namespace SandHook {
 
             A64_ADR_ADRP();
 
-            A64_ADR_ADRP(aarch64_pcrel_insts *inst);
+            A64_ADR_ADRP(aarch64_adr_adrp *inst);
 
             A64_ADR_ADRP(OP op, RegisterA64 *rd, int imme);
 
-            inline U32 instCode() override {
+            U32 instCode() override {
                 return isADRP() ? PCRelAddressingOp::ADRP : PCRelAddressingOp::ADR;
             }
 
-            inline bool isADRP() {
+            bool isADRP() {
                 return get()->op == OP::ADRP;
             }
 
-            ADDR getImmPCOffset();
+            int getImmPCRel();
 
-            ADDR getImmPCOffsetTarget();
+            ADDR getImmPCOffset() override;
+
+            ADDR getImmPCOffsetTarget() override;
 
             int getImm();
 
-            void decode(aarch64_pcrel_insts *decode) override;
+            void decode(aarch64_adr_adrp *decode) override;
 
             void assembler() override;
 
@@ -168,7 +175,7 @@ namespace SandHook {
 
 
 
-        class A64_B_BL : public InstructionA64<aarch64_b_bl> {
+        class A64_B_BL : public A64_INST_PC_REL<aarch64_b_bl> {
         public:
 
             enum OP {
@@ -180,9 +187,18 @@ namespace SandHook {
 
             A64_B_BL(aarch64_b_bl *inst);
 
-            inline U32 instCode() {
+            A64_B_BL(OP op, U32 imme);
+
+            inline U32 instCode() override {
                 return op == B ? UnconditionalBranchOp::B : UnconditionalBranchOp ::BL;
             };
+
+            int getImmBranch() override;
+
+            void decode(aarch64_b_bl *decode) override;
+
+            void assembler() override;
+
 
         private:
             OP op;
