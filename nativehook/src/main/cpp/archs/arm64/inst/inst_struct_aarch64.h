@@ -37,6 +37,30 @@ enum ImmBranchType {
     TestBranchType = 4
 };
 
+// Condition codes.
+enum Condition {
+    eq = 0,   // Z set            Equal.
+    ne = 1,   // Z clear          Not equal.
+    cs = 2,   // C set            Carry set.
+    cc = 3,   // C clear          Carry clear.
+    mi = 4,   // N set            Negative.
+    pl = 5,   // N clear          Positive or zero.
+    vs = 6,   // V set            Overflow.
+    vc = 7,   // V clear          No overflow.
+    hi = 8,   // C set, Z clear   Unsigned higher.
+    ls = 9,   // C clear or Z set Unsigned lower or same.
+    ge = 10,  // N == V           Greater or equal.
+    lt = 11,  // N != V           Less than.
+    gt = 12,  // Z clear, N == V  Greater than.
+    le = 13,  // Z set or N != V  Less then or equal
+    al = 14,  //                  Always.
+    nv = 15,  // Behaves as always/al.
+
+    // Aliases.
+    hs = cs,  // C set            Unsigned higher or same.
+    lo = cc   // C clear          Unsigned lower.
+};
+
 #define IMM_LO_W 2
 #define IMM_HI_W 19
 struct aarch64_adr_adrp {
@@ -73,5 +97,26 @@ struct aarch64_cbz_cbnz {
     InstA64 imm19:19;
     InstA64 rt:5;
 };
+
+#define CBZ_B_COND_OPCODE 0b01010100
+struct aarch64_b_cond {
+    InstA64 opcode:8;
+    InstA64 imm19:19;
+    InstA64 unkown:1;
+    InstA64 cond:4;
+};
+
+
+#define TBZ_TBNZ_OPCODE 0b011011
+struct aarch64_tbz_tbnz {
+    InstA64 b5:1;
+    InstA64 opcode:6;
+    InstA64 op:1;
+    InstA64 b40:5;
+    InstA64 imm14:14;
+    InstA64 rt:5;
+};
+
+
 
 #endif //SANDHOOK_NH_INST_AARCH64_H

@@ -52,4 +52,34 @@ enum UnconditionalBranchOp {
     BL                       = UnconditionalBranchFixed | 0x80000000
 };
 
+// Compare and branch.
+enum CompareBranchOp {
+    CompareBranchFixed = 0x34000000,
+    CompareBranchFMask = 0x7E000000,
+    CompareBranchMask  = 0xFF000000,
+    CBZ_w              = CompareBranchFixed | 0x00000000,
+    CBZ_x              = CompareBranchFixed | 0x80000000,
+    CBZ                = CBZ_w,
+    CBNZ_w             = CompareBranchFixed | 0x01000000,
+    CBNZ_x             = CompareBranchFixed | 0x81000000,
+    CBNZ               = CBNZ_w
+};
+
+// Conditional branch.
+enum ConditionalBranchOp {
+    ConditionalBranchFixed = 0x54000000,
+    ConditionalBranchFMask = 0xFE000000,
+    ConditionalBranchMask  = 0xFF000010,
+    B_cond                 = ConditionalBranchFixed | 0x00000000
+};
+
+// Test and branch.
+enum TestBranchOp {
+    TestBranchFixed = 0x36000000,
+    TestBranchFMask = 0x7E000000,
+    TestBranchMask  = 0x7F000000,
+    TBZ             = TestBranchFixed | 0x00000000,
+    TBNZ            = TestBranchFixed | 0x01000000
+};
+
 #endif //SANDHOOK_NH_INST_CODE_ARM64_H

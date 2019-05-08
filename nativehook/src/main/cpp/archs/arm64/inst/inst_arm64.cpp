@@ -93,7 +93,7 @@ void A64_MOV_WIDE::assembler() {
 void A64_MOV_WIDE::decode(aarch64_mov_wide *inst) {
     imme = static_cast<U16>(inst->imm16);
     shift = static_cast<U8>(inst->hw * 16);
-    op = static_cast<OP>(inst->opc);
+    op = OP(inst->opc);
     if (inst->sf == 1) {
         rd = XRegister::get(static_cast<U8>(inst->rd));
     } else {
@@ -120,7 +120,7 @@ ADDR A64_B_BL::getImmPCOffset() {
 }
 
 void A64_B_BL::decode(aarch64_b_bl *inst) {
-    op = static_cast<OP>(inst->op);
+    op = OP(inst->op);
     offset = getImmPCOffset();
 }
 
@@ -136,14 +136,22 @@ void A64_B_BL::assembler() {
 
 A64_CBZ_CBNZ::A64_CBZ_CBNZ() {}
 
-A64_CBZ_CBNZ::A64_CBZ_CBNZ(aarch64_cbz_cbnz *inst) : A64_INST_PC_REL(inst) {}
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(aarch64_cbz_cbnz *inst) : A64_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, ADDR offset, RegisterA64 *rt) : op(op),
+                                                                                offset(offset),
+                                                                                rt(rt) {
+    assembler();
+}
 
 ADDR A64_CBZ_CBNZ::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
 }
 
 void A64_CBZ_CBNZ::decode(aarch64_cbz_cbnz *inst) {
-    op = static_cast<OP>(get()->op);
+    op = OP(get()->op);
     if (inst->sf == 1) {
         rt = XRegister::get(static_cast<U8>(inst->rt));
     } else {
@@ -160,3 +168,70 @@ void A64_CBZ_CBNZ::assembler() {
     get()->imm19 = TruncateToUint19(offset);
 }
 
+
+//B.Cond
+
+A64_B_COND::A64_B_COND() {}
+
+A64_B_COND::A64_B_COND(aarch64_b_cond *inst) : A64_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+A64_B_COND::A64_B_COND(Condition condition, ADDR offset) : condition(condition), offset(offset) {
+    assembler();
+}
+
+ADDR A64_B_COND::getImmPCOffset() {
+    return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
+}
+
+void A64_B_COND::decode(aarch64_b_cond *inst) {
+    condition = Condition(inst->cond);
+    offset = getImmPCOffset();
+}
+
+void A64_B_COND::assembler() {
+    get()->opcode = CBZ_B_COND_OPCODE;
+    get()->cond = condition;
+    get()->imm19 = TruncateToUint19(offset);
+}
+
+
+//TBZ TBNZ
+
+A64_TBZ_TBNZ::A64_TBZ_TBNZ() {}
+
+A64_TBZ_TBNZ::A64_TBZ_TBNZ(aarch64_tbz_tbnz *inst) : A64_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 *rt, U32 bit, ADDR offset) : op(op),
+                                                                                         rt(rt),
+                                                                                         bit(bit),
+                                                                                         offset(offset) {
+    assembler();
+}
+
+ADDR A64_TBZ_TBNZ::getImmPCOffset() {
+    return signExtend64(14, get()->imm14) << 2;
+}
+
+void A64_TBZ_TBNZ::decode(aarch64_tbz_tbnz *inst) {
+    bit = COMBINE(inst->b5, inst->b40, 5);
+    if (inst->b5 == 1) {
+        rt = XRegister::get(static_cast<U8>(inst->rt));
+    } else {
+        rt = WRegister::get(static_cast<U8>(inst->rt));
+    }
+    op = OP(inst->op);
+    offset = getImmPCOffset();
+}
+
+void A64_TBZ_TBNZ::assembler() {
+    get()->opcode = TBZ_TBNZ_OPCODE;
+    get()->op = op;
+    get()->b5 = rt->is64Bit() ? 1 : 0;
+    get()->rt = rt->getCode();
+    get()->b40 = BITS(bit, sizeof(U32) - 5, sizeof(U32));
+    get()->imm14 = TruncateToUint14(offset);
+}

@@ -220,6 +220,12 @@ namespace SandHook {
 
             A64_CBZ_CBNZ(aarch64_cbz_cbnz *inst);
 
+            A64_CBZ_CBNZ(OP op, ADDR offset, RegisterA64 *rt);
+
+            inline U32 instCode() override {
+                return op == CBZ ? CompareBranchOp::CBZ : CompareBranchOp::CBNZ;
+            }
+
             ADDR getImmPCOffset() override;
 
             void decode(aarch64_cbz_cbnz *inst) override;
@@ -230,6 +236,62 @@ namespace SandHook {
             OP op;
             ADDR offset;
             RegisterA64* rt;
+        };
+
+
+        class A64_B_COND : public A64_INST_PC_REL<aarch64_b_cond> {
+        public:
+            A64_B_COND();
+
+            A64_B_COND(aarch64_b_cond *inst);
+
+            A64_B_COND(Condition condition, ADDR offset);
+
+            inline U32 instCode() override {
+                return B_cond;
+            }
+
+            ADDR getImmPCOffset() override;
+
+            void decode(aarch64_b_cond *inst) override;
+
+            void assembler() override;
+
+        private:
+            Condition condition;
+            ADDR offset;
+        };
+
+
+        class A64_TBZ_TBNZ : public A64_INST_PC_REL<aarch64_tbz_tbnz> {
+        public:
+
+            enum OP {
+                TBZ,
+                TBNZ
+            };
+
+            A64_TBZ_TBNZ();
+
+            A64_TBZ_TBNZ(aarch64_tbz_tbnz *inst);
+
+            A64_TBZ_TBNZ(OP op, RegisterA64 *rt, U32 bit, ADDR offset);
+
+            inline U32 instCode() override {
+                return op == TBZ ? TestBranchOp::TBZ : TestBranchOp::TBNZ;
+            };
+
+            ADDR getImmPCOffset() override;
+
+            void decode(aarch64_tbz_tbnz *inst) override;
+
+            void assembler() override;
+
+        private:
+            OP op;
+            RegisterA64* rt;
+            U32 bit;
+            ADDR offset;
         };
 
     }

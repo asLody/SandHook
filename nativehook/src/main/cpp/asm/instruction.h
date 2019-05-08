@@ -29,7 +29,8 @@ namespace SandHook {
         public:
 
             Unit() {
-                raw = reinterpret_cast<Raw*>(malloc(sizeof(Raw)));
+                raw = reinterpret_cast<Raw*>(malloc(size()));
+                memset(raw, 0, size());
                 auto_alloc = true;
             }
 
