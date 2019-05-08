@@ -6,6 +6,7 @@ import com.swift.sandhook.SandHook;
 import com.swift.sandhook.blacklist.HookBlackList;
 import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.xposedcompat.XposedCompat;
+import com.swift.sandhook.xposedcompat.classloaders.ComposeClassLoader;
 import com.swift.sandhook.xposedcompat.hookstub.HookMethodEntity;
 import com.swift.sandhook.xposedcompat.hookstub.HookStubManager;
 import com.swift.sandhook.xposedcompat.utils.DexLog;
@@ -72,7 +73,7 @@ public final class DynamicBridge {
                     hookMaker = defaultHookMaker;
                 }
                 hookMaker.start(hookMethod, additionalHookInfo,
-                        XposedCompat.classLoader, dexDir == null ? null : dexDir.getAbsolutePath());
+                        new ComposeClassLoader(DynamicBridge.class.getClassLoader(), hookMethod.getDeclaringClass().getClassLoader()), dexDir == null ? null : dexDir.getAbsolutePath());
                 hookedInfo.put(hookMethod, hookMaker.getCallBackupMethod());
             }
             DexLog.d("hook method <" + hookMethod.toString() + "> cost " + (System.currentTimeMillis() - timeStart) + " ms, by " + (stub != null ? "internal stub" : "dex maker"));
