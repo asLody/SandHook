@@ -5,8 +5,9 @@
 #include "inst_arm64.h"
 #include "../register/register_a64.h"
 
-using namespace SandHook::Asm;
+#define SET_OPCODE(X) get()->opcode = OPCODE_A64(X)
 
+using namespace SandHook::Asm;
 
 template<typename InstStruct>
 U8 InstructionA64<InstStruct>::size() {
@@ -31,7 +32,7 @@ ADDR A64_INST_PC_REL<Inst>::getImmPCOffsetTarget() {
 
 A64_ADR_ADRP::A64_ADR_ADRP() {}
 
-A64_ADR_ADRP::A64_ADR_ADRP(aarch64_adr_adrp *inst) : A64_INST_PC_REL(inst) {
+A64_ADR_ADRP::A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
@@ -59,12 +60,12 @@ A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, RegisterA64 *rd, int imme) : op(
     assembler();
 }
 
-void A64_ADR_ADRP::decode(aarch64_adr_adrp *decode) {
+void A64_ADR_ADRP::decode(STRUCT_A64(ADR_ADRP) *decode) {
 
 }
 
 void A64_ADR_ADRP::assembler() {
-
+    SET_OPCODE(ADR_ADRP);
 }
 
 
@@ -82,7 +83,7 @@ A64_MOV_WIDE::A64_MOV_WIDE(A64_MOV_WIDE::OP op,RegisterA64* rd, U16 imme, U8 shi
 }
 
 void A64_MOV_WIDE::assembler() {
-    get()->opcode = MOV_WIDE_OPCODE;
+    SET_OPCODE(MOV_WIDE);
     get()->imm16 = imme;
     get()->hw = static_cast<InstA64>(shift / 16);
     get()->opc = op;
@@ -125,7 +126,7 @@ void A64_B_BL::decode(aarch64_b_bl *inst) {
 }
 
 void A64_B_BL::assembler() {
-    get()->opcode = B_BL_OPCODE;
+    SET_OPCODE(B_BL);
     get()->op = op;
     get()->imm26 = TruncateToUint26(offset);
 }
@@ -161,7 +162,7 @@ void A64_CBZ_CBNZ::decode(aarch64_cbz_cbnz *inst) {
 }
 
 void A64_CBZ_CBNZ::assembler() {
-    get()->opcode = CBZ_CBNZ_OPCODE;
+    SET_OPCODE(CBZ_CBNZ);
     get()->op = op;
     get()->rt = rt->getCode();
     get()->sf = rt->is64Bit() ? 1 : 0;
@@ -191,7 +192,7 @@ void A64_B_COND::decode(aarch64_b_cond *inst) {
 }
 
 void A64_B_COND::assembler() {
-    get()->opcode = CBZ_B_COND_OPCODE;
+    SET_OPCODE(B_COND);
     get()->cond = condition;
     get()->imm19 = TruncateToUint19(offset);
 }
@@ -228,7 +229,7 @@ void A64_TBZ_TBNZ::decode(aarch64_tbz_tbnz *inst) {
 }
 
 void A64_TBZ_TBNZ::assembler() {
-    get()->opcode = TBZ_TBNZ_OPCODE;
+    SET_OPCODE(TBZ_TBNZ);
     get()->op = op;
     get()->b5 = rt->is64Bit() ? 1 : 0;
     get()->rt = rt->getCode();

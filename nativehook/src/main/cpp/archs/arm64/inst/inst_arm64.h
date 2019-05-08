@@ -12,6 +12,22 @@
 #include "../register/register_a64.h"
 #include "../../../../../../../hooklib/src/main/cpp/includes/inst.h"
 
+
+#define INST_A64(X) A64_##X
+
+#define IS_OPCODE(RAW,OP) INST_A64(OP)::is(RAW);
+
+
+#define DEFINE_IS(X) \
+inline static bool is(InstA64& inst) { \
+union { \
+    InstA64 raw; \
+    STRUCT_A64(X) inst; \
+} inst_test; \
+inst_test.raw = inst; \
+return inst_test.inst.opcode == OPCODE_A64(X); \
+}
+
 namespace SandHook {
 
     namespace Asm {
@@ -66,7 +82,7 @@ namespace SandHook {
 
 
 
-        class A64_ADR_ADRP : public A64_INST_PC_REL<aarch64_adr_adrp> {
+        class INST_A64(ADR_ADRP) : public A64_INST_PC_REL<STRUCT_A64(ADR_ADRP)> {
         public:
 
             enum OP {
@@ -76,9 +92,11 @@ namespace SandHook {
 
             A64_ADR_ADRP();
 
-            A64_ADR_ADRP(aarch64_adr_adrp *inst);
+            A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) *inst);
 
             A64_ADR_ADRP(OP op, RegisterA64 *rd, int imme);
+
+            DEFINE_IS(ADR_ADRP)
 
             U32 instCode() override {
                 return isADRP() ? PCRelAddressingOp::ADRP : PCRelAddressingOp::ADR;
@@ -94,7 +112,7 @@ namespace SandHook {
 
             int getImm();
 
-            void decode(aarch64_adr_adrp *decode) override;
+            void decode(STRUCT_A64(ADR_ADRP) *decode) override;
 
             void assembler() override;
 
@@ -106,7 +124,7 @@ namespace SandHook {
 
 
 
-        class A64_MOV_WIDE : public InstructionA64<aarch64_mov_wide> {
+        class INST_A64(MOV_WIDE) : public InstructionA64<aarch64_mov_wide> {
         public:
 
             enum OP {
@@ -169,7 +187,7 @@ namespace SandHook {
 
 
 
-        class A64_B_BL : public A64_INST_PC_REL<aarch64_b_bl> {
+        class INST_A64(B_BL) : public A64_INST_PC_REL<aarch64_b_bl> {
         public:
 
             enum OP {
@@ -208,7 +226,7 @@ namespace SandHook {
         };
 
 
-        class A64_CBZ_CBNZ : public A64_INST_PC_REL<aarch64_cbz_cbnz> {
+        class INST_A64(CBZ_CBNZ) : public A64_INST_PC_REL<aarch64_cbz_cbnz> {
         public:
 
             enum OP {
@@ -239,7 +257,7 @@ namespace SandHook {
         };
 
 
-        class A64_B_COND : public A64_INST_PC_REL<aarch64_b_cond> {
+        class INST_A64(B_COND) : public A64_INST_PC_REL<aarch64_b_cond> {
         public:
             A64_B_COND();
 
@@ -263,7 +281,7 @@ namespace SandHook {
         };
 
 
-        class A64_TBZ_TBNZ : public A64_INST_PC_REL<aarch64_tbz_tbnz> {
+        class INST_A64(TBZ_TBNZ) : public A64_INST_PC_REL<aarch64_tbz_tbnz> {
         public:
 
             enum OP {

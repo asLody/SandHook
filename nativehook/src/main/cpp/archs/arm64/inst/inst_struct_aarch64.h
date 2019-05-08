@@ -9,6 +9,10 @@
 #include "../../../asm/instruction.h"
 #include "inst_code_arm64.h"
 
+#define STRUCT_A64(X) A64_STRUCT_##X
+#define OPCODE_A64(X) A64_OPCODE_##X
+#define DEFINE_OPCODE(X, V) const U32 OPCODE_A64(X) = V;
+
 enum InstructionFields {
 
     // Registers.
@@ -63,7 +67,8 @@ enum Condition {
 
 #define IMM_LO_W 2
 #define IMM_HI_W 19
-struct aarch64_adr_adrp {
+DEFINE_OPCODE(ADR_ADRP, 0b10000)
+struct STRUCT_A64(ADR_ADRP) {
     InstA64 op:1;
     InstA64 immlo:IMM_LO_W;
     InstA64 opcode:5;
@@ -72,7 +77,7 @@ struct aarch64_adr_adrp {
 };
 
 
-#define MOV_WIDE_OPCODE 0b100101
+DEFINE_OPCODE(MOV_WIDE, 0b100101)
 struct aarch64_mov_wide {
     InstA64 sf:1;
     InstA64 opc:2;
@@ -82,14 +87,14 @@ struct aarch64_mov_wide {
     InstA64 rd:5;
 };
 
-#define B_BL_OPCODE 0b00101
+DEFINE_OPCODE(B_BL, 0b00101)
 struct aarch64_b_bl {
     InstA64 op:1;
     InstA64 opcode:5;
     InstA64 imm26:26;
 };
 
-#define CBZ_CBNZ_OPCODE 0b011010
+DEFINE_OPCODE(CBZ_CBNZ, 0b011010)
 struct aarch64_cbz_cbnz {
     InstA64 sf:1;
     InstA64 opcode:6;
@@ -98,7 +103,7 @@ struct aarch64_cbz_cbnz {
     InstA64 rt:5;
 };
 
-#define CBZ_B_COND_OPCODE 0b01010100
+DEFINE_OPCODE(B_COND, 0b01010100)
 struct aarch64_b_cond {
     InstA64 opcode:8;
     InstA64 imm19:19;
@@ -107,7 +112,7 @@ struct aarch64_b_cond {
 };
 
 
-#define TBZ_TBNZ_OPCODE 0b011011
+DEFINE_OPCODE(TBZ_TBNZ, 0b011011)
 struct aarch64_tbz_tbnz {
     InstA64 b5:1;
     InstA64 opcode:6;
