@@ -46,6 +46,8 @@ namespace SandHook {
 
         };
 
+
+
         class A64_INST_PC_REL : public InstructionA64<aarch64_pcrel_insts> {
         public:
 
@@ -61,15 +63,28 @@ namespace SandHook {
 
         };
 
+
+
         class A64_ADR_ADRP : public A64_INST_PC_REL {
         public:
+
+            enum OP {
+                ADR = 0b0,
+                ADRP = 0b1,
+            };
 
             A64_ADR_ADRP();
 
             A64_ADR_ADRP(aarch64_pcrel_insts *inst);
 
+            A64_ADR_ADRP(OP op, RegisterA64 *rd, int imme);
+
+            inline U32 instCode() override {
+                return isADRP() ? PCRelAddressingOp::ADRP : PCRelAddressingOp::ADR;
+            }
+
             inline bool isADRP() {
-                return get()->op == 1;
+                return get()->op == OP::ADRP;
             }
 
             ADDR getImmPCOffset();
@@ -78,12 +93,22 @@ namespace SandHook {
 
             int getImm();
 
+            void decode(aarch64_pcrel_insts *decode) override;
+
+            void assembler() override;
+
+        private:
+            OP op;
+            RegisterA64* rd;
+            int imme;
         };
+
+
 
         class A64_MOV_WIDE : public InstructionA64<aarch64_mov_wide> {
         public:
 
-            enum MOV_WideOp {
+            enum OP {
                 // Move and keep.
                 MOV_WideOp_K = 0b00,
                 // Move with zero.
@@ -96,7 +121,20 @@ namespace SandHook {
 
             A64_MOV_WIDE(aarch64_mov_wide *inst);
 
-            A64_MOV_WIDE(A64_MOV_WIDE::MOV_WideOp op, RegisterA64* rd, U16 imme, U8 shift);
+            A64_MOV_WIDE(A64_MOV_WIDE::OP op, RegisterA64* rd, U16 imme, U8 shift);
+
+            inline U32 instCode() override {
+                switch (op) {
+                    case MOV_WideOp_K:
+                        return MOVK;
+                    case MOV_WideOp_N:
+                        return MOVN;
+                    case MOV_WideOp_Z:
+                        return MOVZ;
+                    default:
+                        return 0;
+                }
+            }
 
             void assembler() override;
 
@@ -107,7 +145,7 @@ namespace SandHook {
                 return shift;
             }
 
-            inline MOV_WideOp getOpt() {
+            inline OP getOpt() {
                 return op;
             }
 
@@ -123,9 +161,32 @@ namespace SandHook {
             //can be 16/32/64/128
             //hw = shift / 16
             U8 shift;
-            MOV_WideOp op;
+            OP op;
             U16 imme;
             RegisterA64* rd;
+        };
+
+
+
+        class A64_B_BL : public InstructionA64<aarch64_b_bl> {
+        public:
+
+            enum OP {
+                B = 0b0,
+                BL = 0b1
+            };
+
+            A64_B_BL();
+
+            A64_B_BL(aarch64_b_bl *inst);
+
+            inline U32 instCode() {
+                return op == B ? UnconditionalBranchOp::B : UnconditionalBranchOp ::BL;
+            };
+
+        private:
+            OP op;
+            U32 imme;
         };
 
     }

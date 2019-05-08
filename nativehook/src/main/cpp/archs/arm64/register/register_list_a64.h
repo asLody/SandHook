@@ -18,5 +18,11 @@ AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS)
 
 WRegister WSP(RegisterA64::kSPRegInternalCode);
 XRegister SP(RegisterA64::kSPRegInternalCode);
+XRegister IP0 = X16;
+XRegister IP1 = X17;
+XRegister LR = X30;
+//zero reg
+XRegister XZR = X31;
+WRegister WZR = W31;
 
 #endif //SANDHOOK_NH_REGISTER_LIST_A64_H

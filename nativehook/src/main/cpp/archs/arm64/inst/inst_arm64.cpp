@@ -10,7 +10,6 @@ using namespace SandHook::Asm;
 
 //PC Rel Inst
 
-
 A64_INST_PC_REL::A64_INST_PC_REL() {}
 
 A64_INST_PC_REL::A64_INST_PC_REL(aarch64_pcrel_insts *inst) : InstructionA64(inst) {}
@@ -36,7 +35,9 @@ ADDR A64_INST_PC_REL::getImmPCOffsetTarget() {
 
 A64_ADR_ADRP::A64_ADR_ADRP() {}
 
-A64_ADR_ADRP::A64_ADR_ADRP(aarch64_pcrel_insts *inst) : A64_INST_PC_REL(inst) {}
+A64_ADR_ADRP::A64_ADR_ADRP(aarch64_pcrel_insts *inst) : A64_INST_PC_REL(inst) {
+    decode(inst);
+}
 
 
 ADDR A64_ADR_ADRP::getImmPCOffset() {
@@ -56,6 +57,19 @@ int A64_ADR_ADRP::getImm()  {
     return getImmPCRel();
 }
 
+A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, RegisterA64 *rd, int imme) : op(op), rd(rd),
+                                                                             imme(imme) {
+    assembler();
+}
+
+void A64_ADR_ADRP::decode(aarch64_pcrel_insts *decode) {
+
+}
+
+void A64_ADR_ADRP::assembler() {
+
+}
+
 
 //Mov Wide
 
@@ -65,7 +79,7 @@ A64_MOV_WIDE::A64_MOV_WIDE(aarch64_mov_wide *inst) : InstructionA64(inst) {
     decode(inst);
 }
 
-A64_MOV_WIDE::A64_MOV_WIDE(A64_MOV_WIDE::MOV_WideOp op,RegisterA64* rd, U16 imme, U8 shift)
+A64_MOV_WIDE::A64_MOV_WIDE(A64_MOV_WIDE::OP op,RegisterA64* rd, U16 imme, U8 shift)
         : shift(shift), op(op), imme(imme), rd(rd) {
     assembler();
 }
@@ -82,10 +96,18 @@ void A64_MOV_WIDE::assembler() {
 void A64_MOV_WIDE::decode(aarch64_mov_wide *inst) {
     imme = static_cast<U16>(inst->imm16);
     shift = static_cast<U8>(inst->hw * 16);
-    op = static_cast<MOV_WideOp>(inst->opc);
+    op = static_cast<OP>(inst->opc);
     if (inst->sf == 0) {
         rd = XRegister::get(static_cast<U8>(inst->rd));
     } else {
         rd = WRegister::get(static_cast<U8>(inst->rd));
     }
 }
+
+
+
+//B BL
+
+A64_B_BL::A64_B_BL() {}
+
+A64_B_BL::A64_B_BL(aarch64_b_bl *inst) : InstructionA64(inst) {}

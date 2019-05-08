@@ -87,6 +87,10 @@ namespace SandHook {
                 return unkownArch;
             }
 
+            virtual U32 instCode() {
+                return 0;
+            };
+
             virtual bool pcRelate() {
                 return false;
             }

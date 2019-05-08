@@ -7,6 +7,7 @@
 
 
 #include "../../../asm/instruction.h"
+#include "inst_code_arm64.h"
 
 enum InstructionFields {
 
@@ -26,44 +27,6 @@ enum InstructionFields {
     kRsShift  = 16,
     kRsBits   = 5,
 
-};
-
-
-// Generic fields.
-enum GenericInstrField {
-    SixtyFourBits        = 0x80000000,
-    ThirtyTwoBits        = 0x00000000,
-
-    FPTypeMask           = 0x00C00000,
-    FP16                 = 0x00C00000,
-    FP32                 = 0x00000000,
-    FP64                 = 0x00400000
-};
-
-
-enum PCRelAddressingOp {
-    PCRelAddressingFixed = 0x10000000,
-    PCRelAddressingFMask = 0x1F000000,
-    PCRelAddressingMask  = 0x9F000000,
-    ADR                  = PCRelAddressingFixed | 0x00000000,
-    ADRP                 = PCRelAddressingFixed | 0x80000000
-};
-
-
-// Move wide immediate.
-enum MoveWideImmediateOp {
-    MoveWideImmediateFixed = 0x12800000,
-    MoveWideImmediateFMask = 0x1F800000,
-    MoveWideImmediateMask  = 0xFF800000,
-    MOVN                   = 0x00000000,
-    MOVZ                   = 0x40000000,
-    MOVK                   = 0x60000000,
-    MOVN_w                 = MoveWideImmediateFixed | MOVN,
-    MOVN_x                 = MoveWideImmediateFixed | MOVN | SixtyFourBits,
-    MOVZ_w                 = MoveWideImmediateFixed | MOVZ,
-    MOVZ_x                 = MoveWideImmediateFixed | MOVZ | SixtyFourBits,
-    MOVK_w                 = MoveWideImmediateFixed | MOVK,
-    MOVK_x                 = MoveWideImmediateFixed | MOVK | SixtyFourBits
 };
 
 enum ImmBranchType {
@@ -95,6 +58,13 @@ struct aarch64_mov_wide {
     InstA64 hw:2;
     InstA64 imm16:16;
     InstA64 rd:5;
+};
+
+
+struct aarch64_b_bl {
+    InstA64 op:1;
+    InstA64 opc:5;
+    InstA64 imm26:26;
 };
 
 #endif //SANDHOOK_NH_INST_AARCH64_H
