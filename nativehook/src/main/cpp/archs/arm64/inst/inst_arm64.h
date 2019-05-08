@@ -10,6 +10,7 @@
 #include "../../../asm/instruction.h"
 #include "../../../includes/base.h"
 #include "../register/register_a64.h"
+#include "../../../../../../../hooklib/src/main/cpp/includes/inst.h"
 
 namespace SandHook {
 
@@ -204,6 +205,31 @@ namespace SandHook {
         private:
             OP op;
             ADDR offset;
+        };
+
+
+        class A64_CBZ_CBNZ : public A64_INST_PC_REL<aarch64_cbz_cbnz> {
+        public:
+
+            enum OP {
+                CBZ = 0,
+                CBNZ = 1
+            };
+
+            A64_CBZ_CBNZ();
+
+            A64_CBZ_CBNZ(aarch64_cbz_cbnz *inst);
+
+            ADDR getImmPCOffset() override;
+
+            void decode(aarch64_cbz_cbnz *inst) override;
+
+            void assembler() override;
+
+        private:
+            OP op;
+            ADDR offset;
+            RegisterA64* rt;
         };
 
     }

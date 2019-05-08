@@ -94,7 +94,7 @@ void A64_MOV_WIDE::decode(aarch64_mov_wide *inst) {
     imme = static_cast<U16>(inst->imm16);
     shift = static_cast<U8>(inst->hw * 16);
     op = static_cast<OP>(inst->opc);
-    if (inst->sf == 0) {
+    if (inst->sf == 1) {
         rd = XRegister::get(static_cast<U8>(inst->rd));
     } else {
         rd = WRegister::get(static_cast<U8>(inst->rd));
@@ -127,5 +127,36 @@ void A64_B_BL::decode(aarch64_b_bl *inst) {
 void A64_B_BL::assembler() {
     get()->opcode = B_BL_OPCODE;
     get()->op = op;
-    get()->imm26 = TruncateToUint32(offset);
+    get()->imm26 = TruncateToUint26(offset);
 }
+
+
+
+//CBZ CBNZ
+
+A64_CBZ_CBNZ::A64_CBZ_CBNZ() {}
+
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(aarch64_cbz_cbnz *inst) : A64_INST_PC_REL(inst) {}
+
+ADDR A64_CBZ_CBNZ::getImmPCOffset() {
+    return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
+}
+
+void A64_CBZ_CBNZ::decode(aarch64_cbz_cbnz *inst) {
+    op = static_cast<OP>(get()->op);
+    if (inst->sf == 1) {
+        rt = XRegister::get(static_cast<U8>(inst->rt));
+    } else {
+        rt = WRegister::get(static_cast<U8>(inst->rt));
+    }
+    offset = getImmPCOffset();
+}
+
+void A64_CBZ_CBNZ::assembler() {
+    get()->opcode = CBZ_CBNZ_OPCODE;
+    get()->op = op;
+    get()->rt = rt->getCode();
+    get()->sf = rt->is64Bit() ? 1 : 0;
+    get()->imm19 = TruncateToUint19(offset);
+}
+

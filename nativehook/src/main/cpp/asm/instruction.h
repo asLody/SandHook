@@ -44,11 +44,11 @@ namespace SandHook {
                 return raw;
             }
 
-            Raw* get() const {
+            inline Raw* get() const {
                 return raw;
             }
 
-            void set(Raw raw) const {
+            inline void set(Raw raw) const {
                 *this->raw = raw;
             }
 
@@ -95,7 +95,7 @@ namespace SandHook {
                 return false;
             }
 
-            virtual void decode(Inst* decode) {}
+            virtual void decode(Inst* inst) {}
 
             virtual void assembler() {}
         };

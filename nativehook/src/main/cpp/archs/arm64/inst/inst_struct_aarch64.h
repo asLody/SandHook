@@ -65,4 +65,13 @@ struct aarch64_b_bl {
     InstA64 imm26:26;
 };
 
+#define CBZ_CBNZ_OPCODE 0b011010
+struct aarch64_cbz_cbnz {
+    InstA64 sf:1;
+    InstA64 opcode:6;
+    InstA64 op:1;
+    InstA64 imm19:19;
+    InstA64 rt:5;
+};
+
 #endif //SANDHOOK_NH_INST_AARCH64_H
