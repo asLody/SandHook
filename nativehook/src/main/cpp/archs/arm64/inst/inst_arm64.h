@@ -42,7 +42,7 @@ namespace SandHook {
                 return raw & *(this->get());
             }
 
-            U8 size() override;
+            U32 size() override;
 
             static inline U32 extend32(unsigned int bits, U32 value) {
                 return value << (32 - bits);

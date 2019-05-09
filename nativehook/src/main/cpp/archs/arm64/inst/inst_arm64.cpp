@@ -9,7 +9,7 @@
 using namespace SandHook::Asm;
 
 template<typename InstStruct>
-U8 InstructionA64<InstStruct>::size() {
+U32 InstructionA64<InstStruct>::size() {
     return sizeof(InstA64);
 }
 

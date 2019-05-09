@@ -35,6 +35,14 @@ enum Arch {
     unkownArch
 };
 
+enum UnitType {
+    Inst,
+    Data,
+    Label,
+    Void,
+    Unkown
+};
+
 enum InstType {
     A32,
     thumb16,
@@ -60,6 +68,9 @@ template <>
 struct Unsigned<64> {
     typedef U64 type;
 };
+
+
+class None {};
 
 template <typename T>
 T AlignDown(T pointer,

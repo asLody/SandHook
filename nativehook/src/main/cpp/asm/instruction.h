@@ -29,9 +29,11 @@ namespace SandHook {
         public:
 
             Unit() {
-                raw = reinterpret_cast<Raw*>(malloc(size()));
-                memset(raw, 0, size());
-                auto_alloc = true;
+                if (unitType() != Void) {
+                    raw = reinterpret_cast<Raw *>(malloc(size()));
+                    memset(raw, 0, size());
+                    auto_alloc = true;
+                }
             }
 
             Unit<Raw>(Raw *raw) : raw(raw) {}
@@ -57,7 +59,11 @@ namespace SandHook {
                 memcpy(dest, getPC(), size());
             }
 
-            virtual U8 size() {
+            virtual UnitType unitType() {
+                return UnitType::Unkown;
+            };
+
+            virtual U32 size() {
                 return sizeof(Raw);
             }
 
@@ -80,6 +86,10 @@ namespace SandHook {
 
             Instruction(Inst *inst) : Unit<Inst>(inst) {}
 
+            UnitType unitType() override {
+                return UnitType::Inst;
+            };
+
             virtual InstType instType() {
                 return unkownInst;
             }
@@ -101,19 +111,51 @@ namespace SandHook {
             virtual void assembler() {}
         };
 
-        class Data16 : public Unit<U16> {
+        template <typename DType>
+        class Data : public Unit<DType> {
         public:
-            Data16(U16 raw) : Unit(raw) {}
+            Data(DType raw) : Unit<DType>(raw) {}
+            inline UnitType unitType() override {
+                return UnitType::Data;
+            };
         };
 
-        class Data32 : public Unit<U32> {
+        class Data16 : public Data<U16> {
         public:
-            Data32(U32 raw) : Unit(raw) {}
+            Data16(U16 raw) : Data(raw) {}
         };
 
-        class Data64 : public Unit<U64> {
+        class Data32 : public Data<U32> {
         public:
-            Data64(U64 raw) : Unit(raw) {}
+            Data32(U32 raw) : Data(raw) {}
+        };
+
+        class Data64 : public Data<U64> {
+        public:
+            Data64(U64 raw) : Data(raw) {}
+        };
+
+        class Label : public Unit<None> {
+        public:
+            Label() {}
+            inline UnitType unitType() override {
+                return UnitType::Label;
+            }
+            U32 size() override {
+                return 0;
+            }
+        };
+
+        class Void : public Unit<None> {
+        public:
+            Void(U32 size) : size_(size) {}
+
+            U32 size() override {
+                return size_;
+            }
+
+        private:
+            U32 size_;
         };
 
     }
