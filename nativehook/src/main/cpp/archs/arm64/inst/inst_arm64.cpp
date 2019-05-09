@@ -278,10 +278,22 @@ void A64_LDR_LIT::assembler() {
 // STR IMM
 A64_STR_IMM::A64_STR_IMM() {}
 
-A64_STR_IMM::A64_STR_IMM(A64_STRUCT_STR_IMM *inst) : InstructionA64(inst) {
+A64_STR_IMM::A64_STR_IMM(STRUCT_A64(STR_IMM) *inst) : InstructionA64(inst) {
     decode(inst);
 }
 
-A64_STR_IMM::A64_STR_IMM(RegisterA64 *rt, const MemOperand &oprand) : rt(rt), oprand(oprand) {
+A64_STR_IMM::A64_STR_IMM(RegisterA64 *rt, const MemOperand &operand) : rt(rt), operand(operand) {
     assembler();
+}
+
+AddrMode A64_STR_IMM::decodeAddrMode() {
+    if (get()->P == 1 && get()->W == 0) {
+        return Offset;
+    } else if (get()->P == 0 && get()->W == 0) {
+        return PostIndex;
+    } else if (get()->P == 1 && get()->W == 1) {
+        return PreIndex;
+    } else {
+        return NonAddrMode;
+    }
 }

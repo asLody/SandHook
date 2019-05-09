@@ -67,102 +67,79 @@ namespace SandHook {
 
         };
 
-        enum AddrMode { Offset, PreIndex, PostIndex };
+        enum AddrMode { Offset, PreIndex, PostIndex, NonAddrMode};
 
         class Operand {
         public:
             inline explicit Operand(S64 imm)
-                    : immediate_(imm), reg_(&UnknowRegiser), shift_(NO_SHIFT), extend_(NO_EXTEND), shift_extent_imm_(0) {}
+                    : immediate(imm), reg(&UnknowRegiser), shift(NO_SHIFT), extend(NO_EXTEND), shift_extend_imm(0) {}
             inline Operand(RegisterA64* reg, Shift shift = LSL, int32_t imm = 0)
-                    : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extent_imm_(imm) {}
+                    : immediate(0), reg(reg), shift(shift), extend(NO_EXTEND), shift_extend_imm(imm) {}
             inline Operand(RegisterA64* reg, Extend extend, int32_t imm = 0)
-                    : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extent_imm_(imm) {}
+                    : immediate(0), reg(reg), shift(NO_SHIFT), extend(extend), shift_extend_imm(imm) {}
 
             // =====
 
-            bool IsImmediate() const { return reg_->is(UnknowRegiser); }
-            bool IsShiftedRegister() const { return /* reg_.IsValid() && */ (shift_ != NO_SHIFT); }
-            bool IsExtendedRegister() const { return /* reg_.IsValid() && */ (extend_ != NO_EXTEND); }
+            bool IsImmediate() const { return reg->is(UnknowRegiser); }
+            bool IsShiftedRegister() const { return  (shift != NO_SHIFT); }
+            bool IsExtendedRegister() const { return (extend != NO_EXTEND); }
 
-            // =====
-
-            RegisterA64* reg() const {
-                return reg_;
-            }
-            S64 Immediate() const { return immediate_; }
-            Shift shift() const {
-                return shift_;
-            }
-            Extend extend() const {
-                return extend_;
-            }
-            int32_t shift_extend_imm() const { return shift_extent_imm_; }
-
-        private:
-
-            S64 immediate_;
-            RegisterA64* reg_;
-            Shift shift_;
-            Extend extend_;
-            int32_t shift_extent_imm_;
+        public:
+            S64 immediate;
+            RegisterA64* reg;
+            Shift shift;
+            Extend extend;
+            int32_t shift_extend_imm;
         };
 
         class MemOperand {
         public:
-            inline explicit MemOperand(RegisterA64* base, int64_t offset = 0, AddrMode addrmode = Offset)
-                    : base_(base), regoffset_(&UnknowRegiser), offset_(offset), addrmode_(addrmode), shift_(NO_SHIFT),
-                      extend_(NO_EXTEND), shift_extend_imm_(0) {}
+            inline explicit MemOperand(RegisterA64* base, S64 offset = 0, AddrMode addr_mode = Offset)
+                    : base(base), reg_offset(&UnknowRegiser), offset(offset), addr_mode(addr_mode), shift(NO_SHIFT),
+                      extend(NO_EXTEND), shift_extend_imm(0) {}
 
-            inline explicit MemOperand(RegisterA64* base, RegisterA64* regoffset, Extend extend, unsigned extend_imm)
-                    : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(NO_SHIFT), extend_(extend),
-                      shift_extend_imm_(extend_imm) {}
+            inline explicit MemOperand(RegisterA64* base, RegisterA64* reg_offset, Extend extend, unsigned extend_imm)
+                    : base(base), reg_offset(reg_offset), offset(0), addr_mode(Offset), shift(NO_SHIFT), extend(extend),
+                      shift_extend_imm(extend_imm) {}
 
-            inline explicit MemOperand(RegisterA64* base, RegisterA64* regoffset, Shift shift = LSL, unsigned shift_imm = 0)
-                    : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(shift), extend_(NO_EXTEND),
-                      shift_extend_imm_(shift_imm) {}
+            inline explicit MemOperand(RegisterA64* base, RegisterA64* reg_offset, Shift shift = LSL, unsigned shift_imm = 0)
+                    : base(base), reg_offset(reg_offset), offset(0), addr_mode(Offset), shift(shift), extend(NO_EXTEND),
+                      shift_extend_imm(shift_imm) {}
 
-            inline explicit MemOperand(RegisterA64* base, const Operand &offset, AddrMode addrmode = Offset)
-                    : base_(base), regoffset_(&UnknowRegiser), addrmode_(addrmode) {
+            inline explicit MemOperand(RegisterA64* base, const Operand &offset, AddrMode addr_mode = Offset)
+                    : base(base), reg_offset(&UnknowRegiser), addr_mode(addr_mode) {
                 if (offset.IsShiftedRegister()) {
-                    regoffset_        = offset.reg();
-                    shift_            = offset.shift();
-                    shift_extend_imm_ = offset.shift_extend_imm();
+                    reg_offset        = offset.reg;
+                    shift            = offset.shift;
+                    shift_extend_imm = offset.shift_extend_imm;
 
-                    extend_ = NO_EXTEND;
-                    offset_ = 0;
+                    extend = NO_EXTEND;
+                    this->offset = 0;
                 } else if (offset.IsExtendedRegister()) {
-                    regoffset_        = offset.reg();
-                    extend_           = offset.extend();
-                    shift_extend_imm_ = offset.shift_extend_imm();
+                    reg_offset        = offset.reg;
+                    extend           = offset.extend;
+                    shift_extend_imm = offset.shift_extend_imm;
 
-                    shift_  = NO_SHIFT;
-                    offset_ = 0;
+                    shift  = NO_SHIFT;
+                    this->offset = 0;
                 }
             }
 
-            const RegisterA64* base() const { return base_; }
-            const RegisterA64* regoffset() const { return regoffset_; }
-            int64_t offset() const { return offset_; }
-            AddrMode addrmode() const { return addrmode_; }
-            Shift shift() const { return shift_; }
-            Extend extend() const { return extend_; }
-            unsigned shift_extend_imm() const { return shift_extend_imm_; }
-
             // =====
 
-            bool IsImmediateOffset() const { return (addrmode_ == Offset); }
-            bool IsRegisterOffset() const { return (addrmode_ == Offset); }
-            bool IsPreIndex() const { return addrmode_ == PreIndex; }
-            bool IsPostIndex() const { return addrmode_ == PostIndex; }
+            bool IsImmediateOffset() const { return (addr_mode == Offset); }
+            bool IsRegisterOffset() const { return (addr_mode == Offset); }
+            bool IsPreIndex() const { return addr_mode == PreIndex; }
+            bool IsPostIndex() const { return addr_mode == PostIndex; }
 
-        private:
-            RegisterA64* base_;
-            RegisterA64* regoffset_;
-            int64_t offset_;
-            AddrMode addrmode_;
-            Shift shift_;
-            Extend extend_;
-            int32_t shift_extend_imm_;
+        public:
+            RegisterA64* base;
+            RegisterA64* reg_offset;
+            S64 offset;
+            AddrMode addr_mode;
+            Shift shift;
+            Extend extend;
+            S32 shift_extend_imm;
         };
 
 
@@ -472,13 +449,26 @@ namespace SandHook {
         public:
             A64_STR_IMM();
 
-            A64_STR_IMM(A64_STRUCT_STR_IMM *inst);
+            A64_STR_IMM(STRUCT_A64(STR_IMM) *inst);
 
-            A64_STR_IMM(RegisterA64 *rt, const MemOperand &oprand);
+            A64_STR_IMM(RegisterA64 *rt, const MemOperand &operand);
+
+            DEFINE_IS(STR_IMM)
+
+            AddrMode getAddrMode() {
+                return operand.addr_mode;
+            }
+
+        private:
+            AddrMode decodeAddrMode();
 
         public:
             RegisterA64* rt;
-            MemOperand oprand = MemOperand(nullptr);
+            MemOperand operand = MemOperand(nullptr);
+        private:
+            bool wback;
+            U32 imm32;
+
         };
 
     }
