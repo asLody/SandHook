@@ -228,7 +228,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(CBZ_CBNZ) : public A64_INST_PC_REL<aarch64_cbz_cbnz> {
+        class INST_A64(CBZ_CBNZ) : public A64_INST_PC_REL<STRUCT_A64(CBZ_CBNZ)> {
         public:
 
             enum OP {
@@ -238,7 +238,7 @@ namespace SandHook {
 
             A64_CBZ_CBNZ();
 
-            A64_CBZ_CBNZ(aarch64_cbz_cbnz *inst);
+            A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) *inst);
 
             A64_CBZ_CBNZ(OP op, ADDR offset, RegisterA64 *rt);
 
@@ -248,7 +248,7 @@ namespace SandHook {
 
             ADDR getImmPCOffset() override;
 
-            void decode(aarch64_cbz_cbnz *inst) override;
+            void decode(STRUCT_A64(CBZ_CBNZ) *inst) override;
 
             void assembler() override;
 
@@ -259,11 +259,11 @@ namespace SandHook {
         };
 
 
-        class INST_A64(B_COND) : public A64_INST_PC_REL<aarch64_b_cond> {
+        class INST_A64(B_COND) : public A64_INST_PC_REL<STRUCT_A64(B_COND)> {
         public:
             A64_B_COND();
 
-            A64_B_COND(aarch64_b_cond *inst);
+            A64_B_COND(STRUCT_A64(B_COND) *inst);
 
             A64_B_COND(Condition condition, ADDR offset);
 
@@ -273,7 +273,7 @@ namespace SandHook {
 
             ADDR getImmPCOffset() override;
 
-            void decode(aarch64_b_cond *inst) override;
+            void decode(STRUCT_A64(B_COND) *inst) override;
 
             void assembler() override;
 
@@ -283,7 +283,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(TBZ_TBNZ) : public A64_INST_PC_REL<aarch64_tbz_tbnz> {
+        class INST_A64(TBZ_TBNZ) : public A64_INST_PC_REL<STRUCT_A64(TBZ_TBNZ)> {
         public:
 
             enum OP {
@@ -293,7 +293,7 @@ namespace SandHook {
 
             A64_TBZ_TBNZ();
 
-            A64_TBZ_TBNZ(aarch64_tbz_tbnz *inst);
+            A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) *inst);
 
             A64_TBZ_TBNZ(OP op, RegisterA64 *rt, U32 bit, ADDR offset);
 
@@ -303,7 +303,7 @@ namespace SandHook {
 
             ADDR getImmPCOffset() override;
 
-            void decode(aarch64_tbz_tbnz *inst) override;
+            void decode(STRUCT_A64(TBZ_TBNZ) *inst) override;
 
             void assembler() override;
 

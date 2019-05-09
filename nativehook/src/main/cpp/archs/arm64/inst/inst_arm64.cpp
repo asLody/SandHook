@@ -137,7 +137,7 @@ void A64_B_BL::assembler() {
 
 A64_CBZ_CBNZ::A64_CBZ_CBNZ() {}
 
-A64_CBZ_CBNZ::A64_CBZ_CBNZ(aarch64_cbz_cbnz *inst) : A64_INST_PC_REL(inst) {
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
@@ -151,7 +151,7 @@ ADDR A64_CBZ_CBNZ::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
 }
 
-void A64_CBZ_CBNZ::decode(aarch64_cbz_cbnz *inst) {
+void A64_CBZ_CBNZ::decode(STRUCT_A64(CBZ_CBNZ) *inst) {
     op = OP(get()->op);
     if (inst->sf == 1) {
         rt = XRegister::get(static_cast<U8>(inst->rt));
@@ -174,7 +174,7 @@ void A64_CBZ_CBNZ::assembler() {
 
 A64_B_COND::A64_B_COND() {}
 
-A64_B_COND::A64_B_COND(aarch64_b_cond *inst) : A64_INST_PC_REL(inst) {
+A64_B_COND::A64_B_COND(STRUCT_A64(B_COND) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
@@ -186,7 +186,7 @@ ADDR A64_B_COND::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
 }
 
-void A64_B_COND::decode(aarch64_b_cond *inst) {
+void A64_B_COND::decode(STRUCT_A64(B_COND) *inst) {
     condition = Condition(inst->cond);
     offset = getImmPCOffset();
 }
@@ -202,7 +202,7 @@ void A64_B_COND::assembler() {
 
 A64_TBZ_TBNZ::A64_TBZ_TBNZ() {}
 
-A64_TBZ_TBNZ::A64_TBZ_TBNZ(aarch64_tbz_tbnz *inst) : A64_INST_PC_REL(inst) {
+A64_TBZ_TBNZ::A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
@@ -217,7 +217,7 @@ ADDR A64_TBZ_TBNZ::getImmPCOffset() {
     return signExtend64(14, get()->imm14) << 2;
 }
 
-void A64_TBZ_TBNZ::decode(aarch64_tbz_tbnz *inst) {
+void A64_TBZ_TBNZ::decode(STRUCT_A64(TBZ_TBNZ) *inst) {
     bit = COMBINE(inst->b5, inst->b40, 5);
     if (inst->b5 == 1) {
         rt = XRegister::get(static_cast<U8>(inst->rt));

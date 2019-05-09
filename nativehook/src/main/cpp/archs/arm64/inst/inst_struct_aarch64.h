@@ -95,7 +95,7 @@ struct STRUCT_A64(B_BL) {
 };
 
 DEFINE_OPCODE(CBZ_CBNZ, 0b011010)
-struct aarch64_cbz_cbnz {
+struct STRUCT_A64(CBZ_CBNZ) {
     InstA64 sf:1;
     InstA64 opcode:6;
     InstA64 op:1;
@@ -104,7 +104,7 @@ struct aarch64_cbz_cbnz {
 };
 
 DEFINE_OPCODE(B_COND, 0b01010100)
-struct aarch64_b_cond {
+struct STRUCT_A64(B_COND) {
     InstA64 opcode:8;
     InstA64 imm19:19;
     InstA64 unkown:1;
@@ -113,7 +113,7 @@ struct aarch64_b_cond {
 
 
 DEFINE_OPCODE(TBZ_TBNZ, 0b011011)
-struct aarch64_tbz_tbnz {
+struct STRUCT_A64(TBZ_TBNZ) {
     InstA64 b5:1;
     InstA64 opcode:6;
     InstA64 op:1;
