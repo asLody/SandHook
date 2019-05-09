@@ -3,7 +3,6 @@
 //
 
 #include "inst_arm64.h"
-#include "../register/register_a64.h"
 
 #define SET_OPCODE(X) get()->opcode = OPCODE_A64(X)
 
@@ -272,4 +271,17 @@ void A64_LDR_LIT::assembler() {
     get()->rt = rt->getCode();
     get()->op = op;
     get()->imm19 = TruncateToUint19(offset);
+}
+
+
+
+// STR IMM
+A64_STR_IMM::A64_STR_IMM() {}
+
+A64_STR_IMM::A64_STR_IMM(A64_STRUCT_STR_IMM *inst) : InstructionA64(inst) {
+    decode(inst);
+}
+
+A64_STR_IMM::A64_STR_IMM(RegisterA64 *rt, const MemOperand &oprand) : rt(rt), oprand(oprand) {
+    assembler();
 }

@@ -21,6 +21,7 @@ add_library( # Sets the name of the library.
              src/main/cpp/decoder/decoder.cpp
              src/main/cpp/archs/arm64/inst/inst_arm64.cpp
              src/main/cpp/archs/arm64/register/register_a64.cpp
+             src/main/cpp/archs/arm64/register/register_list_a64.cpp
              src/main/cpp/archs/arm64/decoder/decoder_arm64.cpp
         )
 

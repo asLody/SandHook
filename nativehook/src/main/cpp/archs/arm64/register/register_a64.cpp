@@ -14,10 +14,10 @@ RegisterA64::RegisterA64(U8 code) : Register(code) {}
 
 
 XRegister* XRegister::registers[AARCH64_REGISTER_COUNT] = {
-#define DEFINE_REGISTERS(N) \
+#define DEFINE_REGISTERS_X(N) \
         &X##N,
-        AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS)
-#undef DEFINE_REGISTERS
+        AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS_X)
+#undef DEFINE_REGISTERS_X
 };
 
 XRegister::XRegister(U8 code) : RegisterA64(code) {}
@@ -31,10 +31,10 @@ U8 XRegister::getWide() {
 
 
 WRegister* WRegister::registers[AARCH64_REGISTER_COUNT] = {
-#define DEFINE_REGISTERS(N) \
+#define DEFINE_REGISTERS_W(N) \
         &W##N,
-        AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS)
-#undef DEFINE_REGISTERS
+        AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS_W)
+#undef DEFINE_REGISTERS_W
 };
 
 WRegister::WRegister(U8 code) : RegisterA64(code) {}

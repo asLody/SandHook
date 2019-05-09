@@ -5,12 +5,10 @@
 #ifndef SANDHOOK_NH_INST_ARM64_H
 #define SANDHOOK_NH_INST_ARM64_H
 
-#include <register.h>
 #include "inst_struct_aarch64.h"
 #include "../../../asm/instruction.h"
 #include "../../../includes/base.h"
-#include "../register/register_a64.h"
-#include "../../../../../../../hooklib/src/main/cpp/includes/inst.h"
+#include "../register/register_list_a64.h"
 
 
 #define INST_A64(X) A64_##X
@@ -71,6 +69,102 @@ namespace SandHook {
 
         enum AddrMode { Offset, PreIndex, PostIndex };
 
+        class Operand {
+        public:
+            inline explicit Operand(S64 imm)
+                    : immediate_(imm), reg_(&UnknowRegiser), shift_(NO_SHIFT), extend_(NO_EXTEND), shift_extent_imm_(0) {}
+            inline Operand(RegisterA64* reg, Shift shift = LSL, int32_t imm = 0)
+                    : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extent_imm_(imm) {}
+            inline Operand(RegisterA64* reg, Extend extend, int32_t imm = 0)
+                    : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extent_imm_(imm) {}
+
+            // =====
+
+            bool IsImmediate() const { return reg_->is(UnknowRegiser); }
+            bool IsShiftedRegister() const { return /* reg_.IsValid() && */ (shift_ != NO_SHIFT); }
+            bool IsExtendedRegister() const { return /* reg_.IsValid() && */ (extend_ != NO_EXTEND); }
+
+            // =====
+
+            RegisterA64* reg() const {
+                return reg_;
+            }
+            S64 Immediate() const { return immediate_; }
+            Shift shift() const {
+                return shift_;
+            }
+            Extend extend() const {
+                return extend_;
+            }
+            int32_t shift_extend_imm() const { return shift_extent_imm_; }
+
+        private:
+
+            S64 immediate_;
+            RegisterA64* reg_;
+            Shift shift_;
+            Extend extend_;
+            int32_t shift_extent_imm_;
+        };
+
+        class MemOperand {
+        public:
+            inline explicit MemOperand(RegisterA64* base, int64_t offset = 0, AddrMode addrmode = Offset)
+                    : base_(base), regoffset_(&UnknowRegiser), offset_(offset), addrmode_(addrmode), shift_(NO_SHIFT),
+                      extend_(NO_EXTEND), shift_extend_imm_(0) {}
+
+            inline explicit MemOperand(RegisterA64* base, RegisterA64* regoffset, Extend extend, unsigned extend_imm)
+                    : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(NO_SHIFT), extend_(extend),
+                      shift_extend_imm_(extend_imm) {}
+
+            inline explicit MemOperand(RegisterA64* base, RegisterA64* regoffset, Shift shift = LSL, unsigned shift_imm = 0)
+                    : base_(base), regoffset_(regoffset), offset_(0), addrmode_(Offset), shift_(shift), extend_(NO_EXTEND),
+                      shift_extend_imm_(shift_imm) {}
+
+            inline explicit MemOperand(RegisterA64* base, const Operand &offset, AddrMode addrmode = Offset)
+                    : base_(base), regoffset_(&UnknowRegiser), addrmode_(addrmode) {
+                if (offset.IsShiftedRegister()) {
+                    regoffset_        = offset.reg();
+                    shift_            = offset.shift();
+                    shift_extend_imm_ = offset.shift_extend_imm();
+
+                    extend_ = NO_EXTEND;
+                    offset_ = 0;
+                } else if (offset.IsExtendedRegister()) {
+                    regoffset_        = offset.reg();
+                    extend_           = offset.extend();
+                    shift_extend_imm_ = offset.shift_extend_imm();
+
+                    shift_  = NO_SHIFT;
+                    offset_ = 0;
+                }
+            }
+
+            const RegisterA64* base() const { return base_; }
+            const RegisterA64* regoffset() const { return regoffset_; }
+            int64_t offset() const { return offset_; }
+            AddrMode addrmode() const { return addrmode_; }
+            Shift shift() const { return shift_; }
+            Extend extend() const { return extend_; }
+            unsigned shift_extend_imm() const { return shift_extend_imm_; }
+
+            // =====
+
+            bool IsImmediateOffset() const { return (addrmode_ == Offset); }
+            bool IsRegisterOffset() const { return (addrmode_ == Offset); }
+            bool IsPreIndex() const { return addrmode_ == PreIndex; }
+            bool IsPostIndex() const { return addrmode_ == PostIndex; }
+
+        private:
+            RegisterA64* base_;
+            RegisterA64* regoffset_;
+            int64_t offset_;
+            AddrMode addrmode_;
+            Shift shift_;
+            Extend extend_;
+            int32_t shift_extend_imm_;
+        };
+
 
         template <typename Inst>
         class A64_INST_PC_REL : public InstructionA64<Inst> {
@@ -122,7 +216,7 @@ namespace SandHook {
 
             void assembler() override;
 
-        private:
+        public:
             OP op;
             RegisterA64* rd;
             int imme;
@@ -184,7 +278,7 @@ namespace SandHook {
                 return rd;
             }
 
-        private:
+        public:
             //can be 16/32/64/128
             //hw = shift / 16
             U8 shift;
@@ -230,7 +324,7 @@ namespace SandHook {
             void assembler() override;
 
 
-        private:
+        public:
             OP op;
             ADDR offset;
         };
@@ -262,7 +356,7 @@ namespace SandHook {
 
             void assembler() override;
 
-        private:
+        public:
             OP op;
             ADDR offset;
             RegisterA64* rt;
@@ -289,7 +383,7 @@ namespace SandHook {
 
             void assembler() override;
 
-        private:
+        public:
             Condition condition;
             ADDR offset;
         };
@@ -321,7 +415,7 @@ namespace SandHook {
 
             void assembler() override;
 
-        private:
+        public:
             OP op;
             RegisterA64* rt;
             U32 bit;
@@ -366,12 +460,27 @@ namespace SandHook {
 
             void assembler() override;
 
-        private:
+        public:
             OP op;
             RegisterA64* rt;
             ADDR offset;
-
         };
+
+
+
+        class INST_A64(STR_IMM) : public InstructionA64<STRUCT_A64(STR_IMM)> {
+        public:
+            A64_STR_IMM();
+
+            A64_STR_IMM(A64_STRUCT_STR_IMM *inst);
+
+            A64_STR_IMM(RegisterA64 *rt, const MemOperand &oprand);
+
+        public:
+            RegisterA64* rt;
+            MemOperand oprand = MemOperand(nullptr);
+        };
+
     }
 
 }

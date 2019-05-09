@@ -48,6 +48,18 @@ namespace SandHook {
                 return getWide() == Reg128Bit;
             }
 
+            virtual bool is(const Register &rhs) {
+                return rhs.code == code;
+            }
+
+            bool operator==(const Register &rhs) const {
+                return code == rhs.code;
+            }
+
+            bool operator!=(const Register &rhs) const {
+                return !(rhs == *this);
+            }
+
         private:
             U8 code;
         };
