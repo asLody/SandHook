@@ -73,7 +73,7 @@ void A64_ADR_ADRP::assembler() {
 
 A64_MOV_WIDE::A64_MOV_WIDE() {}
 
-A64_MOV_WIDE::A64_MOV_WIDE(aarch64_mov_wide *inst) : InstructionA64(inst) {
+A64_MOV_WIDE::A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) *inst) : InstructionA64(inst) {
     decode(inst);
 }
 
@@ -91,7 +91,7 @@ void A64_MOV_WIDE::assembler() {
     get()->rd = rd->getCode();
 }
 
-void A64_MOV_WIDE::decode(aarch64_mov_wide *inst) {
+void A64_MOV_WIDE::decode(STRUCT_A64(MOV_WIDE) *inst) {
     imme = static_cast<U16>(inst->imm16);
     shift = static_cast<U8>(inst->hw * 16);
     op = OP(inst->opc);
@@ -108,7 +108,7 @@ void A64_MOV_WIDE::decode(aarch64_mov_wide *inst) {
 
 A64_B_BL::A64_B_BL() {}
 
-A64_B_BL::A64_B_BL(aarch64_b_bl *inst) : A64_INST_PC_REL(inst) {
+A64_B_BL::A64_B_BL(STRUCT_A64(B_BL) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
@@ -120,7 +120,7 @@ ADDR A64_B_BL::getImmPCOffset() {
     return signExtend64(26 + 2, COMBINE(get()->imm26, 0b00, 2));
 }
 
-void A64_B_BL::decode(aarch64_b_bl *inst) {
+void A64_B_BL::decode(STRUCT_A64(B_BL) *inst) {
     op = OP(inst->op);
     offset = getImmPCOffset();
 }
@@ -233,6 +233,6 @@ void A64_TBZ_TBNZ::assembler() {
     get()->op = op;
     get()->b5 = rt->is64Bit() ? 1 : 0;
     get()->rt = rt->getCode();
-    get()->b40 = BITS(bit, sizeof(U32) - 5, sizeof(U32));
+    get()->b40 = static_cast<InstA64>(BITS(bit, sizeof(InstA64) - 5, sizeof(InstA64)));
     get()->imm14 = TruncateToUint14(offset);
 }

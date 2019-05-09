@@ -78,7 +78,7 @@ struct STRUCT_A64(ADR_ADRP) {
 
 
 DEFINE_OPCODE(MOV_WIDE, 0b100101)
-struct aarch64_mov_wide {
+struct STRUCT_A64(MOV_WIDE) {
     InstA64 sf:1;
     InstA64 opc:2;
     InstA64 opcode:6;
@@ -88,7 +88,7 @@ struct aarch64_mov_wide {
 };
 
 DEFINE_OPCODE(B_BL, 0b00101)
-struct aarch64_b_bl {
+struct STRUCT_A64(B_BL) {
     InstA64 op:1;
     InstA64 opcode:5;
     InstA64 imm26:26;

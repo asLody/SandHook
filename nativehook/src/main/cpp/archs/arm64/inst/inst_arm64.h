@@ -124,7 +124,7 @@ namespace SandHook {
 
 
 
-        class INST_A64(MOV_WIDE) : public InstructionA64<aarch64_mov_wide> {
+        class INST_A64(MOV_WIDE) : public InstructionA64<STRUCT_A64(MOV_WIDE)> {
         public:
 
             enum OP {
@@ -138,9 +138,11 @@ namespace SandHook {
 
             A64_MOV_WIDE();
 
-            A64_MOV_WIDE(aarch64_mov_wide *inst);
+            A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) *inst);
 
             A64_MOV_WIDE(A64_MOV_WIDE::OP op, RegisterA64* rd, U16 imme, U8 shift);
+
+            DEFINE_IS(MOV_WIDE)
 
             inline U32 instCode() override {
                 switch (op) {
@@ -157,7 +159,7 @@ namespace SandHook {
 
             void assembler() override;
 
-            void decode(aarch64_mov_wide *decode) override;
+            void decode(STRUCT_A64(MOV_WIDE) *decode) override;
 
 
             inline U8 getShift() {
@@ -187,7 +189,7 @@ namespace SandHook {
 
 
 
-        class INST_A64(B_BL) : public A64_INST_PC_REL<aarch64_b_bl> {
+        class INST_A64(B_BL) : public A64_INST_PC_REL<STRUCT_A64(B_BL)> {
         public:
 
             enum OP {
@@ -197,7 +199,7 @@ namespace SandHook {
 
             A64_B_BL();
 
-            A64_B_BL(aarch64_b_bl *inst);
+            A64_B_BL(STRUCT_A64(B_BL) *inst);
 
             A64_B_BL(OP op, ADDR offset);
 
@@ -210,12 +212,12 @@ namespace SandHook {
             }
 
             inline U32 instCode() override {
-                return op == B ? UnconditionalBranchOp::B : UnconditionalBranchOp ::BL;
+                return op == B ? UnconditionalBranchOp::B : UnconditionalBranchOp::BL;
             };
 
             ADDR getImmPCOffset() override;
 
-            void decode(aarch64_b_bl *decode) override;
+            void decode(STRUCT_A64(B_BL) *decode) override;
 
             void assembler() override;
 
