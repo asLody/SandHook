@@ -214,7 +214,7 @@ A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 *rt, U32 bit, ADDR o
 }
 
 ADDR A64_TBZ_TBNZ::getImmPCOffset() {
-    return signExtend64(14, get()->imm14) << 2;
+    return signExtend64(14 + 2, COMBINE(get()->imm14, 0b00, 2));
 }
 
 void A64_TBZ_TBNZ::decode(STRUCT_A64(TBZ_TBNZ) *inst) {
@@ -235,4 +235,41 @@ void A64_TBZ_TBNZ::assembler() {
     get()->rt = rt->getCode();
     get()->b40 = static_cast<InstA64>(BITS(bit, sizeof(InstA64) - 5, sizeof(InstA64)));
     get()->imm14 = TruncateToUint14(offset);
+}
+
+
+
+// LDR(literal)
+
+A64_LDR_LIT::A64_LDR_LIT() {}
+
+A64_LDR_LIT::A64_LDR_LIT(STRUCT_A64(LDR_LIT) *inst) : A64_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+
+A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 *rt, ADDR offset) : op(op), rt(rt),
+                                                                             offset(offset) {
+    assembler();
+}
+
+ADDR A64_LDR_LIT::getImmPCOffset() {
+    return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
+}
+
+void A64_LDR_LIT::decode(STRUCT_A64(LDR_LIT) *inst) {
+    op = OP(inst->op);
+    if (op == LDR_W) {
+        rt = WRegister::get(static_cast<U8>(inst->rt));
+    } else {
+        rt = XRegister::get(static_cast<U8>(inst->rt));
+    }
+    offset = getImmPCOffset();
+}
+
+void A64_LDR_LIT::assembler() {
+    SET_OPCODE(LDR_LIT);
+    get()->rt = rt->getCode();
+    get()->op = op;
+    get()->imm19 = TruncateToUint19(offset);
 }

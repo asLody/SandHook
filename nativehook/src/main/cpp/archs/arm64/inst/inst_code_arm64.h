@@ -82,4 +82,55 @@ enum TestBranchOp {
     TBNZ            = TestBranchFixed | 0x01000000
 };
 
+// Load literal.
+enum LoadLiteralOp {
+    LoadLiteralFixed = 0x18000000,
+    LoadLiteralFMask = 0x3B000000,
+    LoadLiteralMask  = 0xFF000000,
+    LDR_w_lit        = LoadLiteralFixed | 0x00000000,
+    LDR_x_lit        = LoadLiteralFixed | 0x40000000,
+    LDRSW_x_lit      = LoadLiteralFixed | 0x80000000,
+    PRFM_lit         = LoadLiteralFixed | 0xC0000000,
+    LDR_s_lit        = LoadLiteralFixed | 0x04000000,
+    LDR_d_lit        = LoadLiteralFixed | 0x44000000,
+    LDR_q_lit        = LoadLiteralFixed | 0x84000000
+};
+
+
+#define LOAD_STORE_OP_LIST(V)     \
+  V(ST, RB, w,  0x00000000),  \
+  V(ST, RH, w,  0x40000000),  \
+  V(ST, R, w,   0x80000000),  \
+  V(ST, R, x,   0xC0000000),  \
+  V(LD, RB, w,  0x00400000),  \
+  V(LD, RH, w,  0x40400000),  \
+  V(LD, R, w,   0x80400000),  \
+  V(LD, R, x,   0xC0400000),  \
+  V(LD, RSB, x, 0x00800000),  \
+  V(LD, RSH, x, 0x40800000),  \
+  V(LD, RSW, x, 0x80800000),  \
+  V(LD, RSB, w, 0x00C00000),  \
+  V(LD, RSH, w, 0x40C00000),  \
+  V(ST, R, b,   0x04000000),  \
+  V(ST, R, h,   0x44000000),  \
+  V(ST, R, s,   0x84000000),  \
+  V(ST, R, d,   0xC4000000),  \
+  V(ST, R, q,   0x04800000),  \
+  V(LD, R, b,   0x04400000),  \
+  V(LD, R, h,   0x44400000),  \
+  V(LD, R, s,   0x84400000),  \
+  V(LD, R, d,   0xC4400000),  \
+  V(LD, R, q,   0x04C00000)
+
+// Load/store (post, pre, offset and unsigned.)
+enum LoadStoreOp {
+    LoadStoreMask = 0xC4C00000,
+    LoadStoreVMask = 0x04000000,
+#define LOAD_STORE(A, B, C, D)  \
+  A##B##_##C = D
+    LOAD_STORE_OP_LIST(LOAD_STORE),
+#undef LOAD_STORE
+    PRFM = 0xC0800000
+};
+
 #endif //SANDHOOK_NH_INST_CODE_ARM64_H

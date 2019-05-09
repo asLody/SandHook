@@ -46,9 +46,13 @@ namespace SandHook {
 
             U8 size() override;
 
-            static inline U32 signExtend64(unsigned int bits, U64 value) {
-                U32 C = (U32) ((-1) << (bits - (U32) 1));
-                return static_cast<U32>((value + C) ^ C);
+            static inline U32 extend32(unsigned int bits, U32 value) {
+                return value << (32 - bits);
+            }
+
+            static inline U64 signExtend64(unsigned int bits, U64 value) {
+                U64 C = (U64) ((-1) << (bits - (U64) 1));
+                return static_cast<U64>((value + C) ^ C);
             }
 
             bool isPCRelAddressing() {
@@ -64,6 +68,8 @@ namespace SandHook {
             }
 
         };
+
+        enum AddrMode { Offset, PreIndex, PostIndex };
 
 
         template <typename Inst>
@@ -203,6 +209,8 @@ namespace SandHook {
 
             A64_B_BL(OP op, ADDR offset);
 
+            DEFINE_IS(B_BL)
+
             inline ADDR getOffset() {
                 return offset;
             }
@@ -242,6 +250,8 @@ namespace SandHook {
 
             A64_CBZ_CBNZ(OP op, ADDR offset, RegisterA64 *rt);
 
+            DEFINE_IS(CBZ_CBNZ)
+
             inline U32 instCode() override {
                 return op == CBZ ? CompareBranchOp::CBZ : CompareBranchOp::CBNZ;
             }
@@ -266,6 +276,8 @@ namespace SandHook {
             A64_B_COND(STRUCT_A64(B_COND) *inst);
 
             A64_B_COND(Condition condition, ADDR offset);
+
+            DEFINE_IS(B_COND)
 
             inline U32 instCode() override {
                 return B_cond;
@@ -297,6 +309,8 @@ namespace SandHook {
 
             A64_TBZ_TBNZ(OP op, RegisterA64 *rt, U32 bit, ADDR offset);
 
+            DEFINE_IS(TBZ_TBNZ)
+
             inline U32 instCode() override {
                 return op == TBZ ? TestBranchOp::TBZ : TestBranchOp::TBNZ;
             };
@@ -314,6 +328,50 @@ namespace SandHook {
             ADDR offset;
         };
 
+
+        class INST_A64(LDR_LIT) : public A64_INST_PC_REL<STRUCT_A64(LDR_LIT)> {
+        public:
+
+            enum OP {
+                LDR_W = 0b00,
+                LDR_X = 0b01,
+                LDR_SW = 0b10,
+                LDR_PRFM = 0b11
+            };
+
+            A64_LDR_LIT();
+
+            A64_LDR_LIT(STRUCT_A64(LDR_LIT) *inst);
+
+            A64_LDR_LIT(OP op, RegisterA64 *rt, ADDR offset);
+
+            DEFINE_IS(LDR_LIT)
+
+            inline U32 instCode() override {
+                switch (op) {
+                    case LDR_W:
+                        return LoadLiteralOp::LDR_w_lit;
+                    case LDR_X:
+                        return LoadLiteralOp::LDR_x_lit;
+                    case LDR_SW:
+                        return LoadLiteralOp::LDRSW_x_lit;
+                    case LDR_PRFM:
+                        return LoadLiteralOp::PRFM_lit;
+                }
+            }
+
+            ADDR getImmPCOffset() override;
+
+            void decode(STRUCT_A64(LDR_LIT) *inst) override;
+
+            void assembler() override;
+
+        private:
+            OP op;
+            RegisterA64* rt;
+            ADDR offset;
+
+        };
     }
 
 }

@@ -65,6 +65,27 @@ enum Condition {
     lo = cc   // C clear          Unsigned lower.
 };
 
+enum Shift {
+    NO_SHIFT = -1,
+    LSL = 0x0,
+    LSR = 0x1,
+    ASR = 0x2,
+    ROR = 0x3,
+    MSL = 0x4
+};
+
+enum Extend {
+    NO_EXTEND = -1,
+    UXTB      = 0,
+    UXTH      = 1,
+    UXTW      = 2,
+    UXTX      = 3,
+    SXTB      = 4,
+    SXTH      = 5,
+    SXTW      = 6,
+    SXTX      = 7
+};
+
 #define IMM_LO_W 2
 #define IMM_HI_W 19
 DEFINE_OPCODE(ADR_ADRP, 0b10000)
@@ -120,6 +141,27 @@ struct STRUCT_A64(TBZ_TBNZ) {
     InstA64 b40:5;
     InstA64 imm14:14;
     InstA64 rt:5;
+};
+
+DEFINE_OPCODE(LDR_LIT, 0b011000)
+struct STRUCT_A64(LDR_LIT) {
+    InstA64 op:2;
+    InstA64 opcode:6;
+    InstA64 imm19:1;
+    InstA64 rt:5;
+};
+
+DEFINE_OPCODE(STR_IMM, 0b011)
+struct STRUCT_A64(STR_IMM) {
+    InstA64 cond:4;
+    InstA64 opcode:3;
+    InstA64 P:1;
+    InstA64 unkown:1;
+    InstA64 W:1;
+    InstA64 unkown2:1;
+    InstA64 rn:4;
+    InstA64 rt:4;
+    InstA64 imm12:12;
 };
 
 
