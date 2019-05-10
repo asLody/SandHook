@@ -13,7 +13,7 @@
 
 #define INST_A64(X) A64_##X
 
-#define IS_OPCODE(RAW,OP) INST_A64(OP)::is(RAW);
+#define IS_OPCODE(RAW,OP) INST_A64(OP)::is(RAW)
 
 
 #define DEFINE_IS(X) \
@@ -56,7 +56,7 @@ namespace SandHook {
 
             U32 size() override;
 
-            static inline U32 extend32(unsigned int bits, U32 value) {
+            static inline U32 zeroExtend32(unsigned int bits, U32 value) {
                 return value << (32 - bits);
             }
 
@@ -109,7 +109,7 @@ namespace SandHook {
 
         class MemOperand {
         public:
-            inline explicit MemOperand(RegisterA64* base, S64 offset = 0, AddrMode addr_mode = Offset)
+            inline explicit MemOperand(RegisterA64* base, Off offset = 0, AddrMode addr_mode = Offset)
                     : base(base), reg_offset(&UnknowRegiser), offset(offset), addr_mode(addr_mode), shift(NO_SHIFT),
                       extend(NO_EXTEND), shift_extend_imm(0) {}
 
@@ -150,7 +150,7 @@ namespace SandHook {
         public:
             RegisterA64* base;
             RegisterA64* reg_offset;
-            S64 offset;
+            Off offset;
             AddrMode addr_mode;
             Shift shift;
             Extend extend;
@@ -468,7 +468,7 @@ namespace SandHook {
 
             A64_STR_IMM(Condition condition, RegisterA64 &rt, const MemOperand &operand);
 
-            DEFINE_IS_EXT(STR_IMM, TEST_INST_FIELD(unkown1_0,0) && TEST_INST_FIELD(unkown2_0,0))
+            DEFINE_IS_EXT(STR_IMM, TEST_INST_FIELD(unkown1_0, 0) && TEST_INST_FIELD(unkown2_0, 0))
 
             void decode(STRUCT_A64(STR_IMM) *inst) override;
 
@@ -488,7 +488,8 @@ namespace SandHook {
         private:
             bool wback;
             U32 imm32;
-
+            bool add;
+            bool index;
         };
 
     }

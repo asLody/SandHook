@@ -34,6 +34,9 @@ include_directories(
         src/main/cpp/decoder
         src/main/cpp/elf
         src/main/cpp/includes
+        src/main/cpp/archs/arm64/inst
+        src/main/cpp/archs/arm64/register
+        src/main/cpp/archs/arm64/decoder
 )
 
 # Searches for a specified prebuilt library and stores the path as a

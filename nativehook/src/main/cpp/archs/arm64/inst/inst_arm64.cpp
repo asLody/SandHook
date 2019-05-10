@@ -91,9 +91,9 @@ void A64_MOV_WIDE::decode(STRUCT_A64(MOV_WIDE) *inst) {
     shift = static_cast<U8>(inst->hw * 16);
     op = OP(inst->opc);
     if (inst->sf == 1) {
-        rd = XRegister::get(static_cast<U8>(inst->rd));
+        rd = XReg(static_cast<U8>(inst->rd));
     } else {
-        rd = WRegister::get(static_cast<U8>(inst->rd));
+        rd = WReg(static_cast<U8>(inst->rd));
     }
 }
 
@@ -149,9 +149,9 @@ Off A64_CBZ_CBNZ::getImmPCOffset() {
 void A64_CBZ_CBNZ::decode(STRUCT_A64(CBZ_CBNZ) *inst) {
     op = OP(get()->op);
     if (inst->sf == 1) {
-        rt = XRegister::get(static_cast<U8>(inst->rt));
+        rt = XReg(static_cast<U8>(inst->rt));
     } else {
-        rt = WRegister::get(static_cast<U8>(inst->rt));
+        rt = WReg(static_cast<U8>(inst->rt));
     }
     offset = getImmPCOffset();
 }
@@ -215,9 +215,9 @@ Off A64_TBZ_TBNZ::getImmPCOffset() {
 void A64_TBZ_TBNZ::decode(STRUCT_A64(TBZ_TBNZ) *inst) {
     bit = COMBINE(inst->b5, inst->b40, 5);
     if (inst->b5 == 1) {
-        rt = XRegister::get(static_cast<U8>(inst->rt));
+        rt = XReg(static_cast<U8>(inst->rt));
     } else {
-        rt = WRegister::get(static_cast<U8>(inst->rt));
+        rt = WReg(static_cast<U8>(inst->rt));
     }
     op = OP(inst->op);
     offset = getImmPCOffset();
@@ -255,9 +255,9 @@ Off A64_LDR_LIT::getImmPCOffset() {
 void A64_LDR_LIT::decode(STRUCT_A64(LDR_LIT) *inst) {
     op = OP(inst->op);
     if (op == LDR_W) {
-        rt = WRegister::get(static_cast<U8>(inst->rt));
+        rt = WReg(static_cast<U8>(inst->rt));
     } else {
-        rt = XRegister::get(static_cast<U8>(inst->rt));
+        rt = XReg(static_cast<U8>(inst->rt));
     }
     offset = getImmPCOffset();
 }
@@ -301,8 +301,17 @@ AddrMode A64_STR_IMM::decodeAddrMode() {
 }
 
 void A64_STR_IMM::decode(STRUCT_A64(STR_IMM) *inst) {
-    Instruction::decode(inst);
+    imm32 = zeroExtend32(12, inst->imm12);
+    condition = Condition(inst->cond);
+    operand.addr_mode = decodeAddrMode();
+    index = inst->P == 1;
+    wback = inst->P == 1 || inst->W == 0;
+    add = inst->U == 0;
+    rt = XReg(static_cast<U8>(inst->rt));
+    operand.base = XReg(static_cast<U8>(inst->rn));
+    operand.offset = add ? imm32 : -imm32;
 }
+
 
 void A64_STR_IMM::assembler() {
     INST_DCHECK(condition, Condition::nv)

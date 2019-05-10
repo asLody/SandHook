@@ -28,6 +28,11 @@ CHECK(X,V, valid = false;)
 #define INST_DCHECK(X,V) \
 DCHECK(X,V, valid = false;)
 
+#define INST_ASSERT(COND) \
+if (COND) { \
+    valid = false; \
+}
+
 namespace SandHook {
     namespace Asm {
 

@@ -86,90 +86,98 @@ enum Extend {
     SXTX      = 7
 };
 
+//ok
 #define IMM_LO_W 2
 #define IMM_HI_W 19
 DEFINE_OPCODE(ADR_ADRP, 0b10000)
 struct STRUCT_A64(ADR_ADRP) {
-    InstA64 op:1;
-    InstA64 immlo:IMM_LO_W;
-    InstA64 opcode:5;
-    InstA64 immhi:IMM_HI_W;
     InstA64 rd:5;
+    InstA64 immhi:IMM_HI_W;
+    InstA64 opcode:5;
+    InstA64 immlo:IMM_LO_W;
+    InstA64 op:1;
 };
 
 
+//ok
 DEFINE_OPCODE(MOV_WIDE, 0b100101)
 struct STRUCT_A64(MOV_WIDE) {
-    InstA64 sf:1;
-    InstA64 opc:2;
-    InstA64 opcode:6;
-    InstA64 hw:2;
-    InstA64 imm16:16;
     InstA64 rd:5;
+    InstA64 imm16:16;
+    InstA64 hw:2;
+    InstA64 opcode:6;
+    InstA64 opc:2;
+    InstA64 sf:1;
 };
 
+//ok
 DEFINE_OPCODE(B_BL, 0b00101)
 struct STRUCT_A64(B_BL) {
-    InstA64 op:1;
-    InstA64 opcode:5;
     InstA64 imm26:26;
+    InstA64 opcode:5;
+    InstA64 op:1;
 };
 
+//ok
 DEFINE_OPCODE(CBZ_CBNZ, 0b011010)
 struct STRUCT_A64(CBZ_CBNZ) {
-    InstA64 sf:1;
-    InstA64 opcode:6;
-    InstA64 op:1;
-    InstA64 imm19:19;
     InstA64 rt:5;
+    InstA64 imm19:19;
+    InstA64 op:1;
+    InstA64 opcode:6;
+    InstA64 sf:1;
 };
 
+//ok
 DEFINE_OPCODE(B_COND, 0b01010100)
 struct STRUCT_A64(B_COND) {
-    InstA64 opcode:8;
-    InstA64 imm19:19;
-    InstA64 unkown:1;
     InstA64 cond:4;
+    InstA64 unkown:1;
+    InstA64 imm19:19;
+    InstA64 opcode:8;
 };
 
-
+//ok
 DEFINE_OPCODE(TBZ_TBNZ, 0b011011)
 struct STRUCT_A64(TBZ_TBNZ) {
-    InstA64 b5:1;
-    InstA64 opcode:6;
-    InstA64 op:1;
-    InstA64 b40:5;
-    InstA64 imm14:14;
     InstA64 rt:5;
+    InstA64 imm14:14;
+    InstA64 b40:5;
+    InstA64 op:1;
+    InstA64 opcode:6;
+    InstA64 b5:1;
 };
 
+//ok
 DEFINE_OPCODE(LDR_LIT, 0b011000)
 struct STRUCT_A64(LDR_LIT) {
-    InstA64 op:2;
-    InstA64 opcode:6;
-    InstA64 imm19:1;
     InstA64 rt:5;
+    InstA64 imm19:19;
+    InstA64 opcode:6;
+    InstA64 op:2;
 };
 
+//ok
 DEFINE_OPCODE(STR_IMM, 0b011)
 struct STRUCT_A64(STR_IMM) {
-    InstA64 cond:4;
-    InstA64 opcode:3;
-    InstA64 P:1;
-    InstA64 U:1;
-    InstA64 unkown1_0:1;
-    InstA64 W:1;
-    InstA64 unkown2_0:1;
-    InstA64 rn:4;
-    InstA64 rt:4;
     InstA64 imm12:12;
+    InstA64 rt:4;
+    InstA64 rn:4;
+    InstA64 unkown2_0:1;
+    InstA64 W:1;
+    InstA64 unkown1_0:1;
+    InstA64 U:1;
+    InstA64 P:1;
+    InstA64 opcode:3;
+    InstA64 cond:4;
 };
 
+//ok
 DEFINE_OPCODE(BR, 0b00101)
 struct STRUCT_A64(BR) {
-    InstA64 op:1;
-    InstA64 opcode:5;
     InstA64 imm26:26;
+    InstA64 opcode:5;
+    InstA64 op:1;
 };
 
 
