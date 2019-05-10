@@ -23,8 +23,8 @@ template<typename Inst>
 A64_INST_PC_REL<Inst>::A64_INST_PC_REL() {}
 
 template<typename Inst>
-ADDR A64_INST_PC_REL<Inst>::getImmPCOffsetTarget() {
-    return reinterpret_cast<ADDR>(this->getImmPCOffset() + (ADDR) this->getPC());
+Addr A64_INST_PC_REL<Inst>::getImmPCOffsetTarget() {
+    return this->getImmPCOffset() + reinterpret_cast<Addr>(this->getPC());
 }
 
 //ADR ADRP
@@ -35,26 +35,22 @@ A64_ADR_ADRP::A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-ADDR A64_ADR_ADRP::getImmPCOffset() {
+Off A64_ADR_ADRP::getImmPCOffset() {
     U32 hi = get()->immhi;
     U32 lo = get()->immlo;
-    ADDR offset = signExtend64(12, COMBINE(hi, lo, IMM_LO_W));
+    Off offset = signExtend64(IMM_LO_W + IMM_HI_W, COMBINE(hi, lo, IMM_LO_W));
     if (isADRP()) {
         offset *= PAGE_SIZE;
     }
     return offset;
 }
 
-ADDR A64_ADR_ADRP::getImmPCOffsetTarget() {
+Addr A64_ADR_ADRP::getImmPCOffsetTarget() {
     void * base = AlignDown(getPC(), PAGE_SIZE);
-    return reinterpret_cast<ADDR>(getImmPCOffset() + (ADDR) base);
+    return getImmPCOffset() + reinterpret_cast<Addr>(base);
 }
 
-int A64_ADR_ADRP::getImm()  {
-    return getImmPCOffset();
-}
-
-A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, RegisterA64 *rd, int imme) : op(op), rd(rd),
+A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, RegisterA64 *rd, S64 imme) : op(op), rd(rd),
                                                                              imme(imme) {
     assembler();
 }
@@ -111,11 +107,11 @@ A64_B_BL::A64_B_BL(STRUCT_A64(B_BL) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-A64_B_BL::A64_B_BL(A64_B_BL::OP op, ADDR offset) : op(op), offset(offset) {
+A64_B_BL::A64_B_BL(A64_B_BL::OP op, Off offset) : op(op), offset(offset) {
     assembler();
 }
 
-ADDR A64_B_BL::getImmPCOffset() {
+Off A64_B_BL::getImmPCOffset() {
     return signExtend64(26 + 2, COMBINE(get()->imm26, 0b00, 2));
 }
 
@@ -140,13 +136,13 @@ A64_CBZ_CBNZ::A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, ADDR offset, RegisterA64 *rt) : op(op),
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Off offset, RegisterA64 *rt) : op(op),
                                                                                 offset(offset),
                                                                                 rt(rt) {
     assembler();
 }
 
-ADDR A64_CBZ_CBNZ::getImmPCOffset() {
+Off A64_CBZ_CBNZ::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
 }
 
@@ -177,11 +173,11 @@ A64_B_COND::A64_B_COND(STRUCT_A64(B_COND) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-A64_B_COND::A64_B_COND(Condition condition, ADDR offset) : condition(condition), offset(offset) {
+A64_B_COND::A64_B_COND(Condition condition, Off offset) : condition(condition), offset(offset) {
     assembler();
 }
 
-ADDR A64_B_COND::getImmPCOffset() {
+Off A64_B_COND::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
 }
 
@@ -205,14 +201,14 @@ A64_TBZ_TBNZ::A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 *rt, U32 bit, ADDR offset) : op(op),
+A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 *rt, U32 bit, Off offset) : op(op),
                                                                                          rt(rt),
                                                                                          bit(bit),
                                                                                          offset(offset) {
     assembler();
 }
 
-ADDR A64_TBZ_TBNZ::getImmPCOffset() {
+Off A64_TBZ_TBNZ::getImmPCOffset() {
     return signExtend64(14 + 2, COMBINE(get()->imm14, 0b00, 2));
 }
 
@@ -247,12 +243,12 @@ A64_LDR_LIT::A64_LDR_LIT(STRUCT_A64(LDR_LIT) *inst) : A64_INST_PC_REL(inst) {
 }
 
 
-A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 *rt, ADDR offset) : op(op), rt(rt),
+A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 *rt, Off offset) : op(op), rt(rt),
                                                                              offset(offset) {
     assembler();
 }
 
-ADDR A64_LDR_LIT::getImmPCOffset() {
+Off A64_LDR_LIT::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
 }
 
@@ -282,7 +278,12 @@ A64_STR_IMM::A64_STR_IMM(STRUCT_A64(STR_IMM) *inst) : InstructionA64(inst) {
     decode(inst);
 }
 
-A64_STR_IMM::A64_STR_IMM(RegisterA64 *rt, const MemOperand &operand) : rt(rt), operand(operand) {
+A64_STR_IMM::A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand) : rt(&rt), operand(operand) {
+    assembler();
+}
+
+A64_STR_IMM::A64_STR_IMM(Condition condition, RegisterA64 &rt, const MemOperand &operand)
+        : condition(condition), rt(&rt), operand(operand) {
     assembler();
 }
 
@@ -294,6 +295,16 @@ AddrMode A64_STR_IMM::decodeAddrMode() {
     } else if (get()->P == 1 && get()->W == 1) {
         return PreIndex;
     } else {
+        valid = false;
         return NonAddrMode;
     }
+}
+
+void A64_STR_IMM::decode(STRUCT_A64(STR_IMM) *inst) {
+    Instruction::decode(inst);
+}
+
+void A64_STR_IMM::assembler() {
+    INST_DCHECK(condition, Condition::nv)
+
 }

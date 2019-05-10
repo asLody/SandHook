@@ -15,12 +15,12 @@ namespace SandHook {
 
         class InstVisitor {
         public:
-            virtual bool visit(Instruction<void>* inst, ADDR offset, ADDR length) = 0;
+            virtual bool visit(Instruction<void>* inst, Addr offset, Addr length) = 0;
         };
 
         class InstDecoder {
         public:
-            virtual void decode(void* codeStart, ADDR codeLen, InstVisitor* visitor) = 0;
+            virtual void decode(void* codeStart, Addr codeLen, InstVisitor* visitor) = 0;
         };
 
 

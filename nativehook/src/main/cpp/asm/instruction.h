@@ -21,6 +21,13 @@ typedef U32 InstT32;
 typedef U32 InstRaw;
 #endif
 
+
+#define INST_CHECK(X,V) \
+CHECK(X,V, valid = false;)
+
+#define INST_DCHECK(X,V) \
+DCHECK(X,V, valid = false;)
+
 namespace SandHook {
     namespace Asm {
 
@@ -43,8 +50,8 @@ namespace SandHook {
                 *this->raw = raw;
             }
 
-            inline void* getPC() const {
-                return raw;
+            virtual void* getPC() {
+                return auto_alloc ? nullptr : raw;
             }
 
             inline Raw* get() const {
@@ -106,9 +113,16 @@ namespace SandHook {
                 return false;
             }
 
+            inline bool isValid() const {
+                return valid;
+            }
+
             virtual void decode(Inst* inst) {}
 
             virtual void assembler() {}
+
+        protected:
+            bool valid = true;
         };
 
         template <typename DType>

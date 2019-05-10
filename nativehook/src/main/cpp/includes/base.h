@@ -19,7 +19,8 @@ typedef int16_t S16;
 typedef int32_t S32;
 typedef int64_t S64;
 
-typedef size_t ADDR;
+typedef size_t Addr;
+typedef S64 Off;
 
 const int PTR_BYTE = sizeof(void*);
 
@@ -27,7 +28,7 @@ const int PTR_BYTE = sizeof(void*);
 
 const int BITS_OF_BYTE = 8;
 
-const ADDR PAGE_SIZE = 2 << PAGE_OFFSET;
+const Addr PAGE_SIZE = 2 << PAGE_OFFSET;
 
 enum Arch {
     arm32,
@@ -114,10 +115,10 @@ T AlignDown(T pointer,
 #endif
 
 
+//只保留低N位
 inline uint64_t TruncateToUintN(unsigned n, uint64_t x) {
     return static_cast<uint64_t>(x) & ((UINT64_C(1) << n) - 1);
 }
-
 VIXL_DEPRECATED("TruncateToUintN",
                 inline uint64_t truncate_to_intn(unsigned n, int64_t x)) {
     return TruncateToUintN(n, x);
@@ -151,6 +152,7 @@ V(57) V(58) V(59) V(60) V(61) V(62) V(63)
 INT_1_TO_32_LIST(DECLARE_TRUNCATE_TO_UINT_32)
 #undef DECLARE_TRUNCATE_TO_INT_N
 
+//位提取
 // Bit field extraction.
 inline uint64_t ExtractUnsignedBitfield64(int msb, int lsb, uint64_t x) {
     if ((msb == 63) && (lsb == 0)) return x;
@@ -158,7 +160,7 @@ inline uint64_t ExtractUnsignedBitfield64(int msb, int lsb, uint64_t x) {
 }
 
 
-inline int64_t ExtractSignedBitfield64(int msb, int lsb, int64_t x) {
+inline int64_t ExtractSignedBitfield64(int msb, int lsb, U64 x) {
     uint64_t temp = ExtractUnsignedBitfield64(msb, lsb, x);
     // If the highest extracted bit is set, sign extend.
     if ((temp >> (msb - lsb)) == 1) {
@@ -169,7 +171,7 @@ inline int64_t ExtractSignedBitfield64(int msb, int lsb, int64_t x) {
     return result;
 }
 
-inline int32_t ExtractSignedBitfield32(int msb, int lsb, int32_t x) {
+inline int32_t ExtractSignedBitfield32(int msb, int lsb, U32 x) {
     uint32_t temp = TruncateToUint32(ExtractSignedBitfield64(msb, lsb, x));
     int32_t result;
     memcpy(&result, &temp, sizeof(result));
@@ -207,7 +209,15 @@ inline int32_t BITS32H(int64_t value) {
 #define SBITS(obj, st, fn) ((long)(BITS(obj, st, fn) | ((long)BIT(obj, fn) * ~SUB_MASK(fn - st))))
 
 
-//big little edd
 
+#define DCHECK(X,V, ACTION) \
+if (X == V) {   \
+    ACTION  \
+}
+
+#define CHECK(X,V, ACTION) \
+if (X != V) { \
+   ACTION         \
+}
 
 #endif //SANDHOOK_BASE_H

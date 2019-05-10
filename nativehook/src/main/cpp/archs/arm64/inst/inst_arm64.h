@@ -26,6 +26,18 @@ inst_test.raw = inst; \
 return inst_test.inst.opcode == OPCODE_A64(X); \
 }
 
+#define DEFINE_IS_EXT(X, EXT_COND) \
+inline static bool is(InstA64& inst) { \
+union { \
+    InstA64 raw; \
+    STRUCT_A64(X) inst; \
+} inst_test; \
+inst_test.raw = inst; \
+return inst_test.inst.opcode == OPCODE_A64(X) && EXT_COND; \
+}
+
+#define TEST_INST_FIELD(F,V) inst_test.inst.F == V
+
 namespace SandHook {
 
     namespace Asm {
@@ -48,9 +60,12 @@ namespace SandHook {
                 return value << (32 - bits);
             }
 
-            static inline U64 signExtend64(unsigned int bits, U64 value) {
-                U64 C = (U64) ((-1) << (bits - (U64) 1));
-                return static_cast<U64>((value + C) ^ C);
+            static inline S64 signExtend64(unsigned int bits, U64 value) {
+                return ExtractSignedBitfield64(bits - 1, 0, value);
+            }
+
+            static inline S32 signExtend32(unsigned int bits, U32 value) {
+                return ExtractSignedBitfield32(bits - 1, 0, value);
             }
 
             bool isPCRelAddressing() {
@@ -151,9 +166,9 @@ namespace SandHook {
 
             A64_INST_PC_REL(Inst *inst);
 
-            virtual ADDR getImmPCOffset() = 0;
+            virtual Off getImmPCOffset() = 0;
 
-            virtual ADDR getImmPCOffsetTarget();
+            virtual Addr getImmPCOffsetTarget();
 
         };
 
@@ -171,7 +186,7 @@ namespace SandHook {
 
             A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) *inst);
 
-            A64_ADR_ADRP(OP op, RegisterA64 *rd, int imme);
+            A64_ADR_ADRP(OP op, RegisterA64 *rd, S64 imme);
 
             DEFINE_IS(ADR_ADRP)
 
@@ -183,11 +198,9 @@ namespace SandHook {
                 return get()->op == OP::ADRP;
             }
 
-            ADDR getImmPCOffset() override;
+            Off getImmPCOffset() override;
 
-            ADDR getImmPCOffsetTarget() override;
-
-            int getImm();
+            Addr getImmPCOffsetTarget() override;
 
             void decode(STRUCT_A64(ADR_ADRP) *decode) override;
 
@@ -196,7 +209,7 @@ namespace SandHook {
         public:
             OP op;
             RegisterA64* rd;
-            int imme;
+            S64 imme;
         };
 
 
@@ -278,11 +291,11 @@ namespace SandHook {
 
             A64_B_BL(STRUCT_A64(B_BL) *inst);
 
-            A64_B_BL(OP op, ADDR offset);
+            A64_B_BL(OP op, Off offset);
 
             DEFINE_IS(B_BL)
 
-            inline ADDR getOffset() {
+            inline Off getOffset() {
                 return offset;
             }
 
@@ -294,7 +307,7 @@ namespace SandHook {
                 return op == B ? UnconditionalBranchOp::B : UnconditionalBranchOp::BL;
             };
 
-            ADDR getImmPCOffset() override;
+            Off getImmPCOffset() override;
 
             void decode(STRUCT_A64(B_BL) *decode) override;
 
@@ -303,7 +316,7 @@ namespace SandHook {
 
         public:
             OP op;
-            ADDR offset;
+            Off offset;
         };
 
 
@@ -319,7 +332,7 @@ namespace SandHook {
 
             A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) *inst);
 
-            A64_CBZ_CBNZ(OP op, ADDR offset, RegisterA64 *rt);
+            A64_CBZ_CBNZ(OP op, Off offset, RegisterA64 *rt);
 
             DEFINE_IS(CBZ_CBNZ)
 
@@ -327,7 +340,7 @@ namespace SandHook {
                 return op == CBZ ? CompareBranchOp::CBZ : CompareBranchOp::CBNZ;
             }
 
-            ADDR getImmPCOffset() override;
+            Off getImmPCOffset() override;
 
             void decode(STRUCT_A64(CBZ_CBNZ) *inst) override;
 
@@ -335,7 +348,7 @@ namespace SandHook {
 
         public:
             OP op;
-            ADDR offset;
+            Off offset;
             RegisterA64* rt;
         };
 
@@ -346,7 +359,7 @@ namespace SandHook {
 
             A64_B_COND(STRUCT_A64(B_COND) *inst);
 
-            A64_B_COND(Condition condition, ADDR offset);
+            A64_B_COND(Condition condition, Off offset);
 
             DEFINE_IS(B_COND)
 
@@ -354,7 +367,7 @@ namespace SandHook {
                 return B_cond;
             }
 
-            ADDR getImmPCOffset() override;
+            Off getImmPCOffset() override;
 
             void decode(STRUCT_A64(B_COND) *inst) override;
 
@@ -362,7 +375,7 @@ namespace SandHook {
 
         public:
             Condition condition;
-            ADDR offset;
+            Off offset;
         };
 
 
@@ -378,7 +391,7 @@ namespace SandHook {
 
             A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) *inst);
 
-            A64_TBZ_TBNZ(OP op, RegisterA64 *rt, U32 bit, ADDR offset);
+            A64_TBZ_TBNZ(OP op, RegisterA64 *rt, U32 bit, Off offset);
 
             DEFINE_IS(TBZ_TBNZ)
 
@@ -386,7 +399,7 @@ namespace SandHook {
                 return op == TBZ ? TestBranchOp::TBZ : TestBranchOp::TBNZ;
             };
 
-            ADDR getImmPCOffset() override;
+            Off getImmPCOffset() override;
 
             void decode(STRUCT_A64(TBZ_TBNZ) *inst) override;
 
@@ -396,7 +409,7 @@ namespace SandHook {
             OP op;
             RegisterA64* rt;
             U32 bit;
-            ADDR offset;
+            Off offset;
         };
 
 
@@ -414,7 +427,7 @@ namespace SandHook {
 
             A64_LDR_LIT(STRUCT_A64(LDR_LIT) *inst);
 
-            A64_LDR_LIT(OP op, RegisterA64 *rt, ADDR offset);
+            A64_LDR_LIT(OP op, RegisterA64 *rt, Off offset);
 
             DEFINE_IS(LDR_LIT)
 
@@ -431,7 +444,7 @@ namespace SandHook {
                 }
             }
 
-            ADDR getImmPCOffset() override;
+            Off getImmPCOffset() override;
 
             void decode(STRUCT_A64(LDR_LIT) *inst) override;
 
@@ -440,7 +453,7 @@ namespace SandHook {
         public:
             OP op;
             RegisterA64* rt;
-            ADDR offset;
+            Off offset;
         };
 
 
@@ -451,9 +464,15 @@ namespace SandHook {
 
             A64_STR_IMM(STRUCT_A64(STR_IMM) *inst);
 
-            A64_STR_IMM(RegisterA64 *rt, const MemOperand &operand);
+            A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand);
 
-            DEFINE_IS(STR_IMM)
+            A64_STR_IMM(Condition condition, RegisterA64 &rt, const MemOperand &operand);
+
+            DEFINE_IS_EXT(STR_IMM, TEST_INST_FIELD(unkown1_0,0) && TEST_INST_FIELD(unkown2_0,0))
+
+            void decode(STRUCT_A64(STR_IMM) *inst) override;
+
+            void assembler() override;
 
             AddrMode getAddrMode() {
                 return operand.addr_mode;
@@ -463,6 +482,7 @@ namespace SandHook {
             AddrMode decodeAddrMode();
 
         public:
+            Condition condition = Condition::al;
             RegisterA64* rt;
             MemOperand operand = MemOperand(nullptr);
         private:

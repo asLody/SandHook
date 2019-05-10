@@ -156,13 +156,22 @@ struct STRUCT_A64(STR_IMM) {
     InstA64 cond:4;
     InstA64 opcode:3;
     InstA64 P:1;
-    InstA64 unkown:1;
+    InstA64 U:1;
+    InstA64 unkown1_0:1;
     InstA64 W:1;
-    InstA64 unkown2:1;
+    InstA64 unkown2_0:1;
     InstA64 rn:4;
     InstA64 rt:4;
     InstA64 imm12:12;
 };
+
+DEFINE_OPCODE(BR, 0b00101)
+struct STRUCT_A64(BR) {
+    InstA64 op:1;
+    InstA64 opcode:5;
+    InstA64 imm26:26;
+};
+
 
 
 

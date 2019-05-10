@@ -19,7 +19,7 @@ namespace SandHook {
 
         template <typename Raw>
         class CodeRelocate {
-            virtual bool relocate(ADDR toPc, CodeRelocateCallback<Raw>& callback) throw(ErrorCodeException) = 0;
+            virtual bool relocate(Addr toPc, CodeRelocateCallback<Raw>& callback) throw(ErrorCodeException) = 0;
         };
 
     }
