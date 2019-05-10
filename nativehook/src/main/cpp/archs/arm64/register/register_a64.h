@@ -34,6 +34,14 @@ namespace SandHook {
 
             RegisterA64();
             RegisterA64(U8 code);
+
+            inline bool isX() {
+                return is64Bit();
+            }
+
+            inline bool isW() {
+                return is32Bit();
+            }
         };
 
         class XRegister : public RegisterA64 {

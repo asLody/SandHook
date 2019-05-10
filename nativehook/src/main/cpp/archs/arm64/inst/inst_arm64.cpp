@@ -5,6 +5,7 @@
 #include "inst_arm64.h"
 
 #define SET_OPCODE(X) get()->opcode = OPCODE_A64(X)
+#define SET_OPCODE_MULTI(X, INDEX) get()->opcode##INDEX = OPCODE_A64(X##_##INDEX)
 
 using namespace SandHook::Asm;
 
@@ -68,8 +69,8 @@ void A64_ADR_ADRP::assembler() {
 
 A64_MOV_WIDE::A64_MOV_WIDE() {}
 
-A64_MOV_WIDE::A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) *inst) : InstructionA64(inst) {
-    decode(inst);
+A64_MOV_WIDE::A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) &inst) : InstructionA64(&inst) {
+    decode(&inst);
 }
 
 A64_MOV_WIDE::A64_MOV_WIDE(A64_MOV_WIDE::OP op,RegisterA64* rd, U16 imme, U8 shift)
@@ -197,8 +198,8 @@ void A64_B_COND::assembler() {
 
 A64_TBZ_TBNZ::A64_TBZ_TBNZ() {}
 
-A64_TBZ_TBNZ::A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) *inst) : A64_INST_PC_REL(inst) {
-    decode(inst);
+A64_TBZ_TBNZ::A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) &inst) : A64_INST_PC_REL(&inst) {
+    decode(&inst);
 }
 
 A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 *rt, U32 bit, Off offset) : op(op),
@@ -316,4 +317,27 @@ void A64_STR_IMM::decode(STRUCT_A64(STR_IMM) *inst) {
 void A64_STR_IMM::assembler() {
     INST_DCHECK(condition, Condition::nv)
 
+}
+
+A64_BR_BLR_RET::A64_BR_BLR_RET() {}
+
+A64_BR_BLR_RET::A64_BR_BLR_RET(STRUCT_A64(BR_BLR_RET) &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
+
+A64_BR_BLR_RET::A64_BR_BLR_RET(A64_BR_BLR_RET::OP op, XRegister &rn) : op(op), rn(&rn) {
+    assembler();
+}
+
+void A64_BR_BLR_RET::decode(A64_STRUCT_BR_BLR_RET *inst) {
+    rn = XReg(static_cast<U8>(inst->op));
+    op = OP(inst->rn);
+}
+
+void A64_BR_BLR_RET::assembler() {
+    SET_OPCODE_MULTI(BR_BLR_RET, 1);
+    SET_OPCODE_MULTI(BR_BLR_RET, 2);
+    SET_OPCODE_MULTI(BR_BLR_RET, 3);
+    get()->rn = rn->getCode();
+    get()->op = op;
 }

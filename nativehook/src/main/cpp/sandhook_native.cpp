@@ -24,14 +24,17 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
     U8 s = sizeof(STRUCT_A64(B_BL));
 
     union {
-        InstA64 raw = 0x58001001;
-        STRUCT_A64(LDR_LIT) bl;
+        InstA64 raw = 0x36A01005;
+        STRUCT_A64(TBZ_TBNZ) bl;
     } test;
 
-        STRUCT_A64(LDR_LIT) bl = test.bl;
+    if (IS_OPCODE(test.raw, TBZ_TBNZ)) {
 
-        A64_LDR_LIT a64ldr(&bl);
+        STRUCT_A64(TBZ_TBNZ) bl = test.bl;
+
+        A64_TBZ_TBNZ a64ldr(bl);
 
         Off off = a64ldr.offset;
+    }
 
 }

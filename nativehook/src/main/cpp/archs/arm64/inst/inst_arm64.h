@@ -15,28 +15,22 @@
 
 #define IS_OPCODE(RAW,OP) INST_A64(OP)::is(RAW)
 
-
-#define DEFINE_IS(X) \
+#define DEFINE_IS_EXT(X, COND) \
 inline static bool is(InstA64& inst) { \
 union { \
     InstA64 raw; \
     STRUCT_A64(X) inst; \
 } inst_test; \
 inst_test.raw = inst; \
-return inst_test.inst.opcode == OPCODE_A64(X); \
+return COND; \
 }
 
-#define DEFINE_IS_EXT(X, EXT_COND) \
-inline static bool is(InstA64& inst) { \
-union { \
-    InstA64 raw; \
-    STRUCT_A64(X) inst; \
-} inst_test; \
-inst_test.raw = inst; \
-return inst_test.inst.opcode == OPCODE_A64(X) && EXT_COND; \
-}
+#define DEFINE_IS(X) DEFINE_IS_EXT(X, TEST_INST_FIELD(opcode,OPCODE_A64(X)))
 
 #define TEST_INST_FIELD(F,V) inst_test.inst.F == V
+
+#define TEST_INST_OPCODE(X, INDEX) inst_test.inst.opcode##INDEX == OPCODE_A64(X##_##INDEX)
+
 
 namespace SandHook {
 
@@ -228,7 +222,7 @@ namespace SandHook {
 
             A64_MOV_WIDE();
 
-            A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) *inst);
+            A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) &inst);
 
             A64_MOV_WIDE(A64_MOV_WIDE::OP op, RegisterA64* rd, U16 imme, U8 shift);
 
@@ -389,7 +383,7 @@ namespace SandHook {
 
             A64_TBZ_TBNZ();
 
-            A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) *inst);
+            A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) &inst);
 
             A64_TBZ_TBNZ(OP op, RegisterA64 *rt, U32 bit, Off offset);
 
@@ -468,7 +462,11 @@ namespace SandHook {
 
             A64_STR_IMM(Condition condition, RegisterA64 &rt, const MemOperand &operand);
 
-            DEFINE_IS_EXT(STR_IMM, TEST_INST_FIELD(unkown1_0, 0) && TEST_INST_FIELD(unkown2_0, 0))
+            DEFINE_IS_EXT(STR_IMM, TEST_INST_FIELD(opcode, OPCODE_A64(STR_IMM)) && TEST_INST_FIELD(unkown1_0, 0) && TEST_INST_FIELD(unkown2_0, 0))
+
+            inline U32 instCode() override {
+                return STR_x;
+            }
 
             void decode(STRUCT_A64(STR_IMM) *inst) override;
 
@@ -490,6 +488,33 @@ namespace SandHook {
             U32 imm32;
             bool add;
             bool index;
+        };
+
+
+        class INST_A64(BR_BLR_RET) : public InstructionA64<STRUCT_A64(BR_BLR_RET)> {
+        public:
+
+            enum OP {
+                BR = 0b00,
+                BLR = 0b01,
+                RET = 0b11
+            };
+
+            A64_BR_BLR_RET();
+
+            A64_BR_BLR_RET(STRUCT_A64(BR_BLR_RET) &inst);
+
+            A64_BR_BLR_RET(OP op, XRegister &rn);
+
+            DEFINE_IS_EXT(BR_BLR_RET, TEST_INST_OPCODE(BR_BLR_RET, 1) && TEST_INST_OPCODE(BR_BLR_RET, 2) && TEST_INST_OPCODE(BR_BLR_RET,3))
+
+            void decode(A64_STRUCT_BR_BLR_RET *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            XRegister* rn;
         };
 
     }
