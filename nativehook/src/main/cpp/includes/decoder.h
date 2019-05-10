@@ -5,8 +5,8 @@
 #ifndef SANDHOOK_NH_DECODER_H
 #define SANDHOOK_NH_DECODER_H
 
-#include "../includes/base.h"
-#include "../asm/instruction.h"
+#include "base.h"
+#include "instruction.h"
 
 namespace SandHook {
     namespace Decoder {

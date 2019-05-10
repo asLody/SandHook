@@ -6,7 +6,7 @@
 #define SANDHOOK_NH_CODE_RELOCATE_H
 
 #include "exception.h"
-#include "../asm/instruction.h"
+#include "instruction.h"
 
 namespace SandHook {
     namespace Asm {

@@ -6,7 +6,7 @@
 #define SANDHOOK_NH_INST_AARCH64_H
 
 
-#include "../../../asm/instruction.h"
+#include "instruction.h"
 #include "inst_code_arm64.h"
 
 #define STRUCT_A64(X) A64_STRUCT_##X
@@ -132,7 +132,7 @@ struct STRUCT_A64(CBZ_CBNZ) {
 DEFINE_OPCODE(B_COND, 0b01010100)
 struct STRUCT_A64(B_COND) {
     InstA64 cond:4;
-    InstA64 unkown:1;
+    InstA64 unkown_0:1;
     InstA64 imm19:19;
     InstA64 opcode:8;
 };

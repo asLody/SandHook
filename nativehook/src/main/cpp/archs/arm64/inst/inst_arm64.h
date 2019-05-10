@@ -6,9 +6,9 @@
 #define SANDHOOK_NH_INST_ARM64_H
 
 #include "inst_struct_aarch64.h"
-#include "../../../asm/instruction.h"
-#include "../../../includes/base.h"
-#include "../register/register_list_a64.h"
+#include "instruction.h"
+#include "base.h"
+#include "register_list_a64.h"
 
 
 #define INST_A64(X) A64_##X

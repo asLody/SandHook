@@ -6,7 +6,7 @@
 #define SANDHOOK_NH_REGISTER_LIST_A64_H
 
 #include "register_a64.h"
-#include "../../../includes/base.h"
+#include "base.h"
 
 using namespace SandHook::Asm;
 
