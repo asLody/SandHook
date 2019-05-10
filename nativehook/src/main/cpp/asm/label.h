@@ -11,12 +11,12 @@
 namespace SandHook {
     namespace Asm {
 
-        virtual class LabelBinder {
+        class LabelBinder {
         public:
-            virtual void bindLabel(void* pc) = 0;
+            virtual void onLabelApply(void* pc) = 0;
         };
 
-        class Label : public Unit<None> {
+        class Label : public Unit<Base> {
         public:
 
             Label() {}
@@ -24,7 +24,7 @@ namespace SandHook {
             Label(void *pc) : pc(pc) {}
 
             inline UnitType unitType() override {
-                return UnitType::Label;
+                return UnitType::UnitLabel;
             }
 
             inline U32 size() override {
@@ -47,17 +47,16 @@ namespace SandHook {
                 binders.push_back(binder);
             }
 
-            inline void bindLabel(void* pc) {
-                setPC(pc);
+            inline void bindLabel() {
                 std::list<LabelBinder*>::iterator binder;
                 for(binder = binders.begin();binder != binders.end(); ++binder) {
-                    (*binder)->bindLabel(pc);
+                    (*binder)->onLabelApply(pc);
                 }
             }
 
         private:
             void* pc;
-            std::list<LabelBinder*> binders = std::list();
+            std::list<LabelBinder*> binders = std::list<LabelBinder*>();
         };
 
     }

@@ -12,6 +12,7 @@
 #define STRUCT_A64(X) A64_STRUCT_##X
 #define OPCODE_A64(X) A64_OPCODE_##X
 #define DEFINE_OPCODE(X, V) const U32 OPCODE_A64(X) = V;
+#define DEFINE_STRUCT_A64(X) struct STRUCT_A64(X) : public Base
 
 enum InstructionFields {
 
@@ -86,6 +87,11 @@ enum Extend {
     SXTX      = 7
 };
 
+//unknow inst
+DEFINE_STRUCT_A64(UNKNOW) {
+    InstA64 raw;
+};
+
 #define IMM_LO_W 2
 #define IMM_HI_W 19
 DEFINE_OPCODE(ADR_ADRP, 0b10000)
@@ -98,7 +104,7 @@ struct STRUCT_A64(ADR_ADRP) {
 };
 
 DEFINE_OPCODE(MOV_WIDE, 0b100101)
-struct STRUCT_A64(MOV_WIDE) {
+DEFINE_STRUCT_A64(MOV_WIDE) {
     InstA64 rd:5;
     InstA64 imm16:16;
     InstA64 hw:2;
@@ -108,14 +114,14 @@ struct STRUCT_A64(MOV_WIDE) {
 };
 
 DEFINE_OPCODE(B_BL, 0b00101)
-struct STRUCT_A64(B_BL) {
+DEFINE_STRUCT_A64(B_BL) {
     InstA64 imm26:26;
     InstA64 opcode:5;
     InstA64 op:1;
 };
 
 DEFINE_OPCODE(CBZ_CBNZ, 0b011010)
-struct STRUCT_A64(CBZ_CBNZ) {
+DEFINE_STRUCT_A64(CBZ_CBNZ) {
     InstA64 rt:5;
     InstA64 imm19:19;
     InstA64 op:1;
@@ -124,7 +130,7 @@ struct STRUCT_A64(CBZ_CBNZ) {
 };
 
 DEFINE_OPCODE(B_COND, 0b01010100)
-struct STRUCT_A64(B_COND) {
+DEFINE_STRUCT_A64(B_COND) {
     InstA64 cond:4;
     InstA64 unkown_0:1;
     InstA64 imm19:19;
@@ -132,7 +138,7 @@ struct STRUCT_A64(B_COND) {
 };
 
 DEFINE_OPCODE(TBZ_TBNZ, 0b011011)
-struct STRUCT_A64(TBZ_TBNZ) {
+DEFINE_STRUCT_A64(TBZ_TBNZ) {
     InstA64 rt:5;
     InstA64 imm14:14;
     InstA64 b40:5;
@@ -142,7 +148,7 @@ struct STRUCT_A64(TBZ_TBNZ) {
 };
 
 DEFINE_OPCODE(LDR_LIT, 0b011000)
-struct STRUCT_A64(LDR_LIT) {
+DEFINE_STRUCT_A64(LDR_LIT) {
     InstA64 rt:5;
     InstA64 imm19:19;
     InstA64 opcode:6;
@@ -150,7 +156,7 @@ struct STRUCT_A64(LDR_LIT) {
 };
 
 DEFINE_OPCODE(STR_IMM, 0b011)
-struct STRUCT_A64(STR_IMM) {
+DEFINE_STRUCT_A64(STR_IMM) {
     InstA64 imm12:12;
     InstA64 rt:4;
     InstA64 rn:4;
@@ -166,7 +172,7 @@ struct STRUCT_A64(STR_IMM) {
 DEFINE_OPCODE(BR_BLR_RET_1, 0b110101100)
 DEFINE_OPCODE(BR_BLR_RET_2, 0b11111000000)
 DEFINE_OPCODE(BR_BLR_RET_3, 0b00000)
-struct STRUCT_A64(BR_BLR_RET) {
+DEFINE_STRUCT_A64(BR_BLR_RET) {
     InstA64 opcode3:5;
     InstA64 rn:5;
     InstA64 opcode2:11;

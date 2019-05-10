@@ -7,31 +7,48 @@
 
 #include "unit.h"
 
+#define DATA(BITS) STRUCT_DATA_##BITS
+
+#define DEFINE_DATA(BITS) \
+struct DATA(BITS) : public Base { \
+    U##BITS raw_;    \
+public: \
+    DATA(BITS)(U##BITS r) {    \
+        raw_ = r;    \
+    }   \
+};
+
 namespace SandHook {
     namespace Asm {
 
         template <typename DType>
         class Data : public Unit<DType> {
         public:
-            Data(DType raw) : Unit<DType>(raw) {}
+            Data(DType raw) : Unit<DType>() {
+                this->set(raw);
+            }
             inline UnitType unitType() override {
-                return UnitType::Data;
+                return UnitType::UnitData;
             };
         };
 
-        class Data16 : public Data<U16> {
+
+        DEFINE_DATA(16)
+        class Data16 : public Data<DATA(16)> {
         public:
-            Data16(U16 raw) : Data(raw) {}
+            Data16(U16 raw) : Data(DATA(16)(raw)) {}
         };
 
-        class Data32 : public Data<U32> {
+        DEFINE_DATA(32)
+        class Data32 : public Data<DATA(32)> {
         public:
-            Data32(U32 raw) : Data(raw) {}
+            Data32(U32 raw) : Data(DATA(32)(raw)) {}
         };
 
-        class Data64 : public Data<U64> {
+        DEFINE_DATA(64)
+        class Data64 : public Data<DATA(64)> {
         public:
-            Data64(U64 raw) : Data(raw) {}
+            Data64(U64 raw) : Data(DATA(64)(raw)) {}
         };
 
     }

@@ -152,6 +152,20 @@ namespace SandHook {
         };
 
 
+        class INST_A64(UNKNOW) : public InstructionA64<STRUCT_A64(UNKNOW)> {
+        public:
+            A64_UNKNOW(STRUCT_A64(UNKNOW) *inst);
+            A64_UNKNOW(STRUCT_A64(UNKNOW) &inst);
+
+            inline bool unknow() override {
+                return true;
+            }
+
+        private:
+            STRUCT_A64(UNKNOW) inst_backup;
+        };
+
+
         template <typename Inst>
         class A64_INST_PC_REL : public InstructionA64<Inst> {
         public:
@@ -287,6 +301,8 @@ namespace SandHook {
 
             A64_B_BL(OP op, Off offset);
 
+            A64_B_BL(OP op, Label &l);
+
             DEFINE_IS(B_BL)
 
             inline Off getOffset() {
@@ -302,6 +318,8 @@ namespace SandHook {
             };
 
             Off getImmPCOffset() override;
+
+            void onOffsetApply(Off offset) override;
 
             void decode(STRUCT_A64(B_BL) *decode) override;
 

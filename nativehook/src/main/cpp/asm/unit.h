@@ -16,7 +16,7 @@ namespace SandHook {
         public:
 
             Unit() {
-                if (unitType() != Void) {
+                if (unitType() != UnitVoid) {
                     raw = reinterpret_cast<Raw *>(malloc(size()));
                     memset(raw, 0, size());
                     auto_alloc = true;
@@ -42,12 +42,30 @@ namespace SandHook {
                 *this->raw = raw;
             }
 
+            inline void set(Raw* raw) {
+                if (auto_alloc) {
+                    free(this->raw);
+                    auto_alloc = false;
+                }
+                this->raw = raw;
+            }
+
             inline void copy(void* dest) {
                 memcpy(dest, getPC(), size());
             }
 
+
+            inline void move(Raw* dest) {
+                memcpy(dest, raw, size());
+                if (auto_alloc) {
+                    free(raw);
+                    auto_alloc = false;
+                }
+                raw = dest;
+            }
+
             virtual UnitType unitType() {
-                return UnitType::Unkown;
+                return UnitType::UnitUnknow;
             };
 
             virtual U32 size() {

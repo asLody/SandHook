@@ -14,6 +14,17 @@ U32 InstructionA64<InstStruct>::size() {
     return sizeof(InstA64);
 }
 
+
+//Unknow
+A64_UNKNOW::A64_UNKNOW(A64_STRUCT_UNKNOW *inst) : InstructionA64(inst) {
+
+}
+
+A64_UNKNOW::A64_UNKNOW(STRUCT_A64(UNKNOW) &inst) {
+    inst_backup = inst;
+    this->set(&inst_backup);
+}
+
 //PC Rel Inst
 
 template<typename Inst>
@@ -109,11 +120,19 @@ A64_B_BL::A64_B_BL(STRUCT_A64(B_BL) *inst) : A64_INST_PC_REL(inst) {
 }
 
 A64_B_BL::A64_B_BL(A64_B_BL::OP op, Off offset) : op(op), offset(offset) {
-    assembler();
+}
+
+A64_B_BL::A64_B_BL(A64_B_BL::OP op, Label &l) : op(op) {
+    bindLabel(l);
 }
 
 Off A64_B_BL::getImmPCOffset() {
     return signExtend64(26 + 2, COMBINE(get()->imm26, 0b00, 2));
+}
+
+void A64_B_BL::onOffsetApply(Off offset) {
+    this->offset = offset;
+    get()->imm26 = TruncateToUint26(offset);
 }
 
 void A64_B_BL::decode(STRUCT_A64(B_BL) *inst) {
@@ -139,9 +158,7 @@ A64_CBZ_CBNZ::A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) *inst) : A64_INST_PC_REL(inst) {
 
 A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Off offset, RegisterA64 *rt) : op(op),
                                                                                 offset(offset),
-                                                                                rt(rt) {
-    assembler();
-}
+                                                                                rt(rt) {}
 
 Off A64_CBZ_CBNZ::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
@@ -174,9 +191,7 @@ A64_B_COND::A64_B_COND(STRUCT_A64(B_COND) *inst) : A64_INST_PC_REL(inst) {
     decode(inst);
 }
 
-A64_B_COND::A64_B_COND(Condition condition, Off offset) : condition(condition), offset(offset) {
-    assembler();
-}
+A64_B_COND::A64_B_COND(Condition condition, Off offset) : condition(condition), offset(offset) {}
 
 Off A64_B_COND::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
@@ -205,9 +220,7 @@ A64_TBZ_TBNZ::A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) &inst) : A64_INST_PC_REL(&inst) 
 A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 *rt, U32 bit, Off offset) : op(op),
                                                                                          rt(rt),
                                                                                          bit(bit),
-                                                                                         offset(offset) {
-    assembler();
-}
+                                                                                         offset(offset) {}
 
 Off A64_TBZ_TBNZ::getImmPCOffset() {
     return signExtend64(14 + 2, COMBINE(get()->imm14, 0b00, 2));
@@ -245,9 +258,7 @@ A64_LDR_LIT::A64_LDR_LIT(STRUCT_A64(LDR_LIT) *inst) : A64_INST_PC_REL(inst) {
 
 
 A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 *rt, Off offset) : op(op), rt(rt),
-                                                                             offset(offset) {
-    assembler();
-}
+                                                                             offset(offset) {}
 
 Off A64_LDR_LIT::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
@@ -279,14 +290,10 @@ A64_STR_IMM::A64_STR_IMM(STRUCT_A64(STR_IMM) *inst) : InstructionA64(inst) {
     decode(inst);
 }
 
-A64_STR_IMM::A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand) : rt(&rt), operand(operand) {
-    assembler();
-}
+A64_STR_IMM::A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand) : rt(&rt), operand(operand) {}
 
 A64_STR_IMM::A64_STR_IMM(Condition condition, RegisterA64 &rt, const MemOperand &operand)
-        : condition(condition), rt(&rt), operand(operand) {
-    assembler();
-}
+        : condition(condition), rt(&rt), operand(operand) {}
 
 AddrMode A64_STR_IMM::decodeAddrMode() {
     if (get()->P == 1 && get()->W == 0) {
@@ -325,9 +332,7 @@ A64_BR_BLR_RET::A64_BR_BLR_RET(STRUCT_A64(BR_BLR_RET) &inst) : InstructionA64(&i
     decode(&inst);
 }
 
-A64_BR_BLR_RET::A64_BR_BLR_RET(A64_BR_BLR_RET::OP op, XRegister &rn) : op(op), rn(&rn) {
-    assembler();
-}
+A64_BR_BLR_RET::A64_BR_BLR_RET(A64_BR_BLR_RET::OP op, XRegister &rn) : op(op), rn(&rn) {}
 
 void A64_BR_BLR_RET::decode(A64_STRUCT_BR_BLR_RET *inst) {
     rn = XReg(static_cast<U8>(inst->op));

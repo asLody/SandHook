@@ -33,15 +33,15 @@ const Addr PAGE_SIZE = 2 << PAGE_OFFSET;
 enum Arch {
     arm32,
     arm64,
-    unkownArch
+    unknowArch
 };
 
 enum UnitType {
-    Inst,
-    Data,
-    Label,
-    Void,
-    Unkown
+    UnitInst,
+    UnitData,
+    UnitLabel,
+    UnitVoid,
+    UnitUnknow
 };
 
 enum InstType {
@@ -49,7 +49,7 @@ enum InstType {
     thumb16,
     thumb32,
     A64,
-    unkownInst
+    unknowInst
 };
 
 template <int SizeInBits>
@@ -71,7 +71,7 @@ struct Unsigned<64> {
 };
 
 
-class None {};
+struct Base {};
 
 template <typename T>
 T AlignDown(T pointer,

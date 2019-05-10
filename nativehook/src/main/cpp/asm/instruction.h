@@ -6,6 +6,7 @@
 #define SANDHOOK_INSTRUCTION_H
 
 #include "unit.h"
+#include "label.h"
 
 //aarch64
 typedef U32 InstA64;
@@ -36,23 +37,22 @@ namespace SandHook {
     namespace Asm {
 
         template <typename Inst>
-        class Instruction : public Unit<Inst> {
+        class Instruction : public Unit<Inst>, public LabelBinder {
         public:
-
             Instruction() {}
 
             Instruction(Inst *inst) : Unit<Inst>(inst) {}
 
             UnitType unitType() override {
-                return UnitType::Inst;
+                return UnitType::UnitInst;
             };
 
             virtual InstType instType() {
-                return unkownInst;
+                return unknowInst;
             }
 
             virtual Arch arch() {
-                return unkownArch;
+                return unknowArch;
             }
 
             virtual U32 instCode() {
@@ -63,8 +63,23 @@ namespace SandHook {
                 return false;
             }
 
+            virtual bool unknow() {
+                return false;
+            }
+
             inline bool isValid() const {
                 return valid;
+            }
+
+            virtual void onOffsetApply(Off offset) {}
+
+            void onLabelApply(void *pc) override {
+                onOffsetApply((Addr)pc - (Addr)this->getPC());
+            }
+
+            inline void bindLabel(Label &l) {
+                label = &l;
+                l.addBinder(this);
             }
 
             virtual void decode(Inst* inst) {}
@@ -73,9 +88,10 @@ namespace SandHook {
 
         protected:
             bool valid = true;
+            Label* label = nullptr;
         };
 
-        class Void : public Unit<None> {
+        class Void : public Unit<Base> {
         public:
             Void(U32 size) : size_(size) {}
 
