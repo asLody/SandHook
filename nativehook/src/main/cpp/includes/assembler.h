@@ -26,11 +26,19 @@ namespace SandHook {
 
         class CodeContainer {
         public:
+
+            CodeContainer(CodeBuffer *codeBuffer);
+
+            void setCodeBuffer(CodeBuffer *codeBuffer);
+
             void append(Unit<Base>* unit);
             void commit();
-        private:
+
+        public:
+            //before commit is virtual address so = 0, after commit is real address
             Addr startPc = 0;
             Addr curPc = 0;
+        private:
             Addr maxSize = 0;
             std::list<Unit<Base>*> units = std::list<Unit<Base>*>();
             std::list<Label*> labels = std::list<Label*>();

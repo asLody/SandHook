@@ -19,6 +19,7 @@ add_library( # Sets the name of the library.
              # Provides a relative path to your source file(s).
              src/main/cpp/sandhook_native.cpp
              src/main/cpp/decoder/decoder.cpp
+             src/main/cpp/archs/arm64/assembler/assembler_a64.cpp
              src/main/cpp/archs/arm64/inst/inst_arm64.cpp
              src/main/cpp/archs/arm64/register/register_a64.cpp
              src/main/cpp/archs/arm64/register/register_list_a64.cpp

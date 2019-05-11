@@ -3,6 +3,7 @@
 //
 
 #include <sys/mman.h>
+#include <platform.h>
 #include "code_buffer.h"
 #include "lock.h"
 
@@ -42,5 +43,6 @@ label_alloc_new_space:
 StaticCodeBuffer::StaticCodeBuffer(Addr pc) : pc(pc) {}
 
 void *StaticCodeBuffer::getBuffer(U32 bufferSize) {
+    memUnprotect(pc, bufferSize);
     return reinterpret_cast<void *>(pc);
 }

@@ -9,4 +9,6 @@
 
 extern "C" bool flushCache(Addr addr, Off len);
 
+extern "C" bool memUnprotect(Addr addr, Addr len);
+
 #endif //SANDHOOK_NH_PLATFORM_H

@@ -234,6 +234,13 @@ namespace SandHook {
                 MOV_WideOp_N = 0b11,
             };
 
+            enum Shift {
+                Shift0 = 0,
+                Shift1 = 16,
+                Shift2 = 32,
+                Shift3 = 48
+            };
+
             A64_MOV_WIDE();
 
             A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) &inst);
