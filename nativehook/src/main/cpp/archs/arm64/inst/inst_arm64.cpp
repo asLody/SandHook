@@ -52,13 +52,13 @@ Off A64_ADR_ADRP::getImmPCOffset() {
     U32 lo = get()->immlo;
     Off offset = signExtend64(IMM_LO_W + IMM_HI_W, COMBINE(hi, lo, IMM_LO_W));
     if (isADRP()) {
-        offset *= PAGE_SIZE;
+        offset *= P_SIZE;
     }
     return offset;
 }
 
 Addr A64_ADR_ADRP::getImmPCOffsetTarget() {
-    void * base = AlignDown(getPC(), PAGE_SIZE);
+    void * base = AlignDown(getPC(), P_SIZE);
     return getImmPCOffset() + reinterpret_cast<Addr>(base);
 }
 
@@ -132,7 +132,7 @@ Off A64_B_BL::getImmPCOffset() {
 
 void A64_B_BL::onOffsetApply(Off offset) {
     this->offset = offset;
-    get()->imm26 = TruncateToUint26(offset);
+    get()->imm26 = TruncateToUint26(offset >> 2);
 }
 
 void A64_B_BL::decode(STRUCT_A64(B_BL) *inst) {
@@ -143,7 +143,7 @@ void A64_B_BL::decode(STRUCT_A64(B_BL) *inst) {
 void A64_B_BL::assembler() {
     SET_OPCODE(B_BL);
     get()->op = op;
-    get()->imm26 = TruncateToUint26(offset);
+    get()->imm26 = TruncateToUint26(offset >> 4);
 }
 
 
@@ -179,7 +179,7 @@ void A64_CBZ_CBNZ::assembler() {
     get()->op = op;
     get()->rt = rt->getCode();
     get()->sf = rt->is64Bit() ? 1 : 0;
-    get()->imm19 = TruncateToUint19(offset);
+    get()->imm19 = TruncateToUint19(offset >> 2);
 }
 
 
@@ -205,7 +205,7 @@ void A64_B_COND::decode(STRUCT_A64(B_COND) *inst) {
 void A64_B_COND::assembler() {
     SET_OPCODE(B_COND);
     get()->cond = condition;
-    get()->imm19 = TruncateToUint19(offset);
+    get()->imm19 = TruncateToUint19(offset >> 2);
 }
 
 
@@ -243,7 +243,7 @@ void A64_TBZ_TBNZ::assembler() {
     get()->b5 = rt->is64Bit() ? 1 : 0;
     get()->rt = rt->getCode();
     get()->b40 = static_cast<InstA64>(BITS(bit, sizeof(InstA64) - 5, sizeof(InstA64)));
-    get()->imm14 = TruncateToUint14(offset);
+    get()->imm14 = TruncateToUint14(offset >> 2);
 }
 
 
@@ -278,7 +278,7 @@ void A64_LDR_LIT::assembler() {
     SET_OPCODE(LDR_LIT);
     get()->rt = rt->getCode();
     get()->op = op;
-    get()->imm19 = TruncateToUint19(offset);
+    get()->imm19 = TruncateToUint19(offset >> 2);
 }
 
 

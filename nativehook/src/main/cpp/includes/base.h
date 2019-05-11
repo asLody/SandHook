@@ -28,7 +28,7 @@ const int PTR_BYTE = sizeof(void*);
 
 const int BITS_OF_BYTE = 8;
 
-const Addr PAGE_SIZE = 2 << PAGE_OFFSET;
+const Addr P_SIZE = 2 << PAGE_OFFSET;
 
 enum Arch {
     arm32,
