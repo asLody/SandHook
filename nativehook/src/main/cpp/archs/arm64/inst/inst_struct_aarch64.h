@@ -177,5 +177,14 @@ DEFINE_STRUCT_A64(STR_IMM) {
     InstA64 size:2;
 };
 
+DEFINE_OPCODE(STR_UIMM, 0b11100100)
+DEFINE_STRUCT_A64(STR_UIMM) {
+    InstA64 rt:5;
+    InstA64 rn:5;
+    InstA64 imm12:12;
+    InstA64 opcode:8;
+    InstA64 size:2;
+};
+
 
 #endif //SANDHOOK_NH_INST_AARCH64_H

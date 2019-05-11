@@ -310,6 +310,10 @@ A64_STR_IMM::A64_STR_IMM(STRUCT_A64(STR_IMM) &inst) : InstructionA64(&inst) {
     decode(&inst);
 }
 
+A64_STR_IMM::A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand) : rt(&rt), operand(operand) {
+
+}
+
 void A64_STR_IMM::decode(STRUCT_A64(STR_IMM) *inst) {
     regSize = Size(inst->size);
     switch (regSize) {
@@ -376,6 +380,48 @@ void A64_STR_IMM::assembler() {
     }
 }
 
-A64_STR_IMM::A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand) : rt(&rt), operand(operand) {
+A64_STR_UIMM::A64_STR_UIMM() {}
 
+A64_STR_UIMM::A64_STR_UIMM(STRUCT_A64(STR_UIMM) &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
+
+A64_STR_UIMM::A64_STR_UIMM(RegisterA64 &rt, const MemOperand &operand) : rt(&rt), operand(operand) {
+
+}
+
+void A64_STR_UIMM::decode(STRUCT_A64(STR_UIMM) *inst) {
+    regSize = Size(inst->size);
+    switch (regSize) {
+        case Size64:
+            rt = XReg(static_cast<U8>(inst->rt));
+            operand.base = XReg(static_cast<U8>(inst->rn));
+            break;
+        case Size32:
+            rt = WReg(static_cast<U8>(inst->rt));
+            operand.base = WReg(static_cast<U8>(inst->rn));
+            break;
+        default:
+            valid = false;
+            return;
+    }
+    operand.addr_mode = AddrMode::Offset;
+    scale = static_cast<U8>(inst->size);
+    offset = inst->imm12 << regSize;
+    operand.offset = offset;
+}
+
+void A64_STR_UIMM::assembler() {
+    SET_OPCODE(STR_IMM);
+    get()->rt = rt->getCode();
+    get()->rn = operand.base->getCode();
+    if (rt->isX()) {
+        get()->size = Size64;
+    } else if (rt->isW()) {
+        get()->size = Size32;
+    } else {
+        valid = false;
+        return;
+    }
+    get()->imm12 = operand.offset >> get()->size;
 }

@@ -543,6 +543,38 @@ namespace SandHook {
             Off offset;
         };
 
+
+        class INST_A64(STR_UIMM) : public InstructionA64<STRUCT_A64(STR_UIMM)> {
+        public:
+
+            enum Size {
+                Size32 = 0b10,
+                Size64 = 0b11
+            };
+
+            A64_STR_UIMM();
+
+            A64_STR_UIMM(STRUCT_A64(STR_UIMM)& inst);
+
+            A64_STR_UIMM(RegisterA64 &rt, const MemOperand &operand);
+
+            DEFINE_IS(STR_UIMM)
+
+            void decode(STRUCT_A64(STR_UIMM) *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterA64* rt;
+            MemOperand operand = MemOperand();
+        private:
+            Size regSize;
+            U8 scale;
+            bool wback = false;
+            bool postindex = false;
+            Off offset;
+        };
+
     }
 
 }
