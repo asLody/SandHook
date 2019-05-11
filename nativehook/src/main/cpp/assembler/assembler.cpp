@@ -3,12 +3,12 @@
 //
 
 #include <assembler.h>
+#include <platform.h>
 
 using namespace SandHook::Assembler;
 using namespace SandHook::Asm;
 
 void CodeContainer::append(Unit<Base> *unit) {
-    Label* l = dynamic_cast<Label *>(unit);
     units.push_back(unit);
     switch (unit->unitType()) {
         case UnitLabel:
@@ -17,20 +17,28 @@ void CodeContainer::append(Unit<Base> *unit) {
         default:
             curPc += unit->size();
     }
-    if (unit->unitType() == UnitData) {
-        unit->move((Base*)codeBuffer->getBuffer(unit));
-    } else if (unit->unitType() != UnitLabel) {
-        unit->set((Base*)codeBuffer->getBuffer(unit));
-    }
+    unit->setVPC(curPc);
 }
 
 void CodeContainer::commit() {
+    std::list<Unit<Base>*>::iterator unit;
+    U32 bufferSize = static_cast<U32>(curPc - startPc);
+    void* bufferStart = codeBuffer->getBuffer(bufferSize);
+    Addr pcNow = reinterpret_cast<Addr>(bufferStart);
+    for(unit = units.begin();unit != units.end(); ++unit) {
+        if ((*unit)->unitType() == UnitData) {
+            (*unit)->move(reinterpret_cast<Base *>(pcNow));
+        } else if ((*unit)->unitType() != UnitLabel) {
+            (*unit)->set(reinterpret_cast<Base *>(pcNow));
+        }
+        if ((*unit)->unitType() == UnitInst) {
+            reinterpret_cast<Instruction<Base>*>(*unit)->assembler();
+        }
+        pcNow += (*unit)->size();
+    }
     std::list<Label*>::iterator label;
     for(label = labels.begin();label != labels.end(); ++label) {
         (*label)->bindLabel();
     }
-}
-
-void *CodeBuffer::getBuffer(Unit<Base> *unit) {
-    return nullptr;
+    flushCache(reinterpret_cast<Addr>(bufferStart), pcNow - reinterpret_cast<Addr>(bufferStart));
 }

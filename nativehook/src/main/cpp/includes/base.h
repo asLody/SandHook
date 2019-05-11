@@ -86,6 +86,8 @@ T AlignDown(T pointer,
     return (T)(pointer_raw & ~mask);
 }
 
+#define FIT(value, align) value <= align ? align : ((value / align) + align)
+
 #define OFFSET(TYPE, MEMBER) ((size_t) & ((TYPE *)0)->MEMBER)
 
 

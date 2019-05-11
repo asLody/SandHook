@@ -13,7 +13,7 @@ namespace SandHook {
 
         class LabelBinder {
         public:
-            virtual void onLabelApply(void* pc) = 0;
+            virtual void onLabelApply(Addr pc) = 0;
         };
 
         class Label : public Unit<Base> {
@@ -50,7 +50,7 @@ namespace SandHook {
             inline void bindLabel() {
                 std::list<LabelBinder*>::iterator binder;
                 for(binder = binders.begin();binder != binders.end(); ++binder) {
-                    (*binder)->onLabelApply(pc);
+                    (*binder)->onLabelApply(getVPC());
                 }
             }
 

@@ -73,8 +73,8 @@ namespace SandHook {
 
             virtual void onOffsetApply(Off offset) {}
 
-            void onLabelApply(void *pc) override {
-                onOffsetApply((Addr)pc - (Addr)this->getPC());
+            void onLabelApply(Addr pc) override {
+                onOffsetApply(pc - this->getVPC());
             }
 
             inline void bindLabel(Label &l) {

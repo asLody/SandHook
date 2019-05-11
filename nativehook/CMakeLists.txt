@@ -26,6 +26,8 @@ add_library( # Sets the name of the library.
              src/main/cpp/relocate/code_relocate.cpp
              src/main/cpp/elf/elf.cpp
              src/main/cpp/assembler/assembler.cpp
+             src/main/cpp/buffer/code_buffer.cpp
+             src/main/cpp/utils/platform.cpp
         )
 
 
@@ -33,6 +35,7 @@ include_directories(
         src/main/cpp/asm
         src/main/cpp/decoder
         src/main/cpp/elf
+        src/main/cpp/utils
         src/main/cpp/includes
         src/main/cpp/archs/arm64/inst
         src/main/cpp/archs/arm64/register

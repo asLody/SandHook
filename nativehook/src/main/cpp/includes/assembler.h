@@ -21,7 +21,7 @@ namespace SandHook {
 
         class CodeBuffer {
         public:
-            void* getBuffer(Unit<Base>* unit);
+            virtual void* getBuffer(U32 size) = 0;
         };
 
         class CodeContainer {
@@ -29,7 +29,7 @@ namespace SandHook {
             void append(Unit<Base>* unit);
             void commit();
         private:
-            void* startPc = nullptr;
+            Addr startPc = 0;
             Addr curPc = 0;
             Addr maxSize = 0;
             std::list<Unit<Base>*> units = std::list<Unit<Base>*>();
