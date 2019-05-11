@@ -155,20 +155,6 @@ DEFINE_STRUCT_A64(LDR_LIT) {
     InstA64 op:2;
 };
 
-DEFINE_OPCODE(STR_IMM, 0b011)
-DEFINE_STRUCT_A64(STR_IMM) {
-    InstA64 imm12:12;
-    InstA64 rt:4;
-    InstA64 rn:4;
-    InstA64 unkown2_0:1;
-    InstA64 W:1;
-    InstA64 unkown1_0:1;
-    InstA64 U:1;
-    InstA64 P:1;
-    InstA64 opcode:3;
-    InstA64 cond:4;
-};
-
 DEFINE_OPCODE(BR_BLR_RET_1, 0b110101100)
 DEFINE_OPCODE(BR_BLR_RET_2, 0b11111000000)
 DEFINE_OPCODE(BR_BLR_RET_3, 0b00000)
@@ -181,7 +167,15 @@ DEFINE_STRUCT_A64(BR_BLR_RET) {
 
 };
 
-
+DEFINE_OPCODE(STR_IMM, 0b111000000)
+DEFINE_STRUCT_A64(STR_IMM) {
+    InstA64 rt:5;
+    InstA64 rn:5;
+    InstA64 addrmode:2;
+    InstA64 imm9:9;
+    InstA64 opcode:9;
+    InstA64 size:2;
+};
 
 
 #endif //SANDHOOK_NH_INST_AARCH64_H

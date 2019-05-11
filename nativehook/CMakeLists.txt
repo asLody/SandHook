@@ -24,6 +24,8 @@ add_library( # Sets the name of the library.
              src/main/cpp/archs/arm64/register/register_a64.cpp
              src/main/cpp/archs/arm64/register/register_list_a64.cpp
              src/main/cpp/archs/arm64/decoder/decoder_arm64.cpp
+             src/main/cpp/archs/arm32/inst/inst_arm32.cpp
+             src/main/cpp/archs/arm32/register/register_a32.cpp
              src/main/cpp/relocate/code_relocate.cpp
              src/main/cpp/elf/elf.cpp
              src/main/cpp/assembler/assembler.cpp
@@ -41,6 +43,9 @@ include_directories(
         src/main/cpp/archs/arm64/inst
         src/main/cpp/archs/arm64/register
         src/main/cpp/archs/arm64/decoder
+        src/main/cpp/archs/arm64/assembler
+        src/main/cpp/archs/arm32/inst
+        src/main/cpp/archs/arm32/register
 )
 
 # Searches for a specified prebuilt library and stores the path as a

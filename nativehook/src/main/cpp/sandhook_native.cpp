@@ -31,8 +31,8 @@ JNIEXPORT void JNICALL
 Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) {
 
     union {
-        InstA64 raw = 0x36A01005;
-        STRUCT_A64(TBZ_TBNZ) bl;
+        InstA64 raw = 0xF8020C43;
+        STRUCT_A64(STR_IMM) str;
     } test;
 
     InstA64* codebl = reinterpret_cast<InstA64 *>((Addr)do1 + 8);
@@ -52,6 +52,11 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
 
         do1();
 
+    }
+
+    if (IS_OPCODE(test.raw, STR_IMM)) {
+        A64_STR_IMM str(test.str);
+        str.get();
     }
 
 }
