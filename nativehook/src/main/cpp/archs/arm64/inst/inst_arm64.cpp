@@ -39,6 +39,11 @@ Addr A64_INST_PC_REL<Inst>::getImmPCOffsetTarget() {
     return this->getImmPCOffset() + reinterpret_cast<Addr>(this->getPC());
 }
 
+template<typename Inst>
+bool A64_INST_PC_REL<Inst>::pcRelate() {
+    return true;
+}
+
 //ADR ADRP
 
 A64_ADR_ADRP::A64_ADR_ADRP() {}
@@ -94,7 +99,7 @@ void A64_MOV_WIDE::assembler() {
     get()->imm16 = imme;
     get()->hw = static_cast<InstA64>(shift / 16);
     get()->opc = op;
-    get()->sf = rd->is64Bit() ? 1 : 0;
+    get()->sf = rd->isX() ? 1 : 0;
     get()->rd = rd->getCode();
 }
 
@@ -178,7 +183,7 @@ void A64_CBZ_CBNZ::assembler() {
     SET_OPCODE(CBZ_CBNZ);
     get()->op = op;
     get()->rt = rt->getCode();
-    get()->sf = rt->is64Bit() ? 1 : 0;
+    get()->sf = rt->isX() ? 1 : 0;
     get()->imm19 = TruncateToUint19(offset >> 2);
 }
 
@@ -240,7 +245,7 @@ void A64_TBZ_TBNZ::decode(STRUCT_A64(TBZ_TBNZ) *inst) {
 void A64_TBZ_TBNZ::assembler() {
     SET_OPCODE(TBZ_TBNZ);
     get()->op = op;
-    get()->b5 = rt->is64Bit() ? 1 : 0;
+    get()->b5 = rt->isX() ? 1 : 0;
     get()->rt = rt->getCode();
     get()->b40 = static_cast<InstA64>(BITS(bit, sizeof(InstA64) - 5, sizeof(InstA64)));
     get()->imm14 = TruncateToUint14(offset >> 2);
@@ -424,4 +429,33 @@ void A64_STR_UIMM::assembler() {
         return;
     }
     get()->imm12 = operand.offset >> get()->size;
+}
+
+
+
+A64_MOV_REG::A64_MOV_REG() {}
+
+A64_MOV_REG::A64_MOV_REG(STRUCT_A64(MOV_REG) &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
+
+A64_MOV_REG::A64_MOV_REG(RegisterA64 &rd, RegisterA64 &rm) : rd(&rd), rm(&rm) {
+}
+
+void A64_MOV_REG::decode(A64_STRUCT_MOV_REG *inst) {
+    if (inst->sf == 1) {
+        rd = XReg(static_cast<U8>(inst->rd));
+        rm = XReg(static_cast<U8>(inst->rm));
+    } else {
+        rd = WReg(static_cast<U8>(inst->rd));
+        rm = WReg(static_cast<U8>(inst->rm));
+    }
+}
+
+void A64_MOV_REG::assembler() {
+    SET_OPCODE_MULTI(MOV_REG, 1);
+    SET_OPCODE_MULTI(MOV_REG, 2);
+    get()->sf = rd->isX() ? 1 : 0;
+    get()->rd = rd->getCode();
+    get()->rm = rm->getCode();
 }

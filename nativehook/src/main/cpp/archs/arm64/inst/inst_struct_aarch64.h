@@ -87,6 +87,10 @@ enum Extend {
     SXTX      = 7
 };
 
+enum FieldWide {
+    WideReg = 5,
+};
+
 //unknow inst
 DEFINE_STRUCT_A64(UNKNOW) {
     InstA64 raw;
@@ -96,7 +100,7 @@ DEFINE_STRUCT_A64(UNKNOW) {
 #define IMM_HI_W 19
 DEFINE_OPCODE(ADR_ADRP, 0b10000)
 struct STRUCT_A64(ADR_ADRP) {
-    InstA64 rd:5;
+    InstA64 rd:WideReg;
     InstA64 immhi:IMM_HI_W;
     InstA64 opcode:5;
     InstA64 immlo:IMM_LO_W;
@@ -105,11 +109,21 @@ struct STRUCT_A64(ADR_ADRP) {
 
 DEFINE_OPCODE(MOV_WIDE, 0b100101)
 DEFINE_STRUCT_A64(MOV_WIDE) {
-    InstA64 rd:5;
+    InstA64 rd:WideReg;
     InstA64 imm16:16;
     InstA64 hw:2;
     InstA64 opcode:6;
     InstA64 opc:2;
+    InstA64 sf:1;
+};
+
+DEFINE_OPCODE(MOV_REG_1, 0b0101010000)
+DEFINE_OPCODE(MOV_REG_2, 0b00000011111)
+DEFINE_STRUCT_A64(MOV_REG) {
+    InstA64 rd:WideReg;
+    InstA64 opcode2:11;
+    InstA64 rm:WideReg;
+    InstA64 opcode1:10;
     InstA64 sf:1;
 };
 
@@ -122,7 +136,7 @@ DEFINE_STRUCT_A64(B_BL) {
 
 DEFINE_OPCODE(CBZ_CBNZ, 0b011010)
 DEFINE_STRUCT_A64(CBZ_CBNZ) {
-    InstA64 rt:5;
+    InstA64 rt:WideReg;
     InstA64 imm19:19;
     InstA64 op:1;
     InstA64 opcode:6;
@@ -139,7 +153,7 @@ DEFINE_STRUCT_A64(B_COND) {
 
 DEFINE_OPCODE(TBZ_TBNZ, 0b011011)
 DEFINE_STRUCT_A64(TBZ_TBNZ) {
-    InstA64 rt:5;
+    InstA64 rt:WideReg;
     InstA64 imm14:14;
     InstA64 b40:5;
     InstA64 op:1;
@@ -149,7 +163,7 @@ DEFINE_STRUCT_A64(TBZ_TBNZ) {
 
 DEFINE_OPCODE(LDR_LIT, 0b011000)
 DEFINE_STRUCT_A64(LDR_LIT) {
-    InstA64 rt:5;
+    InstA64 rt:WideReg;
     InstA64 imm19:19;
     InstA64 opcode:6;
     InstA64 op:2;
@@ -160,7 +174,7 @@ DEFINE_OPCODE(BR_BLR_RET_2, 0b11111000000)
 DEFINE_OPCODE(BR_BLR_RET_3, 0b00000)
 DEFINE_STRUCT_A64(BR_BLR_RET) {
     InstA64 opcode3:5;
-    InstA64 rn:5;
+    InstA64 rn:WideReg;
     InstA64 opcode2:11;
     InstA64 op:2;
     InstA64 opcode1:9;
@@ -169,8 +183,8 @@ DEFINE_STRUCT_A64(BR_BLR_RET) {
 
 DEFINE_OPCODE(STR_IMM, 0b111000000)
 DEFINE_STRUCT_A64(STR_IMM) {
-    InstA64 rt:5;
-    InstA64 rn:5;
+    InstA64 rt:WideReg;
+    InstA64 rn:WideReg;
     InstA64 addrmode:2;
     InstA64 imm9:9;
     InstA64 opcode:9;
@@ -179,8 +193,8 @@ DEFINE_STRUCT_A64(STR_IMM) {
 
 DEFINE_OPCODE(STR_UIMM, 0b11100100)
 DEFINE_STRUCT_A64(STR_UIMM) {
-    InstA64 rt:5;
-    InstA64 rn:5;
+    InstA64 rt:WideReg;
+    InstA64 rn:WideReg;
     InstA64 imm12:12;
     InstA64 opcode:8;
     InstA64 size:2;

@@ -181,6 +181,8 @@ namespace SandHook {
 
             virtual Addr getImmPCOffsetTarget();
 
+            bool pcRelate() override;
+
         };
 
 
@@ -573,6 +575,26 @@ namespace SandHook {
             bool wback = false;
             bool postindex = false;
             Off offset;
+        };
+
+
+        class INST_A64(MOV_REG) : public InstructionA64<STRUCT_A64(MOV_REG)> {
+        public:
+            A64_MOV_REG();
+
+            A64_MOV_REG(STRUCT_A64(MOV_REG) &inst);
+
+            A64_MOV_REG(RegisterA64 &rd, RegisterA64 &rm);
+
+            DEFINE_IS_EXT(MOV_REG, TEST_INST_OPCODE(MOV_REG, 1) && TEST_INST_OPCODE(MOV_REG, 2))
+
+            void decode(A64_STRUCT_MOV_REG *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterA64* rd;
+            RegisterA64* rm;
         };
 
     }
