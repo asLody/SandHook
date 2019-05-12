@@ -31,6 +31,7 @@ DCHECK(X,V, valid = false;)
 #define INST_ASSERT(COND) \
 if (COND) { \
     valid = false; \
+    return; \
 }
 
 namespace SandHook {

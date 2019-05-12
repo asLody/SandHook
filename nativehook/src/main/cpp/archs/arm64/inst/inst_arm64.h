@@ -84,8 +84,19 @@ namespace SandHook {
 
         enum MemOp {MemOp_LOAD, MemOp_STORE, MemOp_PREFETCH};
 
+        enum FPTrapFlags {
+            EnableTrap   = 1,
+            DisableTrap = 0
+        };
+
+        enum FlagsUpdate {
+            SetFlags   = 1,
+            LeaveFlags = 0
+        };
+
         class Operand {
         public:
+            inline explicit Operand(){};
             inline explicit Operand(S64 imm)
                     : immediate(imm), reg(&UnknowRegiser), shift(NO_SHIFT), extend(NO_EXTEND), shift_extend_imm(0) {}
             inline Operand(RegisterA64* reg, Shift shift = LSL, int32_t imm = 0)
@@ -579,6 +590,32 @@ namespace SandHook {
         public:
             RegisterA64* rd;
             RegisterA64* rm;
+        };
+
+
+        class INST_A64(SUBS_EXT_REG) : InstructionA64<STRUCT_A64(SUBS_EXT_REG)> {
+        public:
+            A64_SUBS_EXT_REG();
+
+            A64_SUBS_EXT_REG(STRUCT_A64(SUBS_EXT_REG) &inst);
+
+            A64_SUBS_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
+                             FlagsUpdate flagsUpdate);
+
+            DEFINE_IS(SUBS_EXT_REG)
+
+            DEFINE_INST_CODE(SUBS_EXT_REG)
+
+            void decode(A64_STRUCT_SUBS_EXT_REG *inst) override;
+
+            void assembler() override;
+
+
+        public:
+            RegisterA64* rd;
+            RegisterA64* rn;
+            Operand operand = Operand();
+            FlagsUpdate flagsUpdate;
         };
 
     }

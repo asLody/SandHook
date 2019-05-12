@@ -459,3 +459,38 @@ void A64_MOV_REG::assembler() {
     get()->rd = rd->getCode();
     get()->rm = rm->getCode();
 }
+
+
+
+A64_SUBS_EXT_REG::A64_SUBS_EXT_REG() {}
+
+A64_SUBS_EXT_REG::A64_SUBS_EXT_REG(STRUCT_A64(SUBS_EXT_REG) &inst) : InstructionA64(&inst) {}
+
+A64_SUBS_EXT_REG::A64_SUBS_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
+                                   FlagsUpdate flagsUpdate) : rd(&rd), rn(&rn), operand(operand),
+                                                              flagsUpdate(flagsUpdate) {}
+
+void A64_SUBS_EXT_REG::decode(STRUCT_A64(SUBS_EXT_REG) *inst) {
+    if (inst->sf == 1) {
+        rd = XReg(static_cast<U8>(inst->rd));
+        rn = XReg(static_cast<U8>(inst->rn));
+        operand.reg = XReg(static_cast<U8>(inst->rm));
+    } else {
+        rd = WReg(static_cast<U8>(inst->rd));
+        rn = WReg(static_cast<U8>(inst->rn));
+        operand.reg = XReg(static_cast<U8>(inst->rm));
+    }
+    operand.extend = Extend(inst->option);
+    INST_ASSERT(inst->imm3 > 4);
+    operand.shift = Shift(inst->imm3);
+}
+
+void A64_SUBS_EXT_REG::assembler() {
+    SET_OPCODE(SUBS_EXT_REG);
+    get()->sf = rd->isX() ? 1 : 0;
+    get()->option = operand.extend;
+    get()->imm3 = operand.shift;
+    get()->rm = operand.reg->getCode();
+    get()->rn = rn->getCode();
+    get()->rd = rd->getCode();
+}

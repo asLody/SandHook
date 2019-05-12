@@ -200,5 +200,16 @@ DEFINE_STRUCT_A64(STR_UIMM) {
     InstA64 size:2;
 };
 
+DEFINE_OPCODE(SUBS_EXT_REG, 0b1101011001)
+DEFINE_STRUCT_A64(SUBS_EXT_REG) {
+    InstA64 rd:WideReg;
+    InstA64 rn:WideReg;
+    InstA64 imm3:3;
+    InstA64 option:3;
+    InstA64 rm:WideReg;
+    InstA64 opcode:10;
+    InstA64 sf:1;
+};
+
 
 #endif //SANDHOOK_NH_INST_AARCH64_H
