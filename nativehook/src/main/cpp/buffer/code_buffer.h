@@ -14,11 +14,23 @@ namespace SandHook {
         public:
             void *getBuffer(U32 bufferSize) override;
 
-        private:
+        protected:
             std::list<void*> executeSpaceList = std::list<void*>();
             std::mutex allocSpaceLock;
             Addr executePageOffset = 0;
             U32 currentExecutePageSize = 0;
+        };
+
+        //thread unsafe
+        class AndroidRellocBufferUnsafe : public AndroidCodeBuffer {
+        public:
+        public:
+            void resetLastBufferSize(U32 size) override;
+
+            void *getBuffer(U32 bufferSize) override;
+
+        private:
+            U32 lastAllocSize;
         };
 
         class StaticCodeBuffer : public CodeBuffer {

@@ -16,6 +16,8 @@ namespace SandHook {
 
         public:
             AssemblerA64(CodeBuffer* codeBuffer);
+            void* getStartPC();
+            void* getPC();
             void* finish();
 
 
@@ -33,8 +35,7 @@ namespace SandHook {
             void Mov(XRegister& rd, U64 imme);
 
 
-
-        private:
+        public:
             CodeContainer codeContainer = CodeContainer(nullptr);
         };
 

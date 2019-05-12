@@ -16,6 +16,7 @@ void CodeContainer::setCodeBuffer(CodeBuffer *codeBuffer) {
 
 void CodeContainer::append(Unit<Base> *unit) {
     units.push_back(unit);
+    unit->setVPC(curPc);
     switch (unit->unitType()) {
         case UnitLabel:
             labels.push_back((Label*)unit);
@@ -23,12 +24,17 @@ void CodeContainer::append(Unit<Base> *unit) {
         default:
             curPc += unit->size();
     }
-    unit->setVPC(curPc);
 }
 
 void CodeContainer::commit() {
     U32 bufferSize = static_cast<U32>(curPc - startPc);
-    void* bufferStart = codeBuffer->getBuffer(bufferSize);
+    void* bufferStart;
+    if (startPc > 0) {
+        bufferStart = reinterpret_cast<void *>(startPc);
+        codeBuffer->resetLastBufferSize(bufferSize);
+    } else {
+        bufferStart = codeBuffer->getBuffer(bufferSize);
+    }
     Addr pcNow = reinterpret_cast<Addr>(bufferStart);
 
     //commit to code buffer & assembler inst
@@ -58,4 +64,9 @@ void CodeContainer::commit() {
     startPc = reinterpret_cast<Addr>(bufferStart);
     curPc = pcNow;
 
+}
+
+void CodeContainer::allocBufferFirst(U32 size) {
+    startPc = reinterpret_cast<Addr>(codeBuffer->getBuffer(size));
+    curPc = startPc;
 }

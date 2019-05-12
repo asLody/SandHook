@@ -22,6 +22,7 @@ namespace SandHook {
         class CodeBuffer {
         public:
             virtual void* getBuffer(U32 size) = 0;
+            virtual void resetLastBufferSize(U32 size){};
         };
 
         class CodeContainer {
@@ -31,6 +32,8 @@ namespace SandHook {
 
             void setCodeBuffer(CodeBuffer *codeBuffer);
 
+            //allow code relocate to get new pc first
+            void allocBufferFirst(U32 size);
             void append(Unit<Base>* unit);
             void commit();
 

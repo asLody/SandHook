@@ -7,19 +7,25 @@
 
 #include "exception.h"
 #include "instruction.h"
+#include "assembler.h"
+#include "decoder.h"
+
+using namespace SandHook::Assembler;
+using namespace SandHook::Decoder;
 
 namespace SandHook {
     namespace Asm {
 
-        template <typename Raw>
-        class CodeRelocateCallback {
+        class CodeRelocate : public InstVisitor {
         public:
-            virtual bool result(Unit<Raw>* unit, bool end) throw(ErrorCodeException) = 0;
-        };
 
-        template <typename Raw>
-        class CodeRelocate {
-            virtual bool relocate(Addr toPc, CodeRelocateCallback<Raw>& callback) throw(ErrorCodeException) = 0;
+            CodeRelocate(CodeContainer &codeContainer) : codeContainer(&codeContainer) {}
+
+            virtual bool relocate(Instruction<Base> *instruction, void* toPc) throw(ErrorCodeException) = 0;
+            virtual bool relocate(void* startPc, void* toPc, Addr len) throw(ErrorCodeException) = 0;
+
+        private:
+            CodeContainer* codeContainer;
         };
 
     }

@@ -57,3 +57,11 @@ void SandHook::Assembler::AssemblerA64::Movn(RegisterA64 &rd, U64 imme,
 void SandHook::Assembler::AssemblerA64::Emit(Unit<Base> &unit) {
     codeContainer.append(&unit);
 }
+
+void *SandHook::Assembler::AssemblerA64::getPC() {
+    return reinterpret_cast<void *>(codeContainer.curPc);
+}
+
+void *SandHook::Assembler::AssemblerA64::getStartPC() {
+    return reinterpret_cast<void *>(codeContainer.startPc);
+}

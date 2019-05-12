@@ -46,3 +46,18 @@ void *StaticCodeBuffer::getBuffer(U32 bufferSize) {
     memUnprotect(pc, bufferSize);
     return reinterpret_cast<void *>(pc);
 }
+
+void AndroidRellocBufferUnsafe::resetLastBufferSize(U32 size) {
+    if (executePageOffset + (size - lastAllocSize) <= currentExecutePageSize) {
+        executePageOffset += size - lastAllocSize;
+        lastAllocSize = size;
+    }
+}
+
+void *AndroidRellocBufferUnsafe::getBuffer(U32 bufferSize) {
+    void* res = AndroidCodeBuffer::getBuffer(bufferSize);
+    if (res) {
+        lastAllocSize = bufferSize;
+    }
+    return res;
+}
