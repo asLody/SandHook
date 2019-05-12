@@ -53,3 +53,7 @@ void SandHook::Assembler::AssemblerA64::Movn(RegisterA64 &rd, U64 imme,
                                              INST_A64(MOV_WIDE)::Shift shift) {
     MoveWide(rd, INST_A64(MOV_WIDE)::MOV_WideOp_N, imme, shift);
 }
+
+void SandHook::Assembler::AssemblerA64::Emit(Unit<Base> &unit) {
+    codeContainer.append(&unit);
+}

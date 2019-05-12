@@ -14,26 +14,6 @@
 #define DEFINE_OPCODE(X, V) const U32 OPCODE_A64(X) = V;
 #define DEFINE_STRUCT_A64(X) struct STRUCT_A64(X) : public Base
 
-enum InstructionFields {
-
-    // Registers.
-    kRdShift  = 0,
-    kRdBits   = 5,
-    kRnShift  = 5,
-    kRnBits   = 5,
-    kRaShift  = 10,
-    kRaBits   = 5,
-    kRmShift  = 16,
-    kRmBits   = 5,
-    kRtShift  = 0,
-    kRtBits   = 5,
-    kRt2Shift = 10,
-    kRt2Bits  = 5,
-    kRsShift  = 16,
-    kRsBits   = 5,
-
-};
-
 enum ImmBranchType {
     UnknownBranchType = 0,
     CondBranchType = 1,
@@ -222,6 +202,10 @@ DEFINE_STRUCT_A64(EXCEPTION_GEN) {
     InstA64 imm16:16;
     InstA64 op:3;
     InstA64 opcode1:8;
+};
+
+struct STRUCT_A64(SVC) : STRUCT_A64(EXCEPTION_GEN) {
+
 };
 
 

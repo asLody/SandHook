@@ -6,6 +6,10 @@
 #include <sys/mman.h>
 #include "sandhook_native.h"
 #include "inst_arm64.h"
+#include "decoder_arm64.h"
+
+using namespace SandHook::Asm;
+using namespace SandHook::Decoder;
 
 bool memUnprotect(Addr addr, Addr len) {
     long pagesize = 4096;
@@ -26,6 +30,12 @@ void do1() {
     do2();
 }
 
+class Visitor : public InstVisitor {
+    bool visit(Unit<Base> *unit, void *pc) override {
+        return true;
+    }
+};
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) {
@@ -40,7 +50,7 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
     if (IS_OPCODE(*codebl, B_BL)) {
 
         //decode
-        A64_B_BL a64bl(reinterpret_cast<STRUCT_A64(B_BL)*>(codebl));
+        A64_B_BL a64bl(*reinterpret_cast<STRUCT_A64(B_BL)*>(codebl));
         Off off = a64bl.offset;
         void (*dosth2)() =reinterpret_cast<void (*)()>(a64bl.getImmPCOffsetTarget());
         dosth2();
@@ -59,5 +69,13 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
         str.assembler();
         str.get();
     }
+
+    Arm64Decoder arm64Decoder = Arm64Decoder();
+
+    Visitor visitor = Visitor();
+
+    arm64Decoder.decode(reinterpret_cast<void *>(do1), 4 * 8, visitor);
+
+
 
 }

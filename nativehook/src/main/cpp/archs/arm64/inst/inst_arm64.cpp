@@ -16,13 +16,9 @@ U32 InstructionA64<InstStruct>::size() {
 
 
 //Unknow
-A64_UNKNOW::A64_UNKNOW(A64_STRUCT_UNKNOW *inst) : InstructionA64(inst) {
 
-}
-
-A64_UNKNOW::A64_UNKNOW(STRUCT_A64(UNKNOW) &inst) {
+A64_UNKNOW::A64_UNKNOW(STRUCT_A64(UNKNOW) &inst) : InstructionA64(&inst) {
     inst_backup = inst;
-    this->set(&inst_backup);
 }
 
 //PC Rel Inst
@@ -48,8 +44,8 @@ bool A64_INST_PC_REL<Inst>::pcRelate() {
 
 A64_ADR_ADRP::A64_ADR_ADRP() {}
 
-A64_ADR_ADRP::A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) *inst) : A64_INST_PC_REL(inst) {
-    decode(inst);
+A64_ADR_ADRP::A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) &inst) : A64_INST_PC_REL(&inst) {
+    decode(&inst);
 }
 
 Off A64_ADR_ADRP::getImmPCOffset() {
@@ -120,8 +116,8 @@ void A64_MOV_WIDE::decode(STRUCT_A64(MOV_WIDE) *inst) {
 
 A64_B_BL::A64_B_BL() {}
 
-A64_B_BL::A64_B_BL(STRUCT_A64(B_BL) *inst) : A64_INST_PC_REL(inst) {
-    decode(inst);
+A64_B_BL::A64_B_BL(STRUCT_A64(B_BL) &inst) : A64_INST_PC_REL(&inst) {
+    decode(&inst);
 }
 
 A64_B_BL::A64_B_BL(A64_B_BL::OP op, Off offset) : op(op), offset(offset) {
@@ -157,8 +153,8 @@ void A64_B_BL::assembler() {
 
 A64_CBZ_CBNZ::A64_CBZ_CBNZ() {}
 
-A64_CBZ_CBNZ::A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) *inst) : A64_INST_PC_REL(inst) {
-    decode(inst);
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) &inst) : A64_INST_PC_REL(&inst) {
+    decode(&inst);
 }
 
 A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Off offset, RegisterA64 *rt) : op(op),
@@ -192,8 +188,8 @@ void A64_CBZ_CBNZ::assembler() {
 
 A64_B_COND::A64_B_COND() {}
 
-A64_B_COND::A64_B_COND(STRUCT_A64(B_COND) *inst) : A64_INST_PC_REL(inst) {
-    decode(inst);
+A64_B_COND::A64_B_COND(STRUCT_A64(B_COND) &inst) : A64_INST_PC_REL(&inst) {
+    decode(&inst);
 }
 
 A64_B_COND::A64_B_COND(Condition condition, Off offset) : condition(condition), offset(offset) {}
@@ -257,8 +253,8 @@ void A64_TBZ_TBNZ::assembler() {
 
 A64_LDR_LIT::A64_LDR_LIT() {}
 
-A64_LDR_LIT::A64_LDR_LIT(STRUCT_A64(LDR_LIT) *inst) : A64_INST_PC_REL(inst) {
-    decode(inst);
+A64_LDR_LIT::A64_LDR_LIT(STRUCT_A64(LDR_LIT) &inst) : A64_INST_PC_REL(&inst) {
+    decode(&inst);
 }
 
 
@@ -528,3 +524,7 @@ void A64_EXCEPTION_GEN::assembler() {
 
 
 A64_SVC::A64_SVC(U16 imme) : A64_EXCEPTION_GEN(XXC, EL1,imme) {}
+
+A64_SVC::A64_SVC() {}
+
+A64_SVC::A64_SVC(STRUCT_A64(SVC) &inst) : A64_EXCEPTION_GEN(inst) {}

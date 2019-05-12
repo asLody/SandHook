@@ -179,7 +179,7 @@ namespace SandHook {
 
         class INST_A64(UNKNOW) : public InstructionA64<STRUCT_A64(UNKNOW)> {
         public:
-            A64_UNKNOW(STRUCT_A64(UNKNOW) *inst);
+
             A64_UNKNOW(STRUCT_A64(UNKNOW) &inst);
 
             DEFINE_INST_CODE(UNKNOW)
@@ -221,7 +221,7 @@ namespace SandHook {
 
             A64_ADR_ADRP();
 
-            A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) *inst);
+            A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) &inst);
 
             A64_ADR_ADRP(OP op, RegisterA64 *rd, S64 imme);
 
@@ -320,7 +320,7 @@ namespace SandHook {
 
             A64_B_BL();
 
-            A64_B_BL(STRUCT_A64(B_BL) *inst);
+            A64_B_BL(STRUCT_A64(B_BL) &inst);
 
             A64_B_BL(OP op, Off offset);
 
@@ -363,7 +363,7 @@ namespace SandHook {
 
             A64_CBZ_CBNZ();
 
-            A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) *inst);
+            A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) &inst);
 
             A64_CBZ_CBNZ(OP op, Off offset, RegisterA64 *rt);
 
@@ -390,7 +390,7 @@ namespace SandHook {
         public:
             A64_B_COND();
 
-            A64_B_COND(STRUCT_A64(B_COND) *inst);
+            A64_B_COND(STRUCT_A64(B_COND) &inst);
 
             A64_B_COND(Condition condition, Off offset);
 
@@ -454,7 +454,7 @@ namespace SandHook {
 
             A64_LDR_LIT();
 
-            A64_LDR_LIT(STRUCT_A64(LDR_LIT) *inst);
+            A64_LDR_LIT(STRUCT_A64(LDR_LIT) &inst);
 
             A64_LDR_LIT(OP op, RegisterA64 *rt, Off offset);
 
@@ -668,6 +668,10 @@ namespace SandHook {
         class INST_A64(SVC) : public INST_A64(EXCEPTION_GEN) {
         public:
             A64_SVC(U16 imme);
+
+            A64_SVC();
+
+            A64_SVC(STRUCT_A64(SVC) &inst);
 
             DEFINE_IS_EXT(EXCEPTION_GEN,  TEST_INST_OPCODE(EXCEPTION_GEN, 1) && TEST_INST_OPCODE(EXCEPTION_GEN, 2) && TEST_INST_FIELD(op, XXC) && TEST_INST_FIELD(ll, EL1))
 

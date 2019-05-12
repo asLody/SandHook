@@ -18,6 +18,10 @@ namespace SandHook {
             AssemblerA64(CodeBuffer* codeBuffer);
             void* finish();
 
+
+            void Emit(Unit<Base>& unit);
+
+
             void MoveWide(RegisterA64& rd, INST_A64(MOV_WIDE)::OP op, U64 imme, INST_A64(MOV_WIDE)::Shift shift);
 
             void Movz(RegisterA64& rd, U64 imme, INST_A64(MOV_WIDE)::Shift shift);
@@ -27,6 +31,8 @@ namespace SandHook {
             void Mov(WRegister& rd, U32 imme);
 
             void Mov(XRegister& rd, U64 imme);
+
+
 
         private:
             CodeContainer codeContainer = CodeContainer(nullptr);
