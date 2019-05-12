@@ -31,6 +31,10 @@ return COND; \
 
 #define TEST_INST_OPCODE(X, INDEX) inst_test.inst.opcode##INDEX == OPCODE_A64(X##_##INDEX)
 
+#define DEFINE_INST_CODE(X) \
+inline U32 instCode() override { \
+return InstCodeA64::X; \
+}
 
 namespace SandHook {
 
@@ -160,6 +164,8 @@ namespace SandHook {
             A64_UNKNOW(STRUCT_A64(UNKNOW) *inst);
             A64_UNKNOW(STRUCT_A64(UNKNOW) &inst);
 
+            DEFINE_INST_CODE(UNKNOW)
+
             inline bool unknow() override {
                 return true;
             }
@@ -203,9 +209,7 @@ namespace SandHook {
 
             DEFINE_IS(ADR_ADRP)
 
-            U32 instCode() override {
-                return isADRP() ? PCRelAddressingOp::ADRP : PCRelAddressingOp::ADR;
-            }
+            DEFINE_INST_CODE(ADR_ADRP)
 
             bool isADRP() {
                 return get()->op == OP::ADRP;
@@ -254,18 +258,7 @@ namespace SandHook {
 
             DEFINE_IS(MOV_WIDE)
 
-            inline U32 instCode() override {
-                switch (op) {
-                    case MOV_WideOp_K:
-                        return MOVK;
-                    case MOV_WideOp_N:
-                        return MOVN;
-                    case MOV_WideOp_Z:
-                        return MOVZ;
-                    default:
-                        return 0;
-                }
-            }
+            DEFINE_INST_CODE(MOV_WIDE)
 
             void assembler() override;
 
@@ -325,9 +318,7 @@ namespace SandHook {
                 return op;
             }
 
-            inline U32 instCode() override {
-                return op == B ? UnconditionalBranchOp::B : UnconditionalBranchOp::BL;
-            };
+            DEFINE_INST_CODE(B_BL)
 
             Off getImmPCOffset() override;
 
@@ -387,9 +378,7 @@ namespace SandHook {
 
             DEFINE_IS(B_COND)
 
-            inline U32 instCode() override {
-                return B_cond;
-            }
+            DEFINE_INST_CODE(B_COND)
 
             Off getImmPCOffset() override;
 
@@ -419,9 +408,7 @@ namespace SandHook {
 
             DEFINE_IS(TBZ_TBNZ)
 
-            inline U32 instCode() override {
-                return op == TBZ ? TestBranchOp::TBZ : TestBranchOp::TBNZ;
-            };
+            DEFINE_INST_CODE(TBZ_TBNZ)
 
             Off getImmPCOffset() override;
 
@@ -455,18 +442,7 @@ namespace SandHook {
 
             DEFINE_IS(LDR_LIT)
 
-            inline U32 instCode() override {
-                switch (op) {
-                    case LDR_W:
-                        return LoadLiteralOp::LDR_w_lit;
-                    case LDR_X:
-                        return LoadLiteralOp::LDR_x_lit;
-                    case LDR_SW:
-                        return LoadLiteralOp::LDRSW_x_lit;
-                    case LDR_PRFM:
-                        return LoadLiteralOp::PRFM_lit;
-                }
-            }
+            DEFINE_INST_CODE(LDR_LIT)
 
             Off getImmPCOffset() override;
 
@@ -498,6 +474,8 @@ namespace SandHook {
 
             DEFINE_IS_EXT(BR_BLR_RET, TEST_INST_OPCODE(BR_BLR_RET, 1) && TEST_INST_OPCODE(BR_BLR_RET, 2) && TEST_INST_OPCODE(BR_BLR_RET,3))
 
+            DEFINE_INST_CODE(BR_BLR_RET)
+
             void decode(A64_STRUCT_BR_BLR_RET *inst) override;
 
             void assembler() override;
@@ -528,6 +506,8 @@ namespace SandHook {
             A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand);
 
             DEFINE_IS(STR_IMM)
+
+            DEFINE_INST_CODE(MOV_REG)
 
             void decode(STRUCT_A64(STR_IMM) *inst) override;
 
@@ -562,6 +542,8 @@ namespace SandHook {
 
             DEFINE_IS(STR_UIMM)
 
+            DEFINE_INST_CODE(STR_UIMM)
+
             void decode(STRUCT_A64(STR_UIMM) *inst) override;
 
             void assembler() override;
@@ -587,6 +569,8 @@ namespace SandHook {
             A64_MOV_REG(RegisterA64 &rd, RegisterA64 &rm);
 
             DEFINE_IS_EXT(MOV_REG, TEST_INST_OPCODE(MOV_REG, 1) && TEST_INST_OPCODE(MOV_REG, 2))
+
+            DEFINE_INST_CODE(MOV_REG)
 
             void decode(A64_STRUCT_MOV_REG *inst) override;
 

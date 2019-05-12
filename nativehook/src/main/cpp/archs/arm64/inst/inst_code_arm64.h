@@ -7,7 +7,20 @@
 
 #include "inst_struct_aarch64.h"
 
-
+enum InstCodeA64 {
+    UNKNOW,
+    MOV_WIDE,
+    MOV_REG,
+    ADR_ADRP,
+    LDR_LIT,
+    STR_IMM,
+    STR_UIMM,
+    B_BL,
+    B_COND,
+    BR_BLR_RET,
+    CBZ_CBNZ,
+    TBZ_TBNZ,
+};
 
 // Generic fields.
 enum GenericInstrField {
