@@ -33,8 +33,30 @@ namespace SandHook {
             void Movn(RegisterA64& rd, U64 imme, INST_A64(MOV_WIDE)::Shift shift);
 
             void Mov(WRegister& rd, U32 imme);
-
             void Mov(XRegister& rd, U64 imme);
+
+            void Br(XRegister& rn);
+
+            void B(Off offset);
+            void B(Label* label);
+
+            void Bl(Off offset);
+            void Bl(Label* label);
+
+            void B(Condition condition, Off offset);
+            void B(Condition condition, Label* label);
+
+            void Tbz(RegisterA64 &rt, U32 bit, Off offset);
+            void Tbz(RegisterA64 &rt, U32 bit, Label* label);
+
+            void Tbnz(RegisterA64 &rt, U32 bit, Off offset);
+            void Tbnz(RegisterA64 &rt, U32 bit, Label* label);
+
+            void Cbz(RegisterA64 &rt, Off offset);
+            void Cbz(RegisterA64 &rt, Label* label);
+
+            void Cbnz(RegisterA64 &rt, Off offset);
+            void Cbnz(RegisterA64 &rt, Label* label);
 
 
         public:

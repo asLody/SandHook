@@ -48,6 +48,15 @@ A64_ADR_ADRP::A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) &inst) : A64_INST_PC_REL(&inst) 
     decode(&inst);
 }
 
+A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, XRegister &rd, S64 offset) : op(op), rd(&rd),
+                                                                             offset(offset) {
+    assembler();
+}
+
+A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, XRegister &rd, Label &label) {
+    bindLabel(label);
+}
+
 Off A64_ADR_ADRP::getImmPCOffset() {
     U32 hi = get()->immhi;
     U32 lo = get()->immlo;
@@ -63,19 +72,15 @@ Addr A64_ADR_ADRP::getImmPCOffsetTarget() {
     return getImmPCOffset() + reinterpret_cast<Addr>(base);
 }
 
-A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, RegisterA64 *rd, S64 imme) : op(op), rd(rd),
-                                                                             imme(imme) {
-    assembler();
-}
-
-void A64_ADR_ADRP::decode(STRUCT_A64(ADR_ADRP) *decode) {
-
-}
-
 void A64_ADR_ADRP::assembler() {
     SET_OPCODE(ADR_ADRP);
 }
 
+void A64_ADR_ADRP::decode(STRUCT_A64(ADR_ADRP) *inst) {
+    offset = getImmPCOffsetTarget();
+    rd = XReg(static_cast<U8>(get()->rd));
+    op = OP(get()->op);
+}
 
 //Mov Wide
 
@@ -157,9 +162,14 @@ A64_CBZ_CBNZ::A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) &inst) : A64_INST_PC_REL(&inst) 
     decode(&inst);
 }
 
-A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Off offset, RegisterA64 *rt) : op(op),
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Off offset, RegisterA64 &rt) : op(op),
                                                                                 offset(offset),
-                                                                                rt(rt) {}
+                                                                                rt(&rt) {}
+
+A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Label& label, RegisterA64 &rt) : op(op),
+                                                                               rt(&rt) {
+    bindLabel(label);
+}
 
 Off A64_CBZ_CBNZ::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
@@ -180,6 +190,11 @@ void A64_CBZ_CBNZ::assembler() {
     get()->op = op;
     get()->rt = rt->getCode();
     get()->sf = rt->isX() ? 1 : 0;
+    get()->imm19 = TruncateToUint19(offset >> 2);
+}
+
+void A64_CBZ_CBNZ::onOffsetApply(Off offset) {
+    this->offset = offset;
     get()->imm19 = TruncateToUint19(offset >> 2);
 }
 
@@ -209,6 +224,15 @@ void A64_B_COND::assembler() {
     get()->imm19 = TruncateToUint19(offset >> 2);
 }
 
+A64_B_COND::A64_B_COND(Condition condition, Label &label) {
+    bindLabel(label);
+}
+
+void A64_B_COND::onOffsetApply(Off offset) {
+    this->offset = offset;
+    get()->imm19 = TruncateToUint19(offset >> 2);
+}
+
 
 //TBZ TBNZ
 
@@ -218,10 +242,16 @@ A64_TBZ_TBNZ::A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) &inst) : A64_INST_PC_REL(&inst) 
     decode(&inst);
 }
 
-A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 *rt, U32 bit, Off offset) : op(op),
-                                                                                         rt(rt),
+A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 &rt, U32 bit, Off offset) : op(op),
+                                                                                         rt(&rt),
                                                                                          bit(bit),
                                                                                          offset(offset) {}
+
+A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 &rt, U32 bit, Label &label) : op(op),
+                                                                                     rt(&rt),
+                                                                                     bit(bit) {
+    bindLabel(label);
+}
 
 Off A64_TBZ_TBNZ::getImmPCOffset() {
     return signExtend64(14 + 2, COMBINE(get()->imm14, 0b00, 2));
@@ -244,6 +274,11 @@ void A64_TBZ_TBNZ::assembler() {
     get()->b5 = rt->isX() ? 1 : 0;
     get()->rt = rt->getCode();
     get()->b40 = static_cast<InstA64>(BITS(bit, sizeof(InstA64) - 5, sizeof(InstA64)));
+    get()->imm14 = TruncateToUint14(offset >> 2);
+}
+
+void A64_TBZ_TBNZ::onOffsetApply(Off offset) {
+    this->offset = offset;
     get()->imm14 = TruncateToUint14(offset >> 2);
 }
 

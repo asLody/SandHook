@@ -37,19 +37,71 @@ void CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) throw
 }
 
 IMPL_RELOCATE(B_BL) {
-
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+    if (inst->op == inst->BL) {
+        __ Mov(LR, targetAddr + inst->size());
+    }
+    __ Mov(IP1, targetAddr);
+    __ Br(IP1);
 }
 
 IMPL_RELOCATE(B_COND) {
 
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    Label *true_label = new Label();
+    Label *false_label = new Label();
+
+    __ B(inst->condition, true_label);
+    __ B(false_label);
+
+    __ Emit(true_label);
+    __ Mov(IP1, targetAddr);
+    __ Br(IP1);
+
+    __ Emit(false_label);
 }
 
 IMPL_RELOCATE(TBZ_TBNZ) {
 
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    Label *true_label = new Label();
+    Label *false_label = new Label();
+
+    if (inst->op == INST_A64(TBZ_TBNZ)::TBNZ) {
+        __ Tbnz(*inst->rt, inst->bit, true_label);
+    } else {
+        __ Tbz(*inst->rt, inst->bit, true_label);
+    }
+    __ B(false_label);
+
+    __ Emit(true_label);
+    __ Mov(IP1, targetAddr);
+    __ Br(IP1);
+
+    __ Emit(false_label);
 }
 
 IMPL_RELOCATE(CBZ_CBNZ) {
+    Addr targetAddr = inst->getImmPCOffsetTarget();
 
+    Label *true_label = new Label();
+    Label *false_label = new Label();
+
+    if (inst->op == INST_A64(CBZ_CBNZ)::CBNZ) {
+        __ Cbnz(*inst->rt, true_label);
+    } else {
+        __ Cbz(*inst->rt, true_label);
+    }
+
+    __ B(false_label);
+
+    __ Emit(true_label);
+    __ Mov(IP1, targetAddr);
+    __ Br(IP1);
+
+    __ Emit(false_label);
 }
 
 IMPL_RELOCATE(LDR_LIT) {
@@ -57,5 +109,5 @@ IMPL_RELOCATE(LDR_LIT) {
 }
 
 IMPL_RELOCATE(ADR_ADRP) {
-
+    __ Mov(*inst->rd, inst->getImmPCOffsetTarget());
 }

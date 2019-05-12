@@ -223,7 +223,9 @@ namespace SandHook {
 
             A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) &inst);
 
-            A64_ADR_ADRP(OP op, RegisterA64 *rd, S64 imme);
+            A64_ADR_ADRP(OP op, XRegister &rd, S64 offset);
+
+            A64_ADR_ADRP(OP op, XRegister &rd, Label &label);
 
             DEFINE_IS(ADR_ADRP)
 
@@ -237,14 +239,14 @@ namespace SandHook {
 
             Addr getImmPCOffsetTarget() override;
 
-            void decode(STRUCT_A64(ADR_ADRP) *decode) override;
+            void decode(A64_STRUCT_ADR_ADRP *inst) override;
 
             void assembler() override;
 
         public:
             OP op;
-            RegisterA64* rd;
-            S64 imme;
+            XRegister* rd;
+            S64 offset;
         };
 
 
@@ -365,13 +367,15 @@ namespace SandHook {
 
             A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) &inst);
 
-            A64_CBZ_CBNZ(OP op, Off offset, RegisterA64 *rt);
+            A64_CBZ_CBNZ(OP op, Off offset, RegisterA64 &rt);
+
+            A64_CBZ_CBNZ(OP op, Label& label, RegisterA64 &rt);
 
             DEFINE_IS(CBZ_CBNZ)
 
-            inline U32 instCode() override {
-                return op == CBZ ? CompareBranchOp::CBZ : CompareBranchOp::CBNZ;
-            }
+            DEFINE_INST_CODE(CBZ_CBNZ)
+
+            void onOffsetApply(Off offset) override;
 
             Off getImmPCOffset() override;
 
@@ -394,11 +398,15 @@ namespace SandHook {
 
             A64_B_COND(Condition condition, Off offset);
 
+            A64_B_COND(Condition condition, Label& label);
+
             DEFINE_IS(B_COND)
 
             DEFINE_INST_CODE(B_COND)
 
             Off getImmPCOffset() override;
+
+            void onOffsetApply(Off offset) override;
 
             void decode(STRUCT_A64(B_COND) *inst) override;
 
@@ -414,19 +422,23 @@ namespace SandHook {
         public:
 
             enum OP {
-                TBZ,
-                TBNZ
+                TBZ = 0,
+                TBNZ = 1
             };
 
             A64_TBZ_TBNZ();
 
             A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) &inst);
 
-            A64_TBZ_TBNZ(OP op, RegisterA64 *rt, U32 bit, Off offset);
+            A64_TBZ_TBNZ(OP op, RegisterA64 &rt, U32 bit, Off offset);
+
+            A64_TBZ_TBNZ(OP op, RegisterA64 &rt, U32 bit, Label& label);
 
             DEFINE_IS(TBZ_TBNZ)
 
             DEFINE_INST_CODE(TBZ_TBNZ)
+
+            void onOffsetApply(Off offset) override;
 
             Off getImmPCOffset() override;
 

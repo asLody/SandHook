@@ -4,45 +4,47 @@
 
 #include "assembler_a64.h"
 
-SandHook::Assembler::AssemblerA64::AssemblerA64(CodeBuffer* codeBuffer) {
+using namespace SandHook::Assembler;
+
+AssemblerA64::AssemblerA64(CodeBuffer* codeBuffer) {
     codeContainer.setCodeBuffer(codeBuffer);
 }
 
-void *SandHook::Assembler::AssemblerA64::getPC() {
+void *AssemblerA64::getPC() {
     return reinterpret_cast<void *>(codeContainer.curPc);
 }
 
-void *SandHook::Assembler::AssemblerA64::getStartPC() {
+void *AssemblerA64::getStartPC() {
     return reinterpret_cast<void *>(codeContainer.startPc);
 }
 
-void SandHook::Assembler::AssemblerA64::allocBufferFirst(U32 size) {
+void AssemblerA64::allocBufferFirst(U32 size) {
     codeContainer.allocBufferFirst(size);
 }
 
-void *SandHook::Assembler::AssemblerA64::finish() {
+void *AssemblerA64::finish() {
     codeContainer.commit();
     return reinterpret_cast<void *>(codeContainer.startPc);
 }
 
-void SandHook::Assembler::AssemblerA64::Emit(Unit<Base> *unit) {
+void AssemblerA64::Emit(Unit<Base> *unit) {
     codeContainer.append(unit);
 }
 
 void
-SandHook::Assembler::AssemblerA64::MoveWide(RegisterA64 &rd, INST_A64(MOV_WIDE)::OP op, U64 imme,
+AssemblerA64::MoveWide(RegisterA64 &rd, INST_A64(MOV_WIDE)::OP op, U64 imme,
                                             INST_A64(MOV_WIDE)::Shift shift) {
-    codeContainer.append(reinterpret_cast<Unit<Base> *>(new INST_A64(MOV_WIDE)(op, &rd, imme, shift)));
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MOV_WIDE)(op, &rd, imme, shift)));
 }
 
-void SandHook::Assembler::AssemblerA64::Mov(WRegister &rd, U32 imme) {
+void AssemblerA64::Mov(WRegister &rd, U32 imme) {
     const U16 h0 = BITS16L(imme);
     const U16 h1 = BITS16H(imme);
     Movz(rd, h0, INST_A64(MOV_WIDE)::Shift0);
     Movk(rd, h1, INST_A64(MOV_WIDE)::Shift1);
 }
 
-void SandHook::Assembler::AssemblerA64::Mov(XRegister &rd, U64 imme) {
+void AssemblerA64::Mov(XRegister &rd, U64 imme) {
     const U32 wl = BITS32L(imme);
     const U32 wh = BITS32H(imme);
     const U16 h0 = BITS16L(wl);
@@ -55,18 +57,83 @@ void SandHook::Assembler::AssemblerA64::Mov(XRegister &rd, U64 imme) {
     Movk(rd, h3, INST_A64(MOV_WIDE)::Shift3);
 }
 
-void SandHook::Assembler::AssemblerA64::Movz(RegisterA64 &rd, U64 imme,
+void AssemblerA64::Movz(RegisterA64 &rd, U64 imme,
                                              INST_A64(MOV_WIDE)::Shift shift) {
     MoveWide(rd, INST_A64(MOV_WIDE)::MOV_WideOp_Z, imme, shift);
 }
 
-void SandHook::Assembler::AssemblerA64::Movk(RegisterA64 &rd, U64 imme,
+void AssemblerA64::Movk(RegisterA64 &rd, U64 imme,
                                              INST_A64(MOV_WIDE)::Shift shift) {
     MoveWide(rd, INST_A64(MOV_WIDE)::MOV_WideOp_K, imme, shift);
 }
 
-void SandHook::Assembler::AssemblerA64::Movn(RegisterA64 &rd, U64 imme,
+void AssemblerA64::Movn(RegisterA64 &rd, U64 imme,
                                              INST_A64(MOV_WIDE)::Shift shift) {
     MoveWide(rd, INST_A64(MOV_WIDE)::MOV_WideOp_N, imme, shift);
 }
+
+void AssemblerA64::Br(XRegister &rn) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(BR_BLR_RET)(INST_A64(BR_BLR_RET)::BR, rn)));
+}
+
+void AssemblerA64::B(Off offset) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::B, offset)));
+}
+
+void AssemblerA64::B(Label *label) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::B, *label)));
+}
+
+void AssemblerA64::Bl(Off offset) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::BL, offset)));
+}
+
+void AssemblerA64::Bl(Label *label) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::BL, *label)));
+}
+
+void AssemblerA64::B(Condition condition, Off offset) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_COND)(condition, offset)));
+}
+
+void AssemblerA64::B(Condition condition, Label *label) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_COND)(condition, *label)));
+}
+
+void AssemblerA64::Tbz(RegisterA64 &rt, U32 bit, Label *label) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBZ, rt, bit, *label))));
+}
+
+void AssemblerA64::Tbz(RegisterA64 &rt, U32 bit, Off offset) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBZ, rt, bit, offset))));
+}
+
+void AssemblerA64::Tbnz(RegisterA64 &rt, U32 bit, Off offset) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBNZ, rt, bit, offset))));
+}
+
+void AssemblerA64::Tbnz(RegisterA64 &rt, U32 bit, Label *label) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBNZ, rt, bit, *label))));
+
+}
+
+void AssemblerA64::Cbz(RegisterA64 &rt, Off offset) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBZ, offset, rt))));
+}
+
+void AssemblerA64::Cbz(RegisterA64 &rt, Label *label) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBZ, *label, rt))));
+
+}
+
+void AssemblerA64::Cbnz(RegisterA64 &rt, Off offset) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBNZ, offset, rt))));
+
+}
+
+void AssemblerA64::Cbnz(RegisterA64 &rt, Label *label) {
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBNZ, *label, rt))));
+
+}
+
 
