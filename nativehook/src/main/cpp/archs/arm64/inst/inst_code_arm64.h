@@ -20,7 +20,9 @@ enum InstCodeA64 {
     BR_BLR_RET,
     CBZ_CBNZ,
     TBZ_TBNZ,
-    SUB_EXT_REG
+    SUB_EXT_REG,
+    EXCEPTION_GEN,
+    SVC
 };
 
 // Generic fields.

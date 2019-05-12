@@ -94,6 +94,13 @@ namespace SandHook {
             LeaveFlags = 0
         };
 
+        enum ExceptionLevel {
+            EL0 = 0b00,
+            EL1 = 0b01,
+            EL2 = 0b10,
+            EL3 = 0b11
+        };
+
         class Operand {
         public:
             inline explicit Operand(){};
@@ -624,6 +631,47 @@ namespace SandHook {
             RegisterA64* rn;
             Operand operand = Operand();
             FlagsUpdate flagsUpdate;
+        };
+
+
+        class INST_A64(EXCEPTION_GEN) : public InstructionA64<STRUCT_A64(EXCEPTION_GEN)> {
+        public:
+
+            enum OP {
+                XXC = 0b000,
+                BRK = 0b001,
+                HLT = 0b010,
+                DCP = 0b101
+            };
+
+            A64_EXCEPTION_GEN();
+
+            A64_EXCEPTION_GEN(STRUCT_A64(EXCEPTION_GEN) &inst);
+
+            A64_EXCEPTION_GEN(OP op, ExceptionLevel el, U16 imme);
+
+            DEFINE_IS_EXT(EXCEPTION_GEN, TEST_INST_OPCODE(EXCEPTION_GEN, 1) && TEST_INST_OPCODE(EXCEPTION_GEN, 2))
+
+            DEFINE_INST_CODE(EXCEPTION_GEN)
+
+            void decode(A64_STRUCT_EXCEPTION_GEN *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            ExceptionLevel el;
+            U16 imme;
+        };
+
+
+        class INST_A64(SVC) : public INST_A64(EXCEPTION_GEN) {
+        public:
+            A64_SVC(U16 imme);
+
+            DEFINE_IS_EXT(EXCEPTION_GEN,  TEST_INST_OPCODE(EXCEPTION_GEN, 1) && TEST_INST_OPCODE(EXCEPTION_GEN, 2) && TEST_INST_FIELD(op, XXC) && TEST_INST_FIELD(ll, EL1))
+
+            DEFINE_INST_CODE(SVC)
         };
 
     }

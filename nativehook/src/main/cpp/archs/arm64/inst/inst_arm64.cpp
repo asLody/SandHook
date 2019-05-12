@@ -464,7 +464,9 @@ void A64_MOV_REG::assembler() {
 
 A64_SUB_EXT_REG::A64_SUB_EXT_REG() {}
 
-A64_SUB_EXT_REG::A64_SUB_EXT_REG(STRUCT_A64(SUB_EXT_REG) &inst) : InstructionA64(&inst) {}
+A64_SUB_EXT_REG::A64_SUB_EXT_REG(STRUCT_A64(SUB_EXT_REG) &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
 
 A64_SUB_EXT_REG::A64_SUB_EXT_REG(S s, RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
                                    FlagsUpdate flagsUpdate) : s(s), rd(&rd), rn(&rn), operand(operand),
@@ -497,3 +499,32 @@ void A64_SUB_EXT_REG::assembler() {
     get()->rn = rn->getCode();
     get()->rd = rd->getCode();
 }
+
+
+
+A64_EXCEPTION_GEN::A64_EXCEPTION_GEN() {}
+
+A64_EXCEPTION_GEN::A64_EXCEPTION_GEN(STRUCT_A64(EXCEPTION_GEN) &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
+
+
+A64_EXCEPTION_GEN::A64_EXCEPTION_GEN(A64_EXCEPTION_GEN::OP op, ExceptionLevel el, U16 imme) : op(
+        op), el(el), imme(imme) {}
+
+void A64_EXCEPTION_GEN::decode(STRUCT_A64(EXCEPTION_GEN) *inst) {
+    op = OP(inst->op);
+    el = ExceptionLevel(inst->ll);
+    imme = static_cast<U16>(inst->imm16);
+}
+
+void A64_EXCEPTION_GEN::assembler() {
+    SET_OPCODE_MULTI(EXCEPTION_GEN, 1);
+    SET_OPCODE_MULTI(EXCEPTION_GEN, 2);
+    get()->op = op;
+    get()->ll = el;
+    get()->imm16 = imme;
+}
+
+
+A64_SVC::A64_SVC(U16 imme) : A64_EXCEPTION_GEN(XXC, EL1,imme) {}
