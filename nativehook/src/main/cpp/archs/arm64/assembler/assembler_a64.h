@@ -16,12 +16,14 @@ namespace SandHook {
 
         public:
             AssemblerA64(CodeBuffer* codeBuffer);
+
+            void allocBufferFirst(U32 size);
             void* getStartPC();
             void* getPC();
             void* finish();
 
 
-            void Emit(Unit<Base>& unit);
+            void Emit(Unit<Base>* unit);
 
 
             void MoveWide(RegisterA64& rd, INST_A64(MOV_WIDE)::OP op, U64 imme, INST_A64(MOV_WIDE)::Shift shift);

@@ -8,9 +8,25 @@ SandHook::Assembler::AssemblerA64::AssemblerA64(CodeBuffer* codeBuffer) {
     codeContainer.setCodeBuffer(codeBuffer);
 }
 
+void *SandHook::Assembler::AssemblerA64::getPC() {
+    return reinterpret_cast<void *>(codeContainer.curPc);
+}
+
+void *SandHook::Assembler::AssemblerA64::getStartPC() {
+    return reinterpret_cast<void *>(codeContainer.startPc);
+}
+
+void SandHook::Assembler::AssemblerA64::allocBufferFirst(U32 size) {
+    codeContainer.allocBufferFirst(size);
+}
+
 void *SandHook::Assembler::AssemblerA64::finish() {
     codeContainer.commit();
     return reinterpret_cast<void *>(codeContainer.startPc);
+}
+
+void SandHook::Assembler::AssemblerA64::Emit(Unit<Base> *unit) {
+    codeContainer.append(unit);
 }
 
 void
@@ -54,14 +70,3 @@ void SandHook::Assembler::AssemblerA64::Movn(RegisterA64 &rd, U64 imme,
     MoveWide(rd, INST_A64(MOV_WIDE)::MOV_WideOp_N, imme, shift);
 }
 
-void SandHook::Assembler::AssemblerA64::Emit(Unit<Base> &unit) {
-    codeContainer.append(&unit);
-}
-
-void *SandHook::Assembler::AssemblerA64::getPC() {
-    return reinterpret_cast<void *>(codeContainer.curPc);
-}
-
-void *SandHook::Assembler::AssemblerA64::getStartPC() {
-    return reinterpret_cast<void *>(codeContainer.startPc);
-}
