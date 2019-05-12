@@ -217,11 +217,11 @@ DEFINE_STRUCT_A64(SUB_EXT_REG) {
 DEFINE_OPCODE(EXCEPTION_GEN_1, 0b11010100)
 DEFINE_OPCODE(EXCEPTION_GEN_2, 0b11100100)
 DEFINE_STRUCT_A64(EXCEPTION_GEN) {
-    InstA64 opcode1:8;
-    InstA64 op:3;
-    InstA64 imm16:16;
-    InstA64 opcode2:3;
     InstA64 ll:2;
+    InstA64 opcode2:3;
+    InstA64 imm16:16;
+    InstA64 op:3;
+    InstA64 opcode1:8;
 };
 
 
