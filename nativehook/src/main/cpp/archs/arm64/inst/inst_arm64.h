@@ -573,6 +573,7 @@ namespace SandHook {
 
         class INST_A64(MOV_REG) : public InstructionA64<STRUCT_A64(MOV_REG)> {
         public:
+
             A64_MOV_REG();
 
             A64_MOV_REG(STRUCT_A64(MOV_REG) &inst);
@@ -593,25 +594,32 @@ namespace SandHook {
         };
 
 
-        class INST_A64(SUBS_EXT_REG) : InstructionA64<STRUCT_A64(SUBS_EXT_REG)> {
+        class INST_A64(SUB_EXT_REG) : InstructionA64<STRUCT_A64(SUB_EXT_REG)> {
         public:
-            A64_SUBS_EXT_REG();
 
-            A64_SUBS_EXT_REG(STRUCT_A64(SUBS_EXT_REG) &inst);
+            enum S {
+                Unsign = 0b0,
+                Sign = 0b1,
+            };
 
-            A64_SUBS_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
+            A64_SUB_EXT_REG();
+
+            A64_SUB_EXT_REG(STRUCT_A64(SUB_EXT_REG) &inst);
+
+            A64_SUB_EXT_REG(S s, RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
                              FlagsUpdate flagsUpdate);
 
-            DEFINE_IS(SUBS_EXT_REG)
+            DEFINE_IS_EXT(SUB_EXT_REG, TEST_INST_OPCODE(SUB_EXT_REG, 1) && TEST_INST_OPCODE(SUB_EXT_REG, 2))
 
-            DEFINE_INST_CODE(SUBS_EXT_REG)
+            DEFINE_INST_CODE(SUB_EXT_REG)
 
-            void decode(A64_STRUCT_SUBS_EXT_REG *inst) override;
+            void decode(A64_STRUCT_SUB_EXT_REG *inst) override;
 
             void assembler() override;
 
 
         public:
+            S s;
             RegisterA64* rd;
             RegisterA64* rn;
             Operand operand = Operand();

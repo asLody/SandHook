@@ -462,15 +462,16 @@ void A64_MOV_REG::assembler() {
 
 
 
-A64_SUBS_EXT_REG::A64_SUBS_EXT_REG() {}
+A64_SUB_EXT_REG::A64_SUB_EXT_REG() {}
 
-A64_SUBS_EXT_REG::A64_SUBS_EXT_REG(STRUCT_A64(SUBS_EXT_REG) &inst) : InstructionA64(&inst) {}
+A64_SUB_EXT_REG::A64_SUB_EXT_REG(STRUCT_A64(SUB_EXT_REG) &inst) : InstructionA64(&inst) {}
 
-A64_SUBS_EXT_REG::A64_SUBS_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
-                                   FlagsUpdate flagsUpdate) : rd(&rd), rn(&rn), operand(operand),
+A64_SUB_EXT_REG::A64_SUB_EXT_REG(S s, RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
+                                   FlagsUpdate flagsUpdate) : s(s), rd(&rd), rn(&rn), operand(operand),
                                                               flagsUpdate(flagsUpdate) {}
 
-void A64_SUBS_EXT_REG::decode(STRUCT_A64(SUBS_EXT_REG) *inst) {
+void A64_SUB_EXT_REG::decode(STRUCT_A64(SUB_EXT_REG) *inst) {
+    s = S(inst->S);
     if (inst->sf == 1) {
         rd = XReg(static_cast<U8>(inst->rd));
         rn = XReg(static_cast<U8>(inst->rn));
@@ -485,8 +486,10 @@ void A64_SUBS_EXT_REG::decode(STRUCT_A64(SUBS_EXT_REG) *inst) {
     operand.shift = Shift(inst->imm3);
 }
 
-void A64_SUBS_EXT_REG::assembler() {
-    SET_OPCODE(SUBS_EXT_REG);
+void A64_SUB_EXT_REG::assembler() {
+    SET_OPCODE_MULTI(SUB_EXT_REG, 1);
+    SET_OPCODE_MULTI(SUB_EXT_REG, 2);
+    get()->S = s;
     get()->sf = rd->isX() ? 1 : 0;
     get()->option = operand.extend;
     get()->imm3 = operand.shift;
