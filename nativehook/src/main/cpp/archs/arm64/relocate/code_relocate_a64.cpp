@@ -18,7 +18,7 @@ CodeRelocateA64::CodeRelocateA64(AssemblerA64 &assembler) : CodeRelocate(assembl
 }
 
 void CodeRelocateA64::relocate(void *startPc, void *toPc, Addr len) throw(ErrorCodeException) {
-    __ finish();
+
 }
 
 void CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) throw(ErrorCodeException) {
@@ -33,6 +33,8 @@ void CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) throw
         CASE(CBZ_CBNZ)
         CASE(LDR_LIT)
         CASE(ADR_ADRP)
+        default:
+            __ Emit(instruction);
     }
 }
 

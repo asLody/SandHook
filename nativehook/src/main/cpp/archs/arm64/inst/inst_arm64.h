@@ -188,6 +188,10 @@ namespace SandHook {
                 return true;
             }
 
+            void decode(A64_STRUCT_UNKNOW *inst) override;
+
+            void assembler() override;
+
         private:
             STRUCT_A64(UNKNOW) inst_backup;
         };

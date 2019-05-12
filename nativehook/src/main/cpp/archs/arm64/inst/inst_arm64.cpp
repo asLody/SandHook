@@ -18,7 +18,15 @@ U32 InstructionA64<InstStruct>::size() {
 //Unknow
 
 A64_UNKNOW::A64_UNKNOW(STRUCT_A64(UNKNOW) &inst) : InstructionA64(&inst) {
-    inst_backup = inst;
+    decode(&inst);
+}
+
+void A64_UNKNOW::decode(A64_STRUCT_UNKNOW *inst) {
+    inst_backup = *inst;
+}
+
+void A64_UNKNOW::assembler() {
+    set(inst_backup);
 }
 
 //PC Rel Inst
