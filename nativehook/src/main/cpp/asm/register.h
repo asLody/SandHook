@@ -36,6 +36,10 @@ namespace SandHook {
                 return 0;
             };
 
+            inline U8 getWideInBytes() {
+                return static_cast<U8>(getWide() / BITS_OF_BYTE);
+            };
+
             inline bool is32Bit() {
                 return getWide() == Reg32Bit;
             }

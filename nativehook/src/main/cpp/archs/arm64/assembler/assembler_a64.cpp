@@ -133,6 +133,29 @@ void AssemblerA64::Cbnz(RegisterA64 &rt, Off offset) {
 
 void AssemblerA64::Cbnz(RegisterA64 &rt, Label *label) {
     Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBNZ, *label, rt))));
+}
+
+void AssemblerA64::Str(RegisterA64 &rt, const MemOperand& memOperand) {
+    if (memOperand.addr_mode == Offset) {
+        Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(STR_UIMM)(rt, memOperand)));
+    } else {
+        Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(STR_IMM)(rt, memOperand)));
+    }
+}
+
+void AssemblerA64::Pop(RegisterA64 &rd) {
+
+}
+
+void AssemblerA64::Push(RegisterA64 &rt) {
+    if (rt.isX()) {
+        Str(rt, MemOperand(&SP, -1 * rt.getWideInBytes(), PreIndex));
+    } else {
+        Str(rt, MemOperand(&WSP, -1 * rt.getWideInBytes(), PreIndex));
+    }
+}
+
+void AssemblerA64::Cmp(RegisterA64 &rn, const Operand &operand) {
 
 }
 

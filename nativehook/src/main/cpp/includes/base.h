@@ -197,11 +197,6 @@ inline int32_t BITS32H(int64_t value) {
     return static_cast<int32_t>(value >> 32);
 }
 
-// left/right shift
-#define LFT(a, b, c) ((a & ((1 << b) - 1)) << c)
-#define RHT(a, b, c) ((a >> c) & ((1 << b) - 1))
-
-
 #define COMBINE(hi, lo, lowide) (hi << lowide) | lo
 
 /* borrow from gdb, refer: binutils-gdb/gdb/arch/arm.h */

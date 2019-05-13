@@ -58,6 +58,15 @@ namespace SandHook {
             void Cbnz(RegisterA64 &rt, Off offset);
             void Cbnz(RegisterA64 &rt, Label* label);
 
+            void Str(RegisterA64& rt, const MemOperand& memOperand);
+
+
+            void Pop(RegisterA64& rt);
+            void Push(RegisterA64& rt);
+
+            void Subs();
+            void Cmp(RegisterA64& rn, const Operand& operand);
+
 
         public:
             CodeContainer codeContainer = CodeContainer(nullptr);

@@ -149,6 +149,26 @@ DEFINE_STRUCT_A64(LDR_LIT) {
     InstA64 op:2;
 };
 
+
+DEFINE_OPCODE(LDR_UIMM, 0b11100101)
+DEFINE_STRUCT_A64(LDR_UIMM) {
+    InstA64 rt:WideReg;
+    InstA64 rn:WideReg;
+    InstA64 imm12:12;
+    InstA64 opcode:8;
+    InstA64 size:2;
+};
+
+DEFINE_OPCODE(LDR_IMM, 0b111000010)
+DEFINE_STRUCT_A64(LDR_IMM) {
+    InstA64 rt:WideReg;
+    InstA64 rn:WideReg;
+    InstA64 addrmode:2;
+    InstA64 imm9:9;
+    InstA64 opcode:9;
+    InstA64 size:2;
+};
+
 DEFINE_OPCODE(BR_BLR_RET_1, 0b110101100)
 DEFINE_OPCODE(BR_BLR_RET_2, 0b11111000000)
 DEFINE_OPCODE(BR_BLR_RET_3, 0b00000)
@@ -205,8 +225,10 @@ DEFINE_STRUCT_A64(EXCEPTION_GEN) {
 };
 
 struct STRUCT_A64(SVC) : STRUCT_A64(EXCEPTION_GEN) {
-
 };
+
+
+
 
 
 #endif //SANDHOOK_NH_INST_AARCH64_H

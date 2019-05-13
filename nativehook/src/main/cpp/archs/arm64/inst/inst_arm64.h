@@ -66,10 +66,6 @@ namespace SandHook {
                 return ExtractSignedBitfield32(bits - 1, 0, value);
             }
 
-            bool isPCRelAddressing() {
-                return mask(PCRelAddressingFMask) == PCRelAddressingFixed;
-            }
-
             InstType instType() override {
                 return A64;
             }
@@ -520,7 +516,8 @@ namespace SandHook {
         };
 
 
-        class INST_A64(STR_IMM) : public InstructionA64<STRUCT_A64(STR_IMM)> {
+        template <typename Inst>
+        class A64LoadAndStoreImm : public InstructionA64<Inst> {
         public:
 
             enum AdMod {
@@ -532,6 +529,28 @@ namespace SandHook {
                 Size32 = 0b10,
                 Size64 = 0b11
             };
+
+            A64LoadAndStoreImm() {}
+
+            A64LoadAndStoreImm(Inst *inst) : InstructionA64<Inst>(inst) {}
+
+            A64LoadAndStoreImm(RegisterA64 *rt, const MemOperand &operand) : rt(rt),
+                                                                             operand(operand) {}
+
+            RegisterA64* rt;
+            MemOperand operand = MemOperand();
+        protected:
+            AdMod addrMode;
+            Size regSize;
+            U8 scale;
+            bool wback;
+            bool postindex;
+            Off offset;
+        };
+
+
+        class INST_A64(STR_IMM) : public A64LoadAndStoreImm<STRUCT_A64(STR_IMM)> {
+        public:
 
             A64_STR_IMM();
 
@@ -547,26 +566,11 @@ namespace SandHook {
 
             void assembler() override;
 
-        public:
-            RegisterA64* rt;
-            MemOperand operand = MemOperand();
-        private:
-            AdMod addrMode;
-            Size regSize;
-            U8 scale;
-            bool wback;
-            bool postindex;
-            Off offset;
         };
 
 
-        class INST_A64(STR_UIMM) : public InstructionA64<STRUCT_A64(STR_UIMM)> {
+        class INST_A64(STR_UIMM) : public A64LoadAndStoreImm<STRUCT_A64(STR_UIMM)> {
         public:
-
-            enum Size {
-                Size32 = 0b10,
-                Size64 = 0b11
-            };
 
             A64_STR_UIMM();
 
@@ -581,16 +585,6 @@ namespace SandHook {
             void decode(STRUCT_A64(STR_UIMM) *inst) override;
 
             void assembler() override;
-
-        public:
-            RegisterA64* rt;
-            MemOperand operand = MemOperand();
-        private:
-            Size regSize;
-            U8 scale;
-            bool wback = false;
-            bool postindex = false;
-            Off offset;
         };
 
 
@@ -692,6 +686,36 @@ namespace SandHook {
             DEFINE_IS_EXT(EXCEPTION_GEN,  TEST_INST_OPCODE(EXCEPTION_GEN, 1) && TEST_INST_OPCODE(EXCEPTION_GEN, 2) && TEST_INST_FIELD(op, XXC) && TEST_INST_FIELD(ll, EL1))
 
             DEFINE_INST_CODE(SVC)
+        };
+
+
+        class INST_A64(LDR_IMM) : A64LoadAndStoreImm<STRUCT_A64(LDR_IMM)> {
+        public:
+            A64_LDR_IMM();
+
+            A64_LDR_IMM(STRUCT_A64(LDR_IMM) &inst);
+
+            A64_LDR_IMM(RegisterA64 *rt, const MemOperand &operand);
+
+        private:
+            void decode(STRUCT_A64(LDR_IMM) *inst) override;
+
+            void assembler() override;
+        };
+
+
+        class INST_A64(LDR_UIMM) : A64LoadAndStoreImm<STRUCT_A64(LDR_UIMM)> {
+        public:
+            A64_LDR_UIMM();
+
+            A64_LDR_UIMM(STRUCT_A64(LDR_UIMM) &inst);
+
+            A64_LDR_UIMM(RegisterA64 *rt, const MemOperand &operand);
+
+        private:
+            void decode(STRUCT_A64(LDR_UIMM) *inst) override;
+
+            void assembler() override;
         };
 
     }
