@@ -143,8 +143,28 @@ void AssemblerA64::Str(RegisterA64 &rt, const MemOperand& memOperand) {
     }
 }
 
-void AssemblerA64::Pop(RegisterA64 &rd) {
+void AssemblerA64::Ldr(RegisterA64 &rt, const MemOperand &memOperand) {
+    if (memOperand.addr_mode == Offset) {
+        Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_UIMM)(rt, memOperand)));
+    } else {
+        Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_IMM)(rt, memOperand)));
+    }
+}
 
+void AssemblerA64::Ldrsw(XRegister &rt, const MemOperand& memOperand) {
+    if (memOperand.addr_mode == Offset) {
+        Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDRSW_UIMM)(rt, memOperand)));
+    } else {
+        Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDRSW_IMM)(rt, memOperand)));
+    }
+}
+
+void AssemblerA64::Pop(RegisterA64 &rd) {
+    if (rd.isX()) {
+        Ldr(rd, MemOperand(&SP, -1 * rd.getWideInBytes(), PreIndex));
+    } else {
+        Ldr(rd, MemOperand(&WSP, -1 * rd.getWideInBytes(), PreIndex));
+    }
 }
 
 void AssemblerA64::Push(RegisterA64 &rt) {

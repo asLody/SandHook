@@ -59,7 +59,9 @@ namespace SandHook {
             void Cbnz(RegisterA64 &rt, Label* label);
 
             void Str(RegisterA64& rt, const MemOperand& memOperand);
+            void Ldr(RegisterA64& rt, const MemOperand& memOperand);
 
+            void Ldrsw(XRegister& rt, const MemOperand& memOperand);
 
             void Pop(RegisterA64& rt);
             void Push(RegisterA64& rt);

@@ -15,6 +15,8 @@ enum InstCodeA64 {
     LDR_LIT,
     LDR_UIMM,
     LDR_IMM,
+    LDRSW_UIMM,
+    LDRSW_IMM,
     STR_IMM,
     STR_UIMM,
     B_BL,

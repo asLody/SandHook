@@ -107,7 +107,27 @@ IMPL_RELOCATE(CBZ_CBNZ) {
 }
 
 IMPL_RELOCATE(LDR_LIT) {
-
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+    XRegister* rtX = XReg(inst->rt->getCode());
+    WRegister* rtW = WReg(inst->rt->getCode());
+    switch (inst->op) {
+        case INST_A64(LDR_LIT)::LDR_X:
+            __ Mov(*rtX, targetAddr);
+            __ Ldr(*rtW, MemOperand(rtX, 0, Offset));
+            break;
+        case INST_A64(LDR_LIT)::LDR_W:
+            __ Mov(*rtX, targetAddr);
+            __ Ldr(*rtX, MemOperand(rtX, 0, Offset));
+            break;
+        case INST_A64(LDR_LIT)::LDR_SW:
+            break;
+        case INST_A64(LDR_LIT)::LDR_PRFM:
+            __ Push(X0);
+            __ Mov(X0, targetAddr);
+            __ Ldrsw(X0, MemOperand(rtX, 0, Offset));
+            __ Pop(X0);
+            break;
+    }
 }
 
 IMPL_RELOCATE(ADR_ADRP) {

@@ -611,7 +611,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(SUB_EXT_REG) : InstructionA64<STRUCT_A64(SUB_EXT_REG)> {
+        class INST_A64(SUB_EXT_REG) : public InstructionA64<STRUCT_A64(SUB_EXT_REG)> {
         public:
 
             enum S {
@@ -664,7 +664,7 @@ namespace SandHook {
 
             DEFINE_INST_CODE(EXCEPTION_GEN)
 
-            void decode(A64_STRUCT_EXCEPTION_GEN *inst) override;
+            void decode(STRUCT_A64(EXCEPTION_GEN) *inst) override;
 
             void assembler() override;
 
@@ -689,30 +689,72 @@ namespace SandHook {
         };
 
 
-        class INST_A64(LDR_IMM) : A64LoadAndStoreImm<STRUCT_A64(LDR_IMM)> {
+        class INST_A64(LDR_IMM) : public A64LoadAndStoreImm<STRUCT_A64(LDR_IMM)> {
         public:
             A64_LDR_IMM();
 
             A64_LDR_IMM(STRUCT_A64(LDR_IMM) &inst);
 
-            A64_LDR_IMM(RegisterA64 *rt, const MemOperand &operand);
+            A64_LDR_IMM(RegisterA64 &rt, const MemOperand &operand);
 
-        private:
+            DEFINE_IS(LDR_IMM)
+
+            DEFINE_INST_CODE(LDR_IMM)
+
             void decode(STRUCT_A64(LDR_IMM) *inst) override;
 
             void assembler() override;
         };
 
 
-        class INST_A64(LDR_UIMM) : A64LoadAndStoreImm<STRUCT_A64(LDR_UIMM)> {
+        class INST_A64(LDR_UIMM) : public A64LoadAndStoreImm<STRUCT_A64(LDR_UIMM)> {
         public:
             A64_LDR_UIMM();
 
             A64_LDR_UIMM(STRUCT_A64(LDR_UIMM) &inst);
 
-            A64_LDR_UIMM(RegisterA64 *rt, const MemOperand &operand);
+            A64_LDR_UIMM(RegisterA64 &rt, const MemOperand &operand);
 
-        private:
+            DEFINE_IS(LDR_UIMM)
+
+            DEFINE_INST_CODE(LDR_UIMM)
+
+            void decode(STRUCT_A64(LDR_UIMM) *inst) override;
+
+            void assembler() override;
+        };
+
+
+        class INST_A64(LDRSW_IMM) : public INST_A64(LDR_IMM) {
+        public:
+            A64_LDRSW_IMM();
+
+            A64_LDRSW_IMM(INST_A64(LDRSW_IMM) &inst);
+
+            A64_LDRSW_IMM(XRegister &rt, const MemOperand &operand);
+
+            DEFINE_IS_EXT(LDRSW_IMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_IMM)) && TEST_INST_FIELD(size, Size32))
+
+            DEFINE_INST_CODE(LDRSW_IMM)
+
+            void decode(STRUCT_A64(LDR_IMM) *inst) override;
+
+            void assembler() override;
+        };
+
+
+        class INST_A64(LDRSW_UIMM) : public INST_A64(LDR_UIMM) {
+        public:
+            A64_LDRSW_UIMM();
+
+            A64_LDRSW_UIMM(STRUCT_A64(LDR_UIMM) &inst);
+
+            A64_LDRSW_UIMM(XRegister &rt, const MemOperand &operand);
+
+            DEFINE_IS_EXT(LDRSW_UIMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_UIMM)) && TEST_INST_FIELD(size, Size32))
+
+            DEFINE_INST_CODE(LDRSW_UIMM)
+
             void decode(STRUCT_A64(LDR_UIMM) *inst) override;
 
             void assembler() override;
