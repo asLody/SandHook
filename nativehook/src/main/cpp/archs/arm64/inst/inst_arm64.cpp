@@ -300,12 +300,20 @@ A64_LDR_LIT::A64_LDR_LIT(STRUCT_A64(LDR_LIT) &inst) : A64_INST_PC_REL(&inst) {
     decode(&inst);
 }
 
-
-A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 *rt, Off offset) : op(op), rt(rt),
+A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 &rt, Off offset) : op(op), rt(&rt),
                                                                              offset(offset) {}
+
+A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 &rt, Label& label) : op(op), rt(&rt) {
+    bindLabel(label);
+}
 
 Off A64_LDR_LIT::getImmPCOffset() {
     return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
+}
+
+void A64_LDR_LIT::onOffsetApply(Off offset) {
+    this->offset = offset;
+    get()->imm19 = TruncateToUint19(offset >> 2);
 }
 
 void A64_LDR_LIT::decode(STRUCT_A64(LDR_LIT) *inst) {
@@ -699,9 +707,9 @@ void A64_LDR_UIMM::assembler() {
 
 A64_LDRSW_IMM::A64_LDRSW_IMM() {}
 
-A64_LDRSW_IMM::A64_LDRSW_IMM(INST_A64(LDRSW_IMM) &inst) : A64_LDR_IMM(inst) {}
+A64_LDRSW_IMM::A64_LDRSW_IMM(STRUCT_A64(LDRSW_IMM) &inst) : A64_LDR_IMM(inst) {}
 
-A64_LDRSW_IMM::A64_LDRSW_IMM(XRegister &rt, const MemOperand &operand) : A64_LDR_IMM(rt,
+A64_LDRSW_IMM::A64_LDRSW_IMM(RegisterA64 &rt, const MemOperand &operand) : A64_LDR_IMM(rt,
                                                                                        operand) {}
 
 void A64_LDRSW_IMM::decode(STRUCT_A64(LDR_IMM) *inst) {

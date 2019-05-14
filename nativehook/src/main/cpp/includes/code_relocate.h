@@ -21,8 +21,8 @@ namespace SandHook {
 
             CodeRelocate(CodeContainer &codeContainer) : codeContainer(&codeContainer) {}
 
-            virtual void relocate(Instruction<Base> *instruction, void* toPc) throw(ErrorCodeException) = 0;
-            virtual void relocate(void* startPc, void* toPc, Addr len) throw(ErrorCodeException) = 0;
+            virtual void* relocate(Instruction<Base> *instruction, void* toPc) throw(ErrorCodeException) = 0;
+            virtual void* relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) = 0;
 
         private:
             CodeContainer* codeContainer;

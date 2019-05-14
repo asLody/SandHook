@@ -7,9 +7,13 @@
 #include "sandhook_native.h"
 #include "inst_arm64.h"
 #include "decoder_arm64.h"
+#include "hook.h"
 
 using namespace SandHook::Asm;
 using namespace SandHook::Decoder;
+using namespace SandHook::Hook;
+
+void (*dosth3Backup)() = nullptr;
 
 bool memUnprotect(Addr addr, Addr len) {
     long pagesize = 4096;
@@ -24,6 +28,24 @@ bool memUnprotect(Addr addr, Addr len) {
 
 void do2() {
     int a = 1 + 1;
+    int b = 1 + 1;
+    int c = 1 + 1;
+    int d = 1 + 1;
+}
+
+void do3() {
+    int a = 1 + 1;
+    int b = 1 + 1;
+    int c = 1 + 1;
+    int d = a + b + c;
+}
+
+void do3replace() {
+    int a = 1 + 1;
+    int b = 1 + 1;
+    int c = 1 + 1;
+    int d = 1 + 1;
+    dosth3Backup();
 }
 
 void do1() {
@@ -76,6 +98,12 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
 
     arm64Decoder.decode(reinterpret_cast<void *>(do1), 4 * 8, visitor);
 
+    InlineHookArm64Android inlineHookArm64Android = InlineHookArm64Android();
 
+    dosth3Backup = reinterpret_cast<void (*)()>(inlineHookArm64Android.inlineHook(
+            reinterpret_cast<void *>(do3),
+            reinterpret_cast<void *>(do3replace)));
+
+    do3();
 
 }

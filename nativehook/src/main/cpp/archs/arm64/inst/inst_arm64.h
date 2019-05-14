@@ -468,13 +468,17 @@ namespace SandHook {
 
             A64_LDR_LIT(STRUCT_A64(LDR_LIT) &inst);
 
-            A64_LDR_LIT(OP op, RegisterA64 *rt, Off offset);
+            A64_LDR_LIT(OP op, RegisterA64 &rt, Off offset);
+
+            A64_LDR_LIT(OP op, RegisterA64 &rt, Label& label);
 
             DEFINE_IS(LDR_LIT)
 
             DEFINE_INST_CODE(LDR_LIT)
 
             Off getImmPCOffset() override;
+
+            void onOffsetApply(Off offset) override;
 
             void decode(STRUCT_A64(LDR_LIT) *inst) override;
 
@@ -729,9 +733,9 @@ namespace SandHook {
         public:
             A64_LDRSW_IMM();
 
-            A64_LDRSW_IMM(INST_A64(LDRSW_IMM) &inst);
+            A64_LDRSW_IMM(STRUCT_A64(LDRSW_IMM) &inst);
 
-            A64_LDRSW_IMM(XRegister &rt, const MemOperand &operand);
+            A64_LDRSW_IMM(RegisterA64 &rt, const MemOperand &operand);
 
             DEFINE_IS_EXT(LDRSW_IMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_IMM)) && TEST_INST_FIELD(size, Size32))
 
@@ -740,7 +744,7 @@ namespace SandHook {
             void decode(STRUCT_A64(LDR_IMM) *inst) override;
 
             void assembler() override;
-        };
+    };
 
 
         class INST_A64(LDRSW_UIMM) : public INST_A64(LDR_UIMM) {

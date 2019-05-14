@@ -20,7 +20,14 @@ typedef int32_t S32;
 typedef int64_t S64;
 
 typedef size_t Addr;
+
+//32bit
+#if defined(__i386__) || defined(__arm__)
+typedef S32 Off;
+//64bit
+#elif defined(__aarch64__) || defined(__x86_64__)
 typedef S64 Off;
+#endif
 
 const int PTR_BYTE = sizeof(void*);
 

@@ -37,8 +37,7 @@ label_alloc_new_space:
     return mmapRes;
 }
 
-
-
+AndroidCodeBuffer::AndroidCodeBuffer() {}
 
 StaticCodeBuffer::StaticCodeBuffer(Addr pc) : pc(pc) {}
 

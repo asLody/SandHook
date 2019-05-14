@@ -3,6 +3,7 @@
 //
 
 #include "code_relocate_a64.h"
+#include "decoder_arm64.h"
 
 #define __ assemblerA64->
 
@@ -17,14 +18,23 @@ CodeRelocateA64::CodeRelocateA64(AssemblerA64 &assembler) : CodeRelocate(assembl
     this->assemblerA64 = &assembler;
 }
 
-void CodeRelocateA64::relocate(void *startPc, void *toPc, Addr len) throw(ErrorCodeException) {
-
+void* CodeRelocateA64::relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
+    assemblerA64->allocBufferFirst(static_cast<U32>(len * 8));
+    void* curPc = assemblerA64->getPC();
+    Arm64Decoder decoder = Arm64Decoder();
+    if (toPc == nullptr) {
+        decoder.decode(startPc, len, *this);
+    } else {
+        //TODO
+    }
+    return curPc;
 }
 
-void CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) throw(ErrorCodeException) {
+void* CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) throw(ErrorCodeException) {
+    void* curPc = assemblerA64->getPC();
     if (!instruction->pcRelate()) {
         __ Emit(instruction);
-        return;
+        return curPc;
     }
     switch (instruction->instCode()) {
         CASE(B_BL)
@@ -36,6 +46,7 @@ void CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) throw
         default:
             __ Emit(instruction);
     }
+    return curPc;
 }
 
 IMPL_RELOCATE(B_BL) {
@@ -132,4 +143,9 @@ IMPL_RELOCATE(LDR_LIT) {
 
 IMPL_RELOCATE(ADR_ADRP) {
     __ Mov(*inst->rd, inst->getImmPCOffsetTarget());
+}
+
+bool CodeRelocateA64::visit(Unit<Base> *unit, void *pc) {
+    relocate(reinterpret_cast<Instruction<Base> *>(unit), assemblerA64->getPC());
+    return true;
 }

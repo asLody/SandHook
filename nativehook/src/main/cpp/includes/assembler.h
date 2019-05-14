@@ -37,6 +37,10 @@ namespace SandHook {
             void append(Unit<Base>* unit);
             void commit();
 
+            Addr size();
+
+            virtual ~CodeContainer();
+
         public:
             //before commit is virtual address so = 0, after commit is real address
             Addr startPc = 0;

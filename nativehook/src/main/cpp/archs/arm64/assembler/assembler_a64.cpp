@@ -27,6 +27,15 @@ void *AssemblerA64::finish() {
     return reinterpret_cast<void *>(codeContainer.startPc);
 }
 
+
+void AssemblerA64::Emit(U64 data64) {
+    Emit(reinterpret_cast<Unit<Base>*>(new Data64(data64)));
+}
+
+void AssemblerA64::Emit(U32 data32) {
+    Emit(reinterpret_cast<Unit<Base>*>(new Data32(data32)));
+}
+
 void AssemblerA64::Emit(Unit<Base> *unit) {
     codeContainer.append(unit);
 }
@@ -149,6 +158,10 @@ void AssemblerA64::Ldr(RegisterA64 &rt, const MemOperand &memOperand) {
     } else {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_IMM)(rt, memOperand)));
     }
+}
+
+void AssemblerA64::Ldr(RegisterA64 &rt, Label &label) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(rt.isX() ? INST_A64(LDR_LIT)::LDR_X : INST_A64(LDR_LIT)::LDR_W, rt, label)));
 }
 
 void AssemblerA64::Ldrsw(XRegister &rt, const MemOperand& memOperand) {

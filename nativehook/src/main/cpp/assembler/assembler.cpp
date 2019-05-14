@@ -70,3 +70,14 @@ void CodeContainer::allocBufferFirst(U32 size) {
     startPc = reinterpret_cast<Addr>(codeBuffer->getBuffer(size));
     curPc = startPc;
 }
+
+CodeContainer::~CodeContainer() {
+    std::list<Unit<Base>*>::iterator unit;
+    for(unit = units.begin();unit != units.end(); ++unit) {
+        delete (*unit);
+    }
+}
+
+Addr CodeContainer::size() {
+    return curPc - startPc;
+}

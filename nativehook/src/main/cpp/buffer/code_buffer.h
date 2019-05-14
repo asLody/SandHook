@@ -12,6 +12,9 @@ namespace SandHook {
     namespace Assembler {
         class AndroidCodeBuffer : public CodeBuffer {
         public:
+
+            AndroidCodeBuffer();
+
             void *getBuffer(U32 bufferSize) override;
 
         protected:

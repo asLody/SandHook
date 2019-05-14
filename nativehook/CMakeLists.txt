@@ -32,6 +32,7 @@ add_library( # Sets the name of the library.
              src/main/cpp/assembler/assembler.cpp
              src/main/cpp/buffer/code_buffer.cpp
              src/main/cpp/utils/platform.cpp
+             src/main/cpp/hook/hook.cpp
         )
 
 

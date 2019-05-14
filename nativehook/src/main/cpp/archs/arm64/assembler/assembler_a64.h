@@ -5,7 +5,7 @@
 #ifndef SANDHOOK_NH_ASSEMBLER_A64_H
 #define SANDHOOK_NH_ASSEMBLER_A64_H
 
-#include <assembler.h>
+#include "assembler.h"
 #include "register_a64.h"
 #include "inst_arm64.h"
 
@@ -22,9 +22,9 @@ namespace SandHook {
             void* getPC();
             void* finish();
 
-
+            void Emit(U32 data32);
+            void Emit(U64 data64);
             void Emit(Unit<Base>* unit);
-
 
             void MoveWide(RegisterA64& rd, INST_A64(MOV_WIDE)::OP op, U64 imme, INST_A64(MOV_WIDE)::Shift shift);
 
@@ -60,6 +60,8 @@ namespace SandHook {
 
             void Str(RegisterA64& rt, const MemOperand& memOperand);
             void Ldr(RegisterA64& rt, const MemOperand& memOperand);
+
+            void Ldr(RegisterA64& rt, Label& label);
 
             void Ldrsw(XRegister& rt, const MemOperand& memOperand);
 
