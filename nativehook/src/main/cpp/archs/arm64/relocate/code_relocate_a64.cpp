@@ -52,7 +52,7 @@ void* CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) thro
 IMPL_RELOCATE(B_BL) {
     Addr targetAddr = inst->getImmPCOffsetTarget();
     if (inst->op == inst->BL) {
-        __ Mov(LR, targetAddr + inst->size());
+        __ Mov(LR, (Addr)inst->getPC() + inst->size());
     }
     __ Mov(IP1, targetAddr);
     __ Br(IP1);

@@ -188,20 +188,20 @@ inline int32_t ExtractSignedBitfield32(int msb, int lsb, U32 x) {
 }
 
 
-inline int16_t BITS16L(int32_t value) {
-    return static_cast<int16_t>(value);
+inline U16 BITS16L(U32 value) {
+    return static_cast<U16>(value & 0xffff);
 }
 
-inline int16_t BITS16H(int32_t value) {
-    return static_cast<int16_t>(value >> 16);
+inline U16 BITS16H(U32 value) {
+    return static_cast<U16>(value >> 16);
 }
 
-inline int32_t BITS32L(int64_t value) {
-    return static_cast<int32_t>(value);
+inline U32 BITS32L(U64 value) {
+    return static_cast<U32>(value);
 }
 
-inline int32_t BITS32H(int64_t value) {
-    return static_cast<int32_t>(value >> 32);
+inline U32 BITS32H(U64 value) {
+    return static_cast<U32>(value >> 32);
 }
 
 #define COMBINE(hi, lo, lowide) (hi << lowide) | lo

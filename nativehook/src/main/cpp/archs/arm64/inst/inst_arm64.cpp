@@ -58,7 +58,6 @@ A64_ADR_ADRP::A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) &inst) : A64_INST_PC_REL(&inst) 
 
 A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, XRegister &rd, S64 offset) : op(op), rd(&rd),
                                                                              offset(offset) {
-    assembler();
 }
 
 A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, XRegister &rd, Label &label) {
@@ -99,9 +98,7 @@ A64_MOV_WIDE::A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) &inst) : InstructionA64(&inst) {
 }
 
 A64_MOV_WIDE::A64_MOV_WIDE(A64_MOV_WIDE::OP op,RegisterA64* rd, U16 imme, U8 shift)
-        : shift(shift), op(op), imme(imme), rd(rd) {
-    assembler();
-}
+        : shift(shift), op(op), imme(imme), rd(rd) {}
 
 void A64_MOV_WIDE::assembler() {
     SET_OPCODE(MOV_WIDE);

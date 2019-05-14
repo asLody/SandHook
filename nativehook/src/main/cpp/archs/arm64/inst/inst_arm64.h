@@ -256,11 +256,11 @@ namespace SandHook {
 
             enum OP {
                 // Move and keep.
-                MOV_WideOp_K = 0b00,
+                MOV_WideOp_K = 0b11,
                 // Move with zero.
                 MOV_WideOp_Z = 0b10,
                 // Move with non-zero.
-                MOV_WideOp_N = 0b11,
+                MOV_WideOp_N = 0b00,
             };
 
             enum Shift {
