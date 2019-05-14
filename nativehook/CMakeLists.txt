@@ -42,10 +42,12 @@ include_directories(
         src/main/cpp/elf
         src/main/cpp/utils
         src/main/cpp/includes
+        src/main/cpp/buffer
         src/main/cpp/archs/arm64/inst
         src/main/cpp/archs/arm64/register
         src/main/cpp/archs/arm64/decoder
         src/main/cpp/archs/arm64/assembler
+        src/main/cpp/archs/arm64/relocate
         src/main/cpp/archs/arm32/inst
         src/main/cpp/archs/arm32/register
 )

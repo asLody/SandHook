@@ -25,9 +25,15 @@ namespace SandHook {
 
         class InlineHookArm64Android : InlineHook {
         public:
+            inline InlineHookArm64Android() {
+                hookLock = new std::mutex();
+            };
+            inline ~InlineHookArm64Android() {
+                delete hookLock;
+            }
             void *inlineHook(void *origin, void *replace) override;
         protected:
-            std::mutex* hookLock = new std::mutex();
+            std::mutex* hookLock;
         };
 
     }

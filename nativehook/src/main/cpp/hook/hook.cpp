@@ -4,17 +4,20 @@
 
 #include "hook.h"
 
-#include "../buffer/code_buffer.h"
-#include "../../../../../hooklib/src/main/cpp/utils/lock.h"
+#include "code_buffer.h"
+#include "lock.h"
 
 using namespace SandHook::Hook;
 using namespace SandHook::Decoder;
 using namespace SandHook::Asm;
 using namespace SandHook::Assembler;
+using namespace SandHook::Utils;
 
 
 #include "assembler_a64.h"
+#include "code_relocate_a64.h"
 #include "../archs/arm64/relocate/code_relocate_a64.h"
+
 AndroidCodeBuffer* backupBuffer = new AndroidCodeBuffer();
 void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     AutoLock lock(hookLock);
