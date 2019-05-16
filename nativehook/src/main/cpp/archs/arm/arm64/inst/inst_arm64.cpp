@@ -309,12 +309,12 @@ A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 &rt, Label& label) : op
 }
 
 Off A64_LDR_LIT::getImmPCOffset() {
-    return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
+    return DECODE_OFFSET(19, 2);
 }
 
 void A64_LDR_LIT::onOffsetApply(Off offset) {
     this->offset = offset;
-    get()->imm19 = TruncateToUint19(offset >> 2);
+    ENCODE_OFFSET(19, 2);
 }
 
 void A64_LDR_LIT::decode(STRUCT_A64(LDR_LIT) *inst) {
@@ -331,7 +331,7 @@ void A64_LDR_LIT::assembler() {
     SET_OPCODE(LDR_LIT);
     get()->rt = rt->getCode();
     get()->op = op;
-    get()->imm19 = TruncateToUint19(offset >> 2);
+    ENCODE_OFFSET(19, 2);
 }
 
 
@@ -352,6 +352,7 @@ void A64_BR_BLR_RET::decode(A64_STRUCT_BR_BLR_RET *inst) {
 void A64_BR_BLR_RET::assembler() {
     SET_OPCODE_MULTI(BR_BLR_RET, 1);
     SET_OPCODE_MULTI(BR_BLR_RET, 2);
+    SET_OPCODE_MULTI(BR_BLR_RET, 3);
     ENCODE_RN;
     ENCODE_OP;
 }
