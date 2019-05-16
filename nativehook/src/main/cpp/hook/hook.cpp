@@ -14,10 +14,11 @@ using namespace SandHook::Assembler;
 using namespace SandHook::Utils;
 
 
+
 #include "assembler_a64.h"
 #include "code_relocate_a64.h"
 #include "code_relocate_a64.h"
-
+using namespace SandHook::RegistersA64;
 AndroidCodeBuffer* backupBuffer = new AndroidCodeBuffer();
 void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     AutoLock lock(hookLock);

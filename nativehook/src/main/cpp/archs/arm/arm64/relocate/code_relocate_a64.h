@@ -10,6 +10,7 @@
 
 using namespace SandHook::Assembler;
 using namespace SandHook::Decoder;
+using namespace SandHook::AsmA64;
 
 #define DEFINE_RELOCATE(X) void relocate_##X (INST_A64(X)* inst, void* toPc) throw(ErrorCodeException);
 

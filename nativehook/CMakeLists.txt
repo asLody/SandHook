@@ -11,28 +11,31 @@ cmake_minimum_required(VERSION 3.4.1)
 # Gradle automatically packages shared libraries with your APK.
 
 add_library( # Sets the name of the library.
-             sandhook-native
+        sandhook-native
 
-             # Sets the library as a shared library.
-             SHARED
+        # Sets the library as a shared library.
+        SHARED
 
-             # Provides a relative path to your source file(s).
-             src/main/cpp/sandhook_native.cpp
-             src/main/cpp/decoder/decoder.cpp
-             src/main/cpp/archs/arm64/assembler/assembler_a64.cpp
-             src/main/cpp/archs/arm64/inst/inst_arm64.cpp
-             src/main/cpp/archs/arm64/register/register_a64.cpp
-             src/main/cpp/archs/arm64/register/register_list_a64.cpp
-             src/main/cpp/archs/arm64/decoder/decoder_arm64.cpp
-             src/main/cpp/archs/arm64/relocate/code_relocate_a64.cpp
-             src/main/cpp/archs/arm32/inst/inst_arm32.cpp
-             src/main/cpp/archs/arm32/register/register_a32.cpp
-             src/main/cpp/relocate/code_relocate.cpp
-             src/main/cpp/elf/elf.cpp
-             src/main/cpp/assembler/assembler.cpp
-             src/main/cpp/buffer/code_buffer.cpp
-             src/main/cpp/utils/platform.cpp
-             src/main/cpp/hook/hook.cpp
+        # Provides a relative path to your source file(s).
+        src/main/cpp/sandhook_native.cpp
+        src/main/cpp/decoder/decoder.cpp
+        src/main/cpp/archs/arm/arm64/assembler/assembler_a64.cpp
+        src/main/cpp/archs/arm/arm64/inst/inst_arm64.cpp
+        src/main/cpp/archs/arm/arm64/register/register_a64.cpp
+        src/main/cpp/archs/arm/arm64/register/register_list_a64.cpp
+        src/main/cpp/archs/arm/arm64/decoder/decoder_arm64.cpp
+        src/main/cpp/archs/arm/arm64/relocate/code_relocate_a64.cpp
+        src/main/cpp/archs/arm/arm32/inst/inst_arm32.cpp
+        src/main/cpp/archs/arm/arm32/inst/inst_t32.cpp
+        src/main/cpp/archs/arm/arm32/inst/inst_t16.cpp
+        src/main/cpp/archs/arm/arm32/register/register_a32.cpp
+        src/main/cpp/archs/arm/arm32/register/register_list_a32.cpp
+        src/main/cpp/relocate/code_relocate.cpp
+        src/main/cpp/elf/elf.cpp
+        src/main/cpp/assembler/assembler.cpp
+        src/main/cpp/buffer/code_buffer.cpp
+        src/main/cpp/utils/platform.cpp
+        src/main/cpp/hook/hook.cpp
         )
 
 
@@ -43,13 +46,14 @@ include_directories(
         src/main/cpp/utils
         src/main/cpp/includes
         src/main/cpp/buffer
-        src/main/cpp/archs/arm64/inst
-        src/main/cpp/archs/arm64/register
-        src/main/cpp/archs/arm64/decoder
-        src/main/cpp/archs/arm64/assembler
-        src/main/cpp/archs/arm64/relocate
-        src/main/cpp/archs/arm32/inst
-        src/main/cpp/archs/arm32/register
+        src/main/cpp/archs/arm
+        src/main/cpp/archs/arm/arm64/inst
+        src/main/cpp/archs/arm/arm64/register
+        src/main/cpp/archs/arm/arm64/decoder
+        src/main/cpp/archs/arm/arm64/assembler
+        src/main/cpp/archs/arm/arm64/relocate
+        src/main/cpp/archs/arm/arm32/inst
+        src/main/cpp/archs/arm/arm32/register
 )
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -59,22 +63,22 @@ include_directories(
 # completing its build.
 
 find_library( # Sets the name of the path variable.
-              log-lib
+        log-lib
 
-              # Specifies the name of the NDK library that
-              # you want CMake to locate.
-              log )
+        # Specifies the name of the NDK library that
+        # you want CMake to locate.
+        log)
 
 # Specifies libraries CMake should link to your target library. You
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 
 target_link_libraries( # Specifies the target library.
-                       sandhook-native
+        sandhook-native
 
-                       # Links the target library to the log library
-                       # included in the NDK.
-                       ${log-lib} )
+        # Links the target library to the log library
+        # included in the NDK.
+        ${log-lib})
 
 
 add_definitions(-std=c++11)

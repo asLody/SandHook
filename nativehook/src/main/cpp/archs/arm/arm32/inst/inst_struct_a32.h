@@ -2,11 +2,11 @@
 // Created by swift on 2019/5/12.
 //
 
-#ifndef SANDHOOK_NH_INST_STRCUT_ARM32_H
-#define SANDHOOK_NH_INST_STRCUT_ARM32_H
+#ifndef SANDHOOK_NH_INST_STRUCT_ARM32_H
+#define SANDHOOK_NH_INST_STRUCT_ARM32_H
 
 
-#include "../../../asm/instruction.h"
+#include "instruction.h"
 
 #define STRUCT_A32(X) A32_STRUCT_##X
 #define OPCODE_A32(X) A32_OPCODE_##X

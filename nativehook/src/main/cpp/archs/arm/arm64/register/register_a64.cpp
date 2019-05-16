@@ -6,6 +6,8 @@
 #include "register_list_a64.h"
 
 using namespace SandHook::Asm;
+using namespace SandHook::RegistersA64;
+
 
 RegisterA64::RegisterA64() {}
 

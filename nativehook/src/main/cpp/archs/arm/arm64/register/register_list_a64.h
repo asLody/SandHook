@@ -19,21 +19,26 @@ using namespace SandHook::Asm;
   R(16) R(17) R(18) R(19) R(20) R(21) R(22) R(23)                              \
   R(24) R(25) R(26) R(27) R(28) R(29) R(30) R(31)
 
+
+namespace SandHook {
+namespace RegistersA64 {
+
 #define DEFINE_REGISTERS(N) \
   extern WRegister W##N;  \
   extern XRegister X##N;
     AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS)
 #undef DEFINE_REGISTERS
 
-extern WRegister WSP;
-extern XRegister SP;
-extern XRegister IP0;
-extern XRegister IP1;
-extern XRegister LR;
+    extern WRegister WSP;
+    extern XRegister SP;
+    extern XRegister IP0;
+    extern XRegister IP1;
+    extern XRegister LR;
 //zero reg
-extern XRegister XZR;
-extern WRegister WZR;
-extern RegisterA64 UnknowRegiser;
+    extern XRegister XZR;
+    extern WRegister WZR;
+    extern RegisterA64 UnknowRegiser;
+}}
 
 #define XReg(N) XRegister::get(N)
 #define WReg(N) WRegister::get(N)

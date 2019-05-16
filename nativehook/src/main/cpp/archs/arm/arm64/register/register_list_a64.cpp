@@ -4,6 +4,9 @@
 
 #include "register_list_a64.h"
 
+
+namespace SandHook {
+namespace RegistersA64 {
 #define INIT_REGISTERS(N) \
     WRegister W##N = WRegister(N); \
     XRegister X##N = XRegister(N);
@@ -19,6 +22,7 @@ XRegister LR = X30;
 XRegister XZR = X31;
 WRegister WZR = W31;
 RegisterA64 UnknowRegiser = RegisterA64(38);
-
+}
+}
 //cmp....
 #define ZeroRegFor(X) X.isX() ? XZR : WZR

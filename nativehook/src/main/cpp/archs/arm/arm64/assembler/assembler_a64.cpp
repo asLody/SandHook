@@ -5,6 +5,8 @@
 #include "assembler_a64.h"
 
 using namespace SandHook::Assembler;
+using namespace SandHook::RegistersA64;
+using namespace SandHook::AsmA64;
 
 AssemblerA64::AssemblerA64(CodeBuffer* codeBuffer) {
     codeContainer.setCodeBuffer(codeBuffer);

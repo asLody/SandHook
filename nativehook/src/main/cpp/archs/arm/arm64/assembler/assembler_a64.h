@@ -9,6 +9,8 @@
 #include "register_a64.h"
 #include "inst_arm64.h"
 
+using namespace SandHook::AsmA64;
+
 namespace SandHook {
     namespace Assembler {
 

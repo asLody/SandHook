@@ -7,7 +7,11 @@
 #define SET_OPCODE(X) get()->opcode = OPCODE_A64(X)
 #define SET_OPCODE_MULTI(X, INDEX) get()->opcode##INDEX = OPCODE_A64(X##_##INDEX)
 
+#define DECODE_OFFSET(bits, ext) signExtend64(bits + ext, COMBINE(get()->imm##bits, 0, ext))
+#define ENCODE_OFFSET(bits, ext) get()->imm##bits = TruncateToUint##bits(offset >> ext)
+
 using namespace SandHook::Asm;
+using namespace SandHook::AsmA64;
 
 template<typename InstStruct>
 U32 InstructionA64<InstStruct>::size() {
@@ -104,19 +108,19 @@ void A64_MOV_WIDE::assembler() {
     SET_OPCODE(MOV_WIDE);
     get()->imm16 = imme;
     get()->hw = static_cast<InstA64>(shift / 16);
-    get()->opc = op;
+    ENCODE_OP;
     get()->sf = rd->isX() ? 1 : 0;
-    get()->rd = rd->getCode();
+    ENCODE_RD;
 }
 
 void A64_MOV_WIDE::decode(STRUCT_A64(MOV_WIDE) *inst) {
     imme = static_cast<U16>(inst->imm16);
     shift = static_cast<U8>(inst->hw * 16);
-    op = OP(inst->opc);
+    op = OP(inst->op);
     if (inst->sf == 1) {
-        rd = XReg(static_cast<U8>(inst->rd));
+        DECODE_RD(XReg);
     } else {
-        rd = WReg(static_cast<U8>(inst->rd));
+        DECODE_RD(WReg);
     }
 }
 
@@ -138,23 +142,23 @@ A64_B_BL::A64_B_BL(A64_B_BL::OP op, Label &l) : op(op) {
 }
 
 Off A64_B_BL::getImmPCOffset() {
-    return signExtend64(26 + 2, COMBINE(get()->imm26, 0b00, 2));
+    return DECODE_OFFSET(26, 2);
 }
 
 void A64_B_BL::onOffsetApply(Off offset) {
     this->offset = offset;
-    get()->imm26 = TruncateToUint26(offset >> 2);
+    ENCODE_OFFSET(26, 2);
 }
 
 void A64_B_BL::decode(STRUCT_A64(B_BL) *inst) {
-    op = OP(inst->op);
+    DECODE_OP;
     offset = getImmPCOffset();
 }
 
 void A64_B_BL::assembler() {
     SET_OPCODE(B_BL);
-    get()->op = op;
-    get()->imm26 = TruncateToUint26(offset >> 2);
+    ENCODE_OP;
+    ENCODE_OFFSET(26, 2);
 }
 
 
@@ -177,30 +181,30 @@ A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Label& label, RegisterA64 &rt) :
 }
 
 Off A64_CBZ_CBNZ::getImmPCOffset() {
-    return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
+    return DECODE_OFFSET(19, 2);
 }
 
 void A64_CBZ_CBNZ::decode(STRUCT_A64(CBZ_CBNZ) *inst) {
-    op = OP(get()->op);
+    DECODE_OP;
     if (inst->sf == 1) {
-        rt = XReg(static_cast<U8>(inst->rt));
+        DECODE_RT(XReg);
     } else {
-        rt = WReg(static_cast<U8>(inst->rt));
+        DECODE_RT(WReg);
     }
     offset = getImmPCOffset();
 }
 
 void A64_CBZ_CBNZ::assembler() {
     SET_OPCODE(CBZ_CBNZ);
-    get()->op = op;
-    get()->rt = rt->getCode();
+    ENCODE_OP;
+    ENCODE_RT;
     get()->sf = rt->isX() ? 1 : 0;
-    get()->imm19 = TruncateToUint19(offset >> 2);
+    ENCODE_OFFSET(19, 2);
 }
 
 void A64_CBZ_CBNZ::onOffsetApply(Off offset) {
     this->offset = offset;
-    get()->imm19 = TruncateToUint19(offset >> 2);
+    ENCODE_OFFSET(19, 2);
 }
 
 
@@ -215,18 +219,18 @@ A64_B_COND::A64_B_COND(STRUCT_A64(B_COND) &inst) : A64_INST_PC_REL(&inst) {
 A64_B_COND::A64_B_COND(Condition condition, Off offset) : condition(condition), offset(offset) {}
 
 Off A64_B_COND::getImmPCOffset() {
-    return signExtend64(19 + 2, COMBINE(get()->imm19, 0b00, 2));
+    return DECODE_OFFSET(19, 2);
 }
 
 void A64_B_COND::decode(STRUCT_A64(B_COND) *inst) {
-    condition = Condition(inst->cond);
+    DECODE_COND;
     offset = getImmPCOffset();
 }
 
 void A64_B_COND::assembler() {
     SET_OPCODE(B_COND);
-    get()->cond = condition;
-    get()->imm19 = TruncateToUint19(offset >> 2);
+    ENCODE_COND;
+    ENCODE_OFFSET(19, 2);
 }
 
 A64_B_COND::A64_B_COND(Condition condition, Label &label) {
@@ -235,7 +239,7 @@ A64_B_COND::A64_B_COND(Condition condition, Label &label) {
 
 void A64_B_COND::onOffsetApply(Off offset) {
     this->offset = offset;
-    get()->imm19 = TruncateToUint19(offset >> 2);
+    ENCODE_OFFSET(19, 2);
 }
 
 
@@ -259,27 +263,27 @@ A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 &rt, U32 bit, Label 
 }
 
 Off A64_TBZ_TBNZ::getImmPCOffset() {
-    return signExtend64(14 + 2, COMBINE(get()->imm14, 0b00, 2));
+    return DECODE_OFFSET(14, 2);
 }
 
 void A64_TBZ_TBNZ::decode(STRUCT_A64(TBZ_TBNZ) *inst) {
     bit = COMBINE(inst->b5, inst->b40, 5);
     if (inst->b5 == 1) {
-        rt = XReg(static_cast<U8>(inst->rt));
+        DECODE_RT(XReg);
     } else {
-        rt = WReg(static_cast<U8>(inst->rt));
+        DECODE_RT(WReg);
     }
-    op = OP(inst->op);
+    DECODE_OP;
     offset = getImmPCOffset();
 }
 
 void A64_TBZ_TBNZ::assembler() {
     SET_OPCODE(TBZ_TBNZ);
-    get()->op = op;
+    ENCODE_OP;
     get()->b5 = rt->isX() ? 1 : 0;
-    get()->rt = rt->getCode();
+    ENCODE_RT;
     get()->b40 = static_cast<InstA64>(BITS(bit, sizeof(InstA64) - 5, sizeof(InstA64)));
-    get()->imm14 = TruncateToUint14(offset >> 2);
+    ENCODE_OFFSET(14, 2);
 }
 
 void A64_TBZ_TBNZ::onOffsetApply(Off offset) {
@@ -316,9 +320,9 @@ void A64_LDR_LIT::onOffsetApply(Off offset) {
 void A64_LDR_LIT::decode(STRUCT_A64(LDR_LIT) *inst) {
     op = OP(inst->op);
     if (op == LDR_W) {
-        rt = WReg(static_cast<U8>(inst->rt));
+        DECODE_RT(WReg);
     } else {
-        rt = XReg(static_cast<U8>(inst->rt));
+        DECODE_RT(XReg);
     }
     offset = getImmPCOffset();
 }
@@ -341,16 +345,15 @@ A64_BR_BLR_RET::A64_BR_BLR_RET(STRUCT_A64(BR_BLR_RET) &inst) : InstructionA64(&i
 A64_BR_BLR_RET::A64_BR_BLR_RET(A64_BR_BLR_RET::OP op, XRegister &rn) : op(op), rn(&rn) {}
 
 void A64_BR_BLR_RET::decode(A64_STRUCT_BR_BLR_RET *inst) {
-    rn = XReg(static_cast<U8>(inst->op));
-    op = OP(inst->rn);
+    DECODE_RN(XReg);
+    DECODE_OP;
 }
 
 void A64_BR_BLR_RET::assembler() {
     SET_OPCODE_MULTI(BR_BLR_RET, 1);
     SET_OPCODE_MULTI(BR_BLR_RET, 2);
-    SET_OPCODE_MULTI(BR_BLR_RET, 3);
-    get()->rn = rn->getCode();
-    get()->op = op;
+    ENCODE_RN;
+    ENCODE_OP;
 }
 
 A64_STR_IMM::A64_STR_IMM() {}
@@ -462,7 +465,7 @@ void A64_STR_UIMM::decode(STRUCT_A64(STR_UIMM) *inst) {
 
 void A64_STR_UIMM::assembler() {
     SET_OPCODE(STR_IMM);
-    get()->rt = rt->getCode();
+    ENCODE_RT;
     get()->rn = operand.base->getCode();
     if (rt->isX()) {
         get()->size = Size64;
@@ -488,11 +491,11 @@ A64_MOV_REG::A64_MOV_REG(RegisterA64 &rd, RegisterA64 &rm) : rd(&rd), rm(&rm) {
 
 void A64_MOV_REG::decode(A64_STRUCT_MOV_REG *inst) {
     if (inst->sf == 1) {
-        rd = XReg(static_cast<U8>(inst->rd));
-        rm = XReg(static_cast<U8>(inst->rm));
+        DECODE_RD(XReg);
+        DECODE_RM(XReg);
     } else {
-        rd = WReg(static_cast<U8>(inst->rd));
-        rm = WReg(static_cast<U8>(inst->rm));
+        DECODE_RD(WReg);
+        DECODE_RM(WReg);
     }
 }
 
@@ -500,8 +503,8 @@ void A64_MOV_REG::assembler() {
     SET_OPCODE_MULTI(MOV_REG, 1);
     SET_OPCODE_MULTI(MOV_REG, 2);
     get()->sf = rd->isX() ? 1 : 0;
-    get()->rd = rd->getCode();
-    get()->rm = rm->getCode();
+    ENCODE_RD;
+    ENCODE_RM;
 }
 
 
@@ -519,12 +522,12 @@ A64_SUB_EXT_REG::A64_SUB_EXT_REG(S s, RegisterA64 &rd, RegisterA64 &rn, const Op
 void A64_SUB_EXT_REG::decode(STRUCT_A64(SUB_EXT_REG) *inst) {
     s = S(inst->S);
     if (inst->sf == 1) {
-        rd = XReg(static_cast<U8>(inst->rd));
-        rn = XReg(static_cast<U8>(inst->rn));
+        DECODE_RD(XReg);
+        DECODE_RN(XReg);
         operand.reg = XReg(static_cast<U8>(inst->rm));
     } else {
-        rd = WReg(static_cast<U8>(inst->rd));
-        rn = WReg(static_cast<U8>(inst->rn));
+        DECODE_RD(WReg);
+        DECODE_RN(WReg);
         operand.reg = XReg(static_cast<U8>(inst->rm));
     }
     operand.extend = Extend(inst->option);
@@ -540,8 +543,8 @@ void A64_SUB_EXT_REG::assembler() {
     get()->option = operand.extend;
     get()->imm3 = operand.shift;
     get()->rm = operand.reg->getCode();
-    get()->rn = rn->getCode();
-    get()->rd = rd->getCode();
+    ENCODE_RN;
+    ENCODE_RD;
 }
 
 
@@ -557,7 +560,7 @@ A64_EXCEPTION_GEN::A64_EXCEPTION_GEN(A64_EXCEPTION_GEN::OP op, ExceptionLevel el
         op), el(el), imme(imme) {}
 
 void A64_EXCEPTION_GEN::decode(STRUCT_A64(EXCEPTION_GEN) *inst) {
-    op = OP(inst->op);
+    DECODE_OP;
     el = ExceptionLevel(inst->ll);
     imme = static_cast<U16>(inst->imm16);
 }
@@ -565,7 +568,7 @@ void A64_EXCEPTION_GEN::decode(STRUCT_A64(EXCEPTION_GEN) *inst) {
 void A64_EXCEPTION_GEN::assembler() {
     SET_OPCODE_MULTI(EXCEPTION_GEN, 1);
     SET_OPCODE_MULTI(EXCEPTION_GEN, 2);
-    get()->op = op;
+    ENCODE_OP;
     get()->ll = el;
     get()->imm16 = imme;
 }

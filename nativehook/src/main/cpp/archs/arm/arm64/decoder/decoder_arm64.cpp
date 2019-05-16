@@ -2,13 +2,14 @@
 // Created by swift on 2019/5/6.
 //
 
-#include <inst_arm64.h>
+#include "inst_arm64.h"
 #include "decoder_arm64.h"
 
 using namespace SandHook::Decoder;
+using namespace SandHook::AsmA64;
 
 #define CASE(X) \
-if (IS_OPCODE(*pc, X)) { \
+if (IS_OPCODE_A64(*pc, X)) { \
 STRUCT_A64(X) *s = reinterpret_cast<STRUCT_A64(X) *>(pc); \
 unit = reinterpret_cast<Unit<Base> *>(new INST_A64(X)(*s)); \
 goto label_matched; \

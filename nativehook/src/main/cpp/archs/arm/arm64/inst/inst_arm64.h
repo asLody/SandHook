@@ -13,7 +13,7 @@
 
 #define INST_A64(X) A64_##X
 
-#define IS_OPCODE(RAW,OP) INST_A64(OP)::is(RAW)
+#define IS_OPCODE_A64(RAW,OP) INST_A64(OP)::is(RAW)
 
 #define DEFINE_IS_EXT(X, COND) \
 inline static bool is(InstA64& inst) { \
@@ -36,9 +36,12 @@ inline U32 instCode() override { \
 return InstCodeA64::X; \
 }
 
+using namespace SandHook::RegistersA64;
+using namespace SandHook::Asm;
+
 namespace SandHook {
 
-    namespace Asm {
+    namespace AsmA64 {
 
         template<typename Inst>
         class InstructionA64 : public Instruction<Inst> {
@@ -75,8 +78,6 @@ namespace SandHook {
             }
 
         };
-
-        enum AddrMode { Offset, PreIndex, PostIndex, NonAddrMode};
 
         enum MemOp {MemOp_LOAD, MemOp_STORE, MemOp_PREFETCH};
 
@@ -767,5 +768,12 @@ namespace SandHook {
     }
 
 }
+
+
+#undef DEFINE_IS_EXT
+#undef DEFINE_IS
+#undef TEST_INST_FIELD
+#undef TEST_INST_OPCODE
+#undef DEFINE_INST_CODE
 
 #endif //SANDHOOK_NH_INST_ARM64_H

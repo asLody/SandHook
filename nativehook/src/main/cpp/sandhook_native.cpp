@@ -13,6 +13,7 @@
 using namespace SandHook::Asm;
 using namespace SandHook::Decoder;
 using namespace SandHook::Hook;
+using namespace SandHook::AsmA64;
 
 void (*dosth3Backup)(int, int) = nullptr;
 void (*dosth4Backup)() = nullptr;
@@ -92,7 +93,7 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
 
     InstA64* codebl = reinterpret_cast<InstA64 *>((Addr)do1 + 8);
 
-    if (IS_OPCODE(*codebl, B_BL)) {
+    if (IS_OPCODE_A64(*codebl, B_BL)) {
 
         //decode
         A64_B_BL a64bl(*reinterpret_cast<STRUCT_A64(B_BL)*>(codebl));
@@ -109,7 +110,7 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
 
     }
 
-    if (IS_OPCODE(test.raw, STR_UIMM)) {
+    if (IS_OPCODE_A64(test.raw, STR_UIMM)) {
         A64_STR_UIMM str(test.str);
         str.assembler();
         str.get();

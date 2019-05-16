@@ -5,6 +5,9 @@
 #include "code_relocate_a64.h"
 #include "decoder_arm64.h"
 
+using namespace SandHook::RegistersA64;
+using namespace SandHook::AsmA64;
+
 #define __ assemblerA64->
 
 #define IMPL_RELOCATE(X) void CodeRelocateA64::relocate_##X (INST_A64(X)* inst, void* toPc) throw(ErrorCodeException)
