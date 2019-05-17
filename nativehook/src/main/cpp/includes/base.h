@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <type_traits>
 #include "compiler.h"
 
 typedef uint8_t U8;
@@ -91,6 +92,21 @@ T AlignDown(T pointer,
 
     size_t mask = alignment - 1;
     return (T)(pointer_raw & ~mask);
+}
+
+template<typename T>
+struct Identity {
+    using type = T;
+};
+
+template<typename T>
+constexpr T RoundDown(T x, typename Identity<T>::type n) {
+    return (x & -n);
+}
+
+template<typename T>
+constexpr T RoundUp(T x, typename std::remove_reference<T>::type n) {
+    return RoundDown(x + n - 1, n);
 }
 
 #define FIT(value, align) value <= align ? align : ((value / align) + align)

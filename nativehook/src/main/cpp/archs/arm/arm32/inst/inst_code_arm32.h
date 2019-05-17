@@ -12,7 +12,9 @@ enum InstCodeA32 {
 enum InstCodeT16 {
     B,
     B_COND,
-    BX_BLX
+    BX_BLX,
+    CBZ_CBNZ,
+    LDR_LIT
 };
 
 enum InstCodeT32 {

@@ -38,7 +38,7 @@ DEFINE_STRUCT_T16(B) {
 
 DEFINE_OPCODE_T16(B_COND, 0b1101)
 DEFINE_STRUCT_T16(B_COND) {
-    InstT16 imm8;
+    InstT16 imm8:8;
     InstT16 cond:4;
     InstT16 opcode:4;
 };
@@ -52,6 +52,27 @@ DEFINE_STRUCT_T16(BX_BLX) {
     InstT16 op:1;
     InstT16 opcode1:8;
 };
+
+DEFINE_OPCODE_T16(CBZ_CBNZ_1, 0b1011)
+DEFINE_OPCODE_T16(CBZ_CBNZ_2, 0b0)
+DEFINE_OPCODE_T16(CBZ_CBNZ_3, 0b1)
+DEFINE_STRUCT_T16(CBZ_CBNZ) {
+    InstT16 rn:3;
+    InstT16 imm5:5;
+    InstT16 opcode3:1;
+    InstT16 i:1;
+    InstT16 opcode2:1;
+    InstT16 op:1;
+    InstT16 opcode1:4;
+};
+
+DEFINE_OPCODE_T16(LDR_LIT, 0b01001)
+DEFINE_STRUCT_T16(LDR_LIT) {
+    InstT16 imm8:8;
+    InstT16 rt:3;
+    InstT16 opcode:5;
+};
+
 
 
 

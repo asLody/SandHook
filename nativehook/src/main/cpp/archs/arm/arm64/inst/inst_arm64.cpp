@@ -79,7 +79,7 @@ Off A64_ADR_ADRP::getImmPCOffset() {
 }
 
 Addr A64_ADR_ADRP::getImmPCOffsetTarget() {
-    void * base = AlignDown(getPC(), P_SIZE);
+    void* base = AlignDown(getPC(), P_SIZE);
     return getImmPCOffset() + reinterpret_cast<Addr>(base);
 }
 
@@ -772,7 +772,7 @@ A64_LDRSW_UIMM::A64_LDRSW_UIMM(XRegister &rt, const MemOperand &operand) : A64_L
                                                                                           operand) {}
 
 void A64_LDRSW_UIMM::decode(STRUCT_A64(LDR_UIMM) *inst) {
-    rt = XReg(static_cast<U8>(inst->rt));
+    DECODE_RT(XReg);
     operand.base = XReg(static_cast<U8>(inst->rn));
     operand.addr_mode = AddrMode::Offset;
     scale = static_cast<U8>(inst->size);
@@ -783,7 +783,7 @@ void A64_LDRSW_UIMM::decode(STRUCT_A64(LDR_UIMM) *inst) {
 void A64_LDRSW_UIMM::assembler() {
     SET_OPCODE(LDRSW_UIMM);
     get()->size = Size32;
-    get()->rt = rt->getCode();
+    ENCODE_RT;
     get()->rn = operand.base->getCode();
     get()->imm12 = operand.offset >> Size32;
 }

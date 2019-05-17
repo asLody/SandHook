@@ -13,6 +13,8 @@
 using namespace SandHook::AsmA32;
 
 
+
+//B
 T16_B::T16_B() {}
 
 T16_B::T16_B(T16_STRUCT_B *inst) : T16_INST_PC_REL(inst) {
@@ -44,6 +46,8 @@ void T16_B::onOffsetApply(Off offset) {
 }
 
 
+
+//B Cond
 T16_B_COND::T16_B_COND() {}
 
 T16_B_COND::T16_B_COND(STRUCT_T16(B_COND) *inst) : T16_INST_PC_REL(inst) {
@@ -77,6 +81,14 @@ Off T16_B_COND::getImmPCOffset() {
 }
 
 
+
+//BX BLX
+T16_BX_BLX::T16_BX_BLX(T16_BX_BLX::OP op, RegisterA32 &rm) : op(op), rm(&rm) {}
+
+T16_BX_BLX::T16_BX_BLX(T16_STRUCT_BX_BLX *inst) : T16_INST_PC_REL(inst) {
+    decode(inst);
+}
+
 void T16_BX_BLX::decode(STRUCT_T16(BX_BLX) *inst) {
     DECODE_OP;
     DECODE_RM(Reg);
@@ -87,4 +99,78 @@ void T16_BX_BLX::assembler() {
     SET_OPCODE_MULTI(BX_BLX, 2);
     ENCODE_OP;
     ENCODE_RM;
+}
+
+
+//CBZ CBNZ
+T16_CBZ_CBNZ::T16_CBZ_CBNZ(T16_STRUCT_CBZ_CBNZ *inst) : T16_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+T16_CBZ_CBNZ::T16_CBZ_CBNZ(T16_CBZ_CBNZ::OP op, Off offset, RegisterA32 &rn) : op(op), offset(offset),
+                                                                              rn(&rn) {}
+
+
+T16_CBZ_CBNZ::T16_CBZ_CBNZ(T16_CBZ_CBNZ::OP op, Label& label, RegisterA32 &rn) : op(op),
+                                                                               rn(&rn) {
+    bindLabel(label);
+}
+
+
+
+Off T16_CBZ_CBNZ::getImmPCOffset() {
+    return COMBINE(get()->i, get()->imm5, 5) << 2;
+}
+
+void T16_CBZ_CBNZ::decode(T16_STRUCT_CBZ_CBNZ *inst) {
+    offset = getImmPCOffset();
+    DECODE_RN(Reg);
+    DECODE_OP;
+}
+
+void T16_CBZ_CBNZ::assembler() {
+    SET_OPCODE_MULTI(CBZ_CBNZ, 1);
+    SET_OPCODE_MULTI(CBZ_CBNZ, 2);
+    SET_OPCODE_MULTI(CBZ_CBNZ, 3);
+    ENCODE_OP;
+    ENCODE_RN;
+    ENCODE_OFFSET(5, 2);
+}
+
+void T16_CBZ_CBNZ::onOffsetApply(Off offset) {
+    this->offset = offset;
+    ENCODE_OFFSET(5, 2);
+}
+
+
+//LDR_LIT
+T16_LDR_LIT::T16_LDR_LIT(T16_STRUCT_LDR_LIT *inst) : T16_INST_PC_REL(inst) {
+    decode(inst);
+}
+
+T16_LDR_LIT::T16_LDR_LIT(Off offset, RegisterA32 &rt) : offset(offset), rt(&rt) {
+
+}
+
+Off T16_LDR_LIT::getImmPCOffset() {
+    return DECODE_OFFSET(8, 2);
+}
+
+Addr T16_LDR_LIT::getImmPCOffsetTarget() {
+    return RoundDown((Addr) getPC() + offset, 4);
+}
+
+void T16_LDR_LIT::onOffsetApply(Off offset) {
+    this->offset = offset;
+    ENCODE_OFFSET(8, 2);
+}
+
+void T16_LDR_LIT::decode(T16_STRUCT_LDR_LIT *inst) {
+    DECODE_RT(Reg);
+    offset = getImmPCOffset();
+}
+
+void T16_LDR_LIT::assembler() {
+    SET_OPCODE(LDR_LIT);
+    ENCODE_RT;
 }

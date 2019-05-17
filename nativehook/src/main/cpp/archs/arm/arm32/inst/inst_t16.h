@@ -163,7 +163,14 @@ namespace SandHook {
                 BLX = 0b1
             };
 
-        private:
+            T16_BX_BLX(T16_STRUCT_BX_BLX *inst);
+
+            T16_BX_BLX(OP op, RegisterA32 &rm);
+
+            DEFINE_IS_EXT(BX_BLX, TEST_INST_OPCODE(BX_BLX, 1) && TEST_INST_OPCODE(BX_BLX, 2))
+
+            DEFINE_INST_CODE(BX_BLX)
+
             void decode(T16_STRUCT_BX_BLX *inst) override;
 
             void assembler() override;
@@ -171,6 +178,67 @@ namespace SandHook {
         public:
             OP op;
             RegisterA32* rm;
+        };
+
+
+        class INST_T16(CBZ_CBNZ) : public T16_INST_PC_REL<STRUCT_T16(CBZ_CBNZ)> {
+        public:
+            enum OP {
+                CBZ = 0b0,
+                CBNZ = 0b1
+            };
+
+            T16_CBZ_CBNZ(T16_STRUCT_CBZ_CBNZ *inst);
+
+            T16_CBZ_CBNZ(OP op, Off offset, RegisterA32 &rn);
+
+            T16_CBZ_CBNZ(OP op, Label& label, RegisterA32 &rn);
+
+            DEFINE_IS_EXT(CBZ_CBNZ, TEST_INST_OPCODE(CBZ_CBNZ, 1) && TEST_INST_OPCODE(CBZ_CBNZ, 2) && TEST_INST_OPCODE(CBZ_CBNZ, 3))
+
+            DEFINE_INST_CODE(CBZ_CBNZ)
+
+            void onOffsetApply(Off offset) override;
+
+            Off getImmPCOffset() override;
+
+            void decode(T16_STRUCT_CBZ_CBNZ *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            Off offset;
+            RegisterA32* rn;
+        };
+
+
+        class INST_T16(LDR_LIT) : T16_INST_PC_REL<STRUCT_T16(LDR_LIT)> {
+        public:
+            T16_LDR_LIT(T16_STRUCT_LDR_LIT *inst);
+
+            T16_LDR_LIT(Off offset, RegisterA32 &rt);
+
+            DEFINE_IS(LDR_LIT)
+
+            DEFINE_INST_CODE(LDR_LIT)
+
+        private:
+            Addr getImmPCOffsetTarget() override;
+
+        public:
+
+            Off getImmPCOffset() override;
+
+            void onOffsetApply(Off offset) override;
+
+            void decode(T16_STRUCT_LDR_LIT *inst) override;
+
+            void assembler() override;
+
+        public:
+            Off offset;
+            RegisterA32* rt;
         };
 
     }
