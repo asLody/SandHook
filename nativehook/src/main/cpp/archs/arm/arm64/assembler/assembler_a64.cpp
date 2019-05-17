@@ -174,19 +174,25 @@ void AssemblerA64::Ldrsw(XRegister &rt, const MemOperand& memOperand) {
     }
 }
 
+// If the current stack pointer is sp, then it must be aligned to 16 bytes
+// on entry and the total size of the specified registers must also be a
+// multiple of 16 bytes.
 void AssemblerA64::Pop(RegisterA64 &rd) {
     if (rd.isX()) {
-        Ldr(rd, MemOperand(&SP, rd.getWideInBytes(), PostIndex));
+        Ldr(rd, MemOperand(&SP, 16, PostIndex));
     } else {
-        Ldr(rd, MemOperand(&WSP, rd.getWideInBytes(), PostIndex));
+        Ldr(rd, MemOperand(&WSP, 16, PostIndex));
     }
 }
 
+// If the current stack pointer is sp, then it must be aligned to 16 bytes
+// on entry and the total size of the specified registers must also be a
+// multiple of 16 bytes.
 void AssemblerA64::Push(RegisterA64 &rt) {
     if (rt.isX()) {
-        Str(rt, MemOperand(&SP, -rt.getWideInBytes(), PreIndex));
+        Str(rt, MemOperand(&SP, -16, PreIndex));
     } else {
-        Str(rt, MemOperand(&WSP, -rt.getWideInBytes(), PreIndex));
+        Str(rt, MemOperand(&WSP, -16, PreIndex));
     }
 }
 
