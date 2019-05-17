@@ -155,7 +155,7 @@ namespace SandHook {
         };
 
 
-        class INST_T16(BX_BLX) : T16_INST_PC_REL<STRUCT_T16(BX_BLX)> {
+        class INST_T16(BX_BLX) : public T16_INST_PC_REL<STRUCT_T16(BX_BLX)> {
         public:
 
             enum OP {
@@ -213,7 +213,7 @@ namespace SandHook {
         };
 
 
-        class INST_T16(LDR_LIT) : T16_INST_PC_REL<STRUCT_T16(LDR_LIT)> {
+        class INST_T16(LDR_LIT) : public T16_INST_PC_REL<STRUCT_T16(LDR_LIT)> {
         public:
             T16_LDR_LIT(T16_STRUCT_LDR_LIT *inst);
 
@@ -239,6 +239,95 @@ namespace SandHook {
         public:
             Off offset;
             RegisterA32* rt;
+        };
+
+
+        class INST_T16(ADD_IMM_RDN) : public InstructionT16<STRUCT_T16(ADD_IMM_RDN)> {
+        public:
+            T16_ADD_IMM_RDN(T16_STRUCT_ADD_IMM_RDN *inst);
+
+            T16_ADD_IMM_RDN(RegisterA32 *rdn, S32 imm32);
+
+            void decode(T16_STRUCT_ADD_IMM_RDN *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterA32* rdn;
+            S32 imm32;
+        };
+
+        class INST_T16(ADR) : public T16_INST_PC_REL<STRUCT_T16(ADR)> {
+        public:
+
+            T16_ADR(T16_STRUCT_ADR *inst);
+
+            T16_ADR(RegisterA32 *rd, Off offset);
+
+            T16_ADR(RegisterA32 *rd, Label& label);
+
+            DEFINE_IS(ADR)
+
+            DEFINE_INST_CODE(ADR)
+
+            Off getImmPCOffset() override;
+
+            Addr getImmPCOffsetTarget() override;
+
+            void decode(T16_STRUCT_ADR *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterA32* rd;
+            Off offset;
+        };
+
+
+        class INST_T16(CMP_REG) : public InstructionT16<STRUCT_T16(CMP_REG)> {
+        public:
+            T16_CMP_REG();
+
+            T16_CMP_REG(T16_STRUCT_CMP_REG *inst);
+
+            T16_CMP_REG(RegisterA32 &rm, RegisterA32 &rn);
+
+            DEFINE_INST_CODE(CMP_REG)
+
+            DEFINE_IS_EXT(CMP_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) && TEST_INST_FIELD(opcode, OPCODE_T16(CMP_REG)))
+
+            void decode(T16_STRUCT_CMP_REG *inst) override;
+
+            void assembler() override;
+
+            bool pcRelate() override;
+
+        public:
+            RegisterA32* rm;
+            RegisterA32* rn;
+        };
+
+
+        class INST_T16(MOV_REG) : public InstructionT16<STRUCT_T16(MOV_REG)> {
+        public:
+            T16_MOV_REG(T16_STRUCT_MOV_REG *inst);
+
+
+            T16_MOV_REG(RegisterA32 &rd, RegisterA32 &rm);
+
+            DEFINE_INST_CODE(MOV_REG)
+
+            DEFINE_IS_EXT(MOV_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) && TEST_INST_FIELD(opcode, OPCODE_T16(MOV_REG)))
+
+            void decode(T16_STRUCT_MOV_REG *inst) override;
+
+            void assembler() override;
+
+            bool pcRelate() override;
+
+        public:
+            RegisterA32* rd;
+            RegisterA32* rm;
         };
 
     }

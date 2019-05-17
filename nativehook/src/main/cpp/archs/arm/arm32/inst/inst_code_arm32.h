@@ -10,11 +10,21 @@ enum InstCodeA32 {
 };
 
 enum InstCodeT16 {
+    BASE_SASMC,
+    DATA_PROC,
+    SPDIABE,
+    MISC,
     B,
     B_COND,
     BX_BLX,
     CBZ_CBNZ,
-    LDR_LIT
+    LDR_LIT,
+    //when rd = rn
+    ADD_IMM_RDN,
+    //rn = pc
+    ADR,
+    CMP_REG,
+    MOV_REG
 };
 
 enum InstCodeT32 {
