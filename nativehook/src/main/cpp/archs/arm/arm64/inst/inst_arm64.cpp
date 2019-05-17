@@ -395,8 +395,8 @@ void A64_STR_IMM::decode(STRUCT_A64(STR_IMM) *inst) {
             operand.addr_mode = AddrMode::PreIndex;
             break;
         default:
+            operand.addr_mode = AddrMode::Offset;
             valid = false;
-            return;
     }
     scale = static_cast<U8>(inst->size);
     offset = signExtend64(9, inst->imm9);
@@ -428,8 +428,8 @@ void A64_STR_IMM::assembler() {
             get()->addrmode = PreIndex;
             break;
         default:
+            get()->addrmode = Offset;
             valid = false;
-            return;
     }
 }
 
@@ -620,8 +620,8 @@ void A64_LDR_IMM::decode(STRUCT_A64(LDR_IMM) *inst) {
             operand.addr_mode = AddrMode::PreIndex;
             break;
         default:
+            operand.addr_mode = AddrMode::Offset;
             valid = false;
-            return;
     }
     scale = static_cast<U8>(inst->size);
     offset = signExtend64(9, inst->imm9);
@@ -653,8 +653,8 @@ void A64_LDR_IMM::assembler() {
             get()->addrmode = PreIndex;
             break;
         default:
+            get()->addrmode = Offset;
             valid = false;
-            return;
     }
 }
 

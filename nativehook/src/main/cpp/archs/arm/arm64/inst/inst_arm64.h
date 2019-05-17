@@ -526,7 +526,8 @@ namespace SandHook {
         public:
 
             enum AdMod {
-                PostIndex = 0b00,
+                Offset = 0b00,
+                PostIndex = 0b01,
                 PreIndex = 0b11
             };
 

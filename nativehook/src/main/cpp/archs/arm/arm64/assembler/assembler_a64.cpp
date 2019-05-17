@@ -176,17 +176,17 @@ void AssemblerA64::Ldrsw(XRegister &rt, const MemOperand& memOperand) {
 
 void AssemblerA64::Pop(RegisterA64 &rd) {
     if (rd.isX()) {
-        Ldr(rd, MemOperand(&SP, -1 * rd.getWideInBytes(), PreIndex));
+        Ldr(rd, MemOperand(&SP, rd.getWideInBytes(), PostIndex));
     } else {
-        Ldr(rd, MemOperand(&WSP, -1 * rd.getWideInBytes(), PreIndex));
+        Ldr(rd, MemOperand(&WSP, rd.getWideInBytes(), PostIndex));
     }
 }
 
 void AssemblerA64::Push(RegisterA64 &rt) {
     if (rt.isX()) {
-        Str(rt, MemOperand(&SP, -1 * rt.getWideInBytes(), PreIndex));
+        Str(rt, MemOperand(&SP, -rt.getWideInBytes(), PreIndex));
     } else {
-        Str(rt, MemOperand(&WSP, -1 * rt.getWideInBytes(), PreIndex));
+        Str(rt, MemOperand(&WSP, -rt.getWideInBytes(), PreIndex));
     }
 }
 
