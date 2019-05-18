@@ -240,4 +240,6 @@ if (X != V) { \
    ACTION         \
 }
 
+#define ENUM_VALUE(Type, Value) static_cast<std::underlying_type<Type>::type>(Value)
+
 #endif //SANDHOOK_BASE_H

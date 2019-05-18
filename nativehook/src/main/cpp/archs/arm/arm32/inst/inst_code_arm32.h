@@ -5,11 +5,11 @@
 #ifndef SANDHOOK_INST_CODE_ARM32_H
 #define SANDHOOK_INST_CODE_ARM32_H
 
-enum InstCodeA32 {
+enum class InstCodeA32 {
 
 };
 
-enum InstCodeT16 {
+enum class InstCodeT16 {
     BASE_SASMC,
     DATA_PROC,
     SPDIABE,
@@ -27,8 +27,8 @@ enum InstCodeT16 {
     MOV_REG
 };
 
-enum InstCodeT32 {
-
+enum class InstCodeT32 {
+    B32,
 };
 
 #endif //SANDHOOK_INST_CODE_ARM32_H

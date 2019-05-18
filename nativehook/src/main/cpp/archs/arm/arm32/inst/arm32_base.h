@@ -5,6 +5,7 @@
 #ifndef SANDHOOK_ARM32_BASE_H
 #define SANDHOOK_ARM32_BASE_H
 
+#include <ostream>
 #include "arm_base.h"
 #include "register_list_a32.h"
 
@@ -47,6 +48,97 @@ namespace SandHook {
             int shift_imm; // valid if rm_ != no_reg && rs_ == no_reg
             AddrMode addr_mode;   // bits P, U, and W
         };
+
+
+        class RegisterList {
+        public:
+            RegisterList() : list_(0) {}
+            RegisterList(RegisterA32& reg)  // NOLINT(runtime/explicit)
+                    : list_(RegisterToList(reg)) {}
+            RegisterList(RegisterA32& reg1, RegisterA32& reg2)
+                    : list_(RegisterToList(reg1) | RegisterToList(reg2)) {}
+            RegisterList(RegisterA32& reg1, RegisterA32& reg2, RegisterA32& reg3)
+                    : list_(RegisterToList(reg1) | RegisterToList(reg2) |
+                            RegisterToList(reg3)) {}
+            RegisterList(RegisterA32& reg1, RegisterA32& reg2, RegisterA32& reg3, RegisterA32& reg4)
+                    : list_(RegisterToList(reg1) | RegisterToList(reg2) |
+                            RegisterToList(reg3) | RegisterToList(reg4)) {}
+            explicit RegisterList(uint32_t list) : list_(list) {}
+            uint32_t GetList() const { return list_; }
+            void SetList(uint32_t list) { list_ = list; }
+            bool Includes(RegisterA32& reg) const {
+                return (list_ & RegisterToList(reg)) != 0;
+            }
+            void Combine(RegisterList& other) { list_ |= other.GetList(); }
+            void Combine(RegisterA32& reg) { list_ |= RegisterToList(reg); }
+            void Remove(RegisterList& other) { list_ &= ~other.GetList(); }
+            void Remove(RegisterA32& reg) { list_ &= ~RegisterToList(reg); }
+            bool Overlaps(RegisterList& other) const {
+                return (list_ & other.list_) != 0;
+            }
+            bool IsR0toR7orPC() const {
+                // True if all the registers from the list are not from r8-r14.
+                return (list_ & 0x7f00) == 0;
+            }
+            bool IsR0toR7orLR() const {
+                // True if all the registers from the list are not from r8-r13 nor from r15.
+                return (list_ & 0xbf00) == 0;
+            }
+            Register GetFirstAvailableRegister() const;
+            bool IsEmpty() const { return list_ == 0; }
+            static RegisterList Union(const RegisterList& list_1,
+                                      const RegisterList& list_2) {
+                return RegisterList(list_1.list_ | list_2.list_);
+            }
+            static RegisterList Union(const RegisterList& list_1,
+                                      const RegisterList& list_2,
+                                      const RegisterList& list_3) {
+                return Union(list_1, Union(list_2, list_3));
+            }
+            static RegisterList Union(const RegisterList& list_1,
+                                      const RegisterList& list_2,
+                                      const RegisterList& list_3,
+                                      const RegisterList& list_4) {
+                return Union(Union(list_1, list_2), Union(list_3, list_4));
+            }
+            static RegisterList Intersection(const RegisterList& list_1,
+                                             const RegisterList& list_2) {
+                return RegisterList(list_1.list_ & list_2.list_);
+            }
+            static RegisterList Intersection(const RegisterList& list_1,
+                                             const RegisterList& list_2,
+                                             const RegisterList& list_3) {
+                return Intersection(list_1, Intersection(list_2, list_3));
+            }
+            static RegisterList Intersection(const RegisterList& list_1,
+                                             const RegisterList& list_2,
+                                             const RegisterList& list_3,
+                                             const RegisterList& list_4) {
+                return Intersection(Intersection(list_1, list_2),
+                                    Intersection(list_3, list_4));
+            }
+
+        private:
+            static uint32_t RegisterToList(RegisterA32& reg) {
+                if (reg.getCode() == UnknowRegiser.getCode()) {
+                    return 0;
+                } else {
+                    return UINT32_C(1) << reg.getCode();
+                }
+            }
+
+            // Bitfield representation of all registers in the list
+            // (1 for r0, 2 for r1, 4 for r2, ...).
+            uint32_t list_;
+        };
+
+        inline uint32_t GetRegisterListEncoding(const RegisterList& registers,
+                                                int first,
+                                                int count) {
+            return (registers.GetList() >> first) & ((1 << count) - 1);
+        }
+
+        std::ostream& operator<<(std::ostream& os, RegisterList registers);
     }
 }
 

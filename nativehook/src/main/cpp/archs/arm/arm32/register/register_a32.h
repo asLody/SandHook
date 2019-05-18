@@ -22,6 +22,10 @@ namespace SandHook {
 
             U8 getWide() override;
 
+            virtual bool isUnkonw () {
+                return getCode() == 38;
+            }
+
             static RegisterA32* get(U8 code) {
                 return registers[code];
             }

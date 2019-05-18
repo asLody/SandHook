@@ -33,7 +33,7 @@ return COND; \
 
 #define DEFINE_INST_CODE(X) \
 inline U32 instCode() override { \
-return InstCodeA64::X; \
+return ENUM_VALUE(InstCodeA64, InstCodeA64::X); \
 }
 
 using namespace SandHook::RegistersA64;
@@ -56,10 +56,6 @@ namespace SandHook {
             }
 
             U32 size() override;
-
-            static inline U32 zeroExtend32(unsigned int bits, U32 value) {
-                return value << (32 - bits);
-            }
 
             static inline S64 signExtend64(unsigned int bits, U64 value) {
                 return ExtractSignedBitfield64(bits - 1, 0, value);

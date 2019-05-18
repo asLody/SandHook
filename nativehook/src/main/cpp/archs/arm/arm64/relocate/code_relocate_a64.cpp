@@ -13,7 +13,7 @@ using namespace SandHook::AsmA64;
 #define IMPL_RELOCATE(X) void CodeRelocateA64::relocate_##X (INST_A64(X)* inst, void* toPc) throw(ErrorCodeException)
 
 #define CASE(X) \
-case InstCodeA64::X: \
+case ENUM_VALUE(InstCodeA64, InstCodeA64::X): \
 relocate_##X(reinterpret_cast<INST_A64(X)*>(instruction), toPc); \
 break;
 

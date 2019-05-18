@@ -34,7 +34,10 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     //build inline trampoline
 #define __ assemblerInline.
     Label* target_addr_label = new Label();
+    __ Push(X0);
     __ Ldr(IP1, *target_addr_label);
+    __ Ldr(IP1, *target_addr_label);
+    __ Pop(X0);
     __ Br(IP1);
     __ Emit(target_addr_label);
     __ Emit(reinterpret_cast<Addr>(replace));

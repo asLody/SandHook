@@ -51,8 +51,10 @@ void do5() {
 }
 
 void do4() {
-    do5();
-    LOGE("x = %d", 6);
+    int a = 1 + 1;
+    int b = a + 1;
+    int d = a + 1;
+    int e = a + 1;
     LOGE("x = %d", 7);
 }
 

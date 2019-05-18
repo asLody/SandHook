@@ -7,7 +7,7 @@
 
 #include "inst_struct_aarch64.h"
 
-enum InstCodeA64 {
+enum class InstCodeA64 {
     UNKNOW,
     MOV_WIDE,
     MOV_REG,

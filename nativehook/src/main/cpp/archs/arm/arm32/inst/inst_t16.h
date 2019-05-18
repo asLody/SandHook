@@ -34,7 +34,7 @@ return COND; \
 
 #define DEFINE_INST_CODE(X) \
 inline U32 instCode() override { \
-return InstCodeT16::X; \
+return ENUM_VALUE(InstCodeT16, InstCodeT16::X); \
 }
 
 using namespace SandHook::RegistersA32;
@@ -57,6 +57,10 @@ namespace SandHook {
 
             U32 size() override {
                 return 2;
+            }
+
+            void onLabelApply(Addr pc) override {
+                this->onOffsetApply(pc - this->getVPC() - 2 * size());
             }
 
             static inline U32 zeroExtend32(unsigned int bits, U32 value) {
