@@ -35,7 +35,7 @@ return COND; \
 
 #define DEFINE_INST_CODE(X) \
 inline U32 instCode() override { \
-return InstCodeT32::X; \
+return ENUM_VALUE(InstCodeT32, InstCodeT32::X); \
 }
 
 using namespace SandHook::RegistersA32;
@@ -121,6 +121,10 @@ namespace SandHook {
 
             T32_B32(OP op, X x, Label& label);
 
+            DEFINE_INST_CODE(B32)
+
+            DEFINE_IS(B32)
+
             Off getImmPCOffset() override;
 
             void decode(T32_STRUCT_B32 *inst) override;
@@ -132,6 +136,66 @@ namespace SandHook {
             X x;
             Off offset;
         };
+
+        class INST_T32(LDR_UIMM) : public InstructionT32<STRUCT_T32(LDR_UIMM)> {
+        public:
+            T32_LDR_UIMM(T32_STRUCT_LDR_UIMM *inst);
+
+            T32_LDR_UIMM(RegisterA32 &rt, RegisterA32 &rn, U32 offset);
+
+            DEFINE_INST_CODE(LDR_UIMM)
+
+            DEFINE_IS(LDR_UIMM)
+
+            void decode(T32_STRUCT_LDR_UIMM *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterA32* rt;
+            RegisterA32* rn;
+            U32 offset;
+        };
+
+
+        class INST_T32(LDR_LIT) : public T32_INST_PC_REL<STRUCT_T32(LDR_LIT)> {
+        public:
+
+            enum OP {
+                LDR = 0b1011111,
+                LDRB = 0b0011111,
+                LDRH = 0b0111111
+            };
+
+            enum S {
+                cmp = 0,
+                add = 1
+            };
+
+            T32_LDR_LIT();
+
+            T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst);
+
+            T32_LDR_LIT(RegisterA32 &rt, Off offset);
+
+            DEFINE_IS(LDR_LIT)
+
+            DEFINE_INST_CODE(LDR_LIT)
+
+            Off getImmPCOffset() override;
+
+            void decode(T32_STRUCT_LDR_LIT *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            RegisterA32* rt;
+            Off offset;
+        };
+
+
+
 
     }
 }

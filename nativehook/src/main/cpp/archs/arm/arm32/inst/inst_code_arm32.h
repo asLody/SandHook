@@ -24,11 +24,17 @@ enum class InstCodeT16 {
     //rn = pc
     ADR,
     CMP_REG,
-    MOV_REG
+    MOV_IMM,
+    MOV_REG,
 };
 
 enum class InstCodeT32 {
     B32,
+    LDR_LIT,
+    LDR_IMM,
+    LDR_UIMM,
+    LDRB_LIT,
+    MOV_MOVT_IMM
 };
 
 #endif //SANDHOOK_INST_CODE_ARM32_H

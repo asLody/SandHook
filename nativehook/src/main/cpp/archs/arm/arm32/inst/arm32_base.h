@@ -138,6 +138,14 @@ namespace SandHook {
             return (registers.GetList() >> first) & ((1 << count) - 1);
         }
 
+        inline bool isThumbCode(Addr codeAddr) {
+            return (codeAddr & 0x1) == 0x1;
+        }
+
+        inline bool isThumb32(InstT16 code) {
+            return ((code & 0xF000) == 0xF000) || ((code & 0xF800) == 0xE800);
+        }
+
         std::ostream& operator<<(std::ostream& os, RegisterList registers);
     }
 }

@@ -13,6 +13,8 @@
 #define DEFINE_OPCODE_T32(X, V) const U32 OPCODE_T32(X) = V;
 #define DEFINE_STRUCT_T32(X) struct STRUCT_T32(X) : public Base
 
+#define T32_REG_WIDE 4
+
 
 DEFINE_OPCODE_T32(B32, 0b11110)
 DEFINE_STRUCT_T32(B32) {
@@ -24,6 +26,39 @@ DEFINE_STRUCT_T32(B32) {
     InstT32 imm10:10;
     InstT32 S:1;
     InstT32 opcode:5;
+};
+
+DEFINE_OPCODE_T32(LDR_LIT, 0b111100)
+DEFINE_STRUCT_T32(LDR_LIT) {
+    InstT32 imm12:12;
+    InstT32 rt:T32_REG_WIDE;
+    InstT32 op:7;
+    InstT32 U:1;
+    InstT32 S:1;
+    InstT32 opcode:7;
+};
+
+
+//ldr imm T3
+DEFINE_OPCODE_T32(LDR_UIMM, 0b111110001101)
+DEFINE_STRUCT_T32(LDR_UIMM) {
+    InstT32 imm12:12;
+    InstT32 rt:T32_REG_WIDE;
+    InstT32 rn:T32_REG_WIDE;
+    InstT32 opcode:12;
+};
+
+DEFINE_OPCODE_T32(MOV_MOVT_IMM_1, 0b11110)
+DEFINE_OPCODE_T32(MOV_MOVT_IMM_2, 0b0)
+DEFINE_STRUCT_T32(MOV_MOVT_IMM) {
+    InstT32 imm8:8;
+    InstT32 rd:4;
+    InstT32 imm3:3;
+    InstT32 opcode2:1;
+    InstT32 imm4:4;
+    InstT32 op:6;
+    InstT32 i:1;
+    InstT32 opcode1:5;
 };
 
 
