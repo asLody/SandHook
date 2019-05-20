@@ -5,6 +5,8 @@
 #ifndef SANDHOOK_NH_CODE_RELOCATE_A64_H
 #define SANDHOOK_NH_CODE_RELOCATE_A64_H
 
+#include <mutex>
+#include <map>
 #include "code_relocate.h"
 #include "assembler_a64.h"
 
@@ -27,6 +29,10 @@ namespace SandHook {
 
             bool visit(Unit<Base> *unit, void *pc) override;
 
+            bool inRelocateRange(Off targetOffset, Addr targetLen);
+
+            Label* getLaterBindLabel(Addr offset);
+
             DEFINE_RELOCATE(B_BL)
 
             DEFINE_RELOCATE(B_COND)
@@ -40,8 +46,19 @@ namespace SandHook {
             DEFINE_RELOCATE(ADR_ADRP)
 
 
+            ~CodeRelocateA64() {
+                delete relocateLock;
+                delete laterBindlabels;
+            }
+
+
         private:
             AssemblerA64* assemblerA64;
+            std::mutex* relocateLock = new std::mutex();
+            std::map<Addr, Label*>* laterBindlabels = new std::map<Addr, Label*>();
+            Addr startAddr;
+            Addr length;
+            Addr curOffset;
         };
 
     }

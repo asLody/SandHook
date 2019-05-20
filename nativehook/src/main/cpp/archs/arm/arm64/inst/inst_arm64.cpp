@@ -318,19 +318,20 @@ void A64_LDR_LIT::onOffsetApply(Off offset) {
 }
 
 void A64_LDR_LIT::decode(STRUCT_A64(LDR_LIT) *inst) {
-    op = OP(inst->op);
+    DECODE_OP;
+    offset = getImmPCOffset();
+    ENCODE_OFFSET(19, 2);
     if (op == LDR_W) {
         DECODE_RT(WReg);
     } else {
         DECODE_RT(XReg);
     }
-    offset = getImmPCOffset();
 }
 
 void A64_LDR_LIT::assembler() {
     SET_OPCODE(LDR_LIT);
-    get()->rt = rt->getCode();
-    get()->op = op;
+    ENCODE_OP;
+    ENCODE_RT;
     ENCODE_OFFSET(19, 2);
 }
 
@@ -702,7 +703,7 @@ void A64_LDR_UIMM::assembler() {
         valid = false;
         return;
     }
-    get()->imm12 = operand.offset >> get()->size;
+    get()->imm12 = static_cast<InstA64>(operand.offset >> get()->size);
 }
 
 

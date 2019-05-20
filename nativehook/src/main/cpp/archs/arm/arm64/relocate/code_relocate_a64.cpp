@@ -4,9 +4,11 @@
 
 #include "code_relocate_a64.h"
 #include "decoder_arm64.h"
+#include "lock.h"
 
 using namespace SandHook::RegistersA64;
 using namespace SandHook::AsmA64;
+using namespace SandHook::Utils;
 
 #define __ assemblerA64->
 
@@ -21,7 +23,17 @@ CodeRelocateA64::CodeRelocateA64(AssemblerA64 &assembler) : CodeRelocate(assembl
     this->assemblerA64 = &assembler;
 }
 
+bool CodeRelocateA64::visit(Unit<Base> *unit, void *pc) {
+    relocate(reinterpret_cast<Instruction<Base> *>(unit), assemblerA64->getPC());
+    curOffset += unit->size();
+    return true;
+}
+
 void* CodeRelocateA64::relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
+    AutoLock autoLock(relocateLock);
+    startAddr = reinterpret_cast<Addr>(startPc);
+    length = len;
+    curOffset = 0;
     assemblerA64->allocBufferFirst(static_cast<U32>(len * 8));
     void* curPc = assemblerA64->getPC();
     Arm64Decoder decoder = Arm64Decoder();
@@ -35,6 +47,10 @@ void* CodeRelocateA64::relocate(void *startPc, Addr len, void *toPc = nullptr) t
 
 void* CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) throw(ErrorCodeException) {
     void* curPc = assemblerA64->getPC();
+
+    //insert later bind labels
+    __ Emit(getLaterBindLabel(curOffset));
+
     if (!instruction->pcRelate()) {
         __ Emit(instruction);
         return curPc;
@@ -52,8 +68,38 @@ void* CodeRelocateA64::relocate(Instruction<Base> *instruction, void *toPc) thro
     return curPc;
 }
 
+//in range of copy
+bool CodeRelocateA64::inRelocateRange(Off targetOffset, Addr targetLen) {
+    Off startP = curOffset + targetOffset;
+    Off endP = startP + targetLen;
+    return startP >= 0 && endP <= length;
+}
+
+Label *CodeRelocateA64::getLaterBindLabel(Addr offset) {
+    Label* label_per_unit = nullptr;
+    std::map<Addr,Label*>::iterator it = laterBindlabels->find(offset);
+    if (it != laterBindlabels->end()) {
+        label_per_unit = it->second;
+    }
+    if (label_per_unit == nullptr) {
+        label_per_unit = new Label();
+        laterBindlabels->insert(std::map<Addr, Label*>::value_type(offset, label_per_unit));
+    }
+    return label_per_unit;
+}
+
 IMPL_RELOCATE(B_BL) {
     Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+        if (inst->op == inst->BL) {
+            __ Bl(getLaterBindLabel(inst->offset + curOffset));
+        } else {
+            __ B(getLaterBindLabel(inst->offset + curOffset));
+        }
+        return;
+    }
+
     if (inst->op == inst->BL) {
         __ Mov(LR, (Addr)inst->getPC() + inst->size());
     }
@@ -62,8 +108,12 @@ IMPL_RELOCATE(B_BL) {
 }
 
 IMPL_RELOCATE(B_COND) {
-
     Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+        __ B(inst->condition, getLaterBindLabel(inst->offset + curOffset));
+        return;
+    }
 
     Label *true_label = new Label();
     Label *false_label = new Label();
@@ -81,6 +131,15 @@ IMPL_RELOCATE(B_COND) {
 IMPL_RELOCATE(TBZ_TBNZ) {
 
     Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+        if (inst->op == INST_A64(TBZ_TBNZ)::TBNZ) {
+            __ Tbnz(*inst->rt, inst->bit, getLaterBindLabel(inst->offset + curOffset));
+        } else {
+            __ Tbz(*inst->rt, inst->bit, getLaterBindLabel(inst->offset + curOffset));
+        }
+        return;
+    }
 
     Label *true_label = new Label();
     Label *false_label = new Label();
@@ -101,6 +160,15 @@ IMPL_RELOCATE(TBZ_TBNZ) {
 
 IMPL_RELOCATE(CBZ_CBNZ) {
     Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+        if (inst->op == INST_A64(CBZ_CBNZ)::CBNZ) {
+            __ Cbnz(*inst->rt, getLaterBindLabel(inst->offset + curOffset));
+        } else {
+            __ Cbz(*inst->rt, getLaterBindLabel(inst->offset + curOffset));
+        }
+        return;
+    }
 
     Label *true_label = new Label();
     Label *false_label = new Label();
@@ -124,16 +192,40 @@ IMPL_RELOCATE(LDR_LIT) {
     Addr targetAddr = inst->getImmPCOffsetTarget();
     XRegister* rtX = XReg(inst->rt->getCode());
     WRegister* rtW = WReg(inst->rt->getCode());
+
+    if (inRelocateRange(inst->offset, sizeof(Addr))) {
+        switch (inst->op) {
+            case INST_A64(LDR_LIT)::LDR_X:
+                __ Ldr(*rtX, getLaterBindLabel(inst->offset + curOffset));
+                break;
+            case INST_A64(LDR_LIT)::LDR_W:
+                __ Ldr(*rtW, getLaterBindLabel(inst->offset + curOffset));
+                break;
+            case INST_A64(LDR_LIT)::LDR_SW:
+                __ Ldrsw(*rtX, getLaterBindLabel(inst->offset + curOffset));
+                break;
+            case INST_A64(LDR_LIT)::LDR_PRFM:
+                __ Push(X0);
+                __ Mov(X0, targetAddr);
+                __ Ldrsw(X0, MemOperand(rtX, 0, Offset));
+                __ Pop(X0);
+                break;
+        }
+        return;
+    }
+
     switch (inst->op) {
         case INST_A64(LDR_LIT)::LDR_X:
             __ Mov(*rtX, targetAddr);
-            __ Ldr(*rtW, MemOperand(rtX, 0, Offset));
+            __ Ldr(*rtX, MemOperand(rtX, 0, Offset));
             break;
         case INST_A64(LDR_LIT)::LDR_W:
             __ Mov(*rtX, targetAddr);
-            __ Ldr(*rtX, MemOperand(rtX, 0, Offset));
+            __ Ldr(*rtW, MemOperand(rtX, 0, Offset));
             break;
         case INST_A64(LDR_LIT)::LDR_SW:
+            __ Mov(*rtX, targetAddr);
+            __ Ldrsw(*rtX, MemOperand(rtX, 0, Offset));
             break;
         case INST_A64(LDR_LIT)::LDR_PRFM:
             __ Push(X0);
@@ -146,9 +238,4 @@ IMPL_RELOCATE(LDR_LIT) {
 
 IMPL_RELOCATE(ADR_ADRP) {
     __ Mov(*inst->rd, inst->getImmPCOffsetTarget());
-}
-
-bool CodeRelocateA64::visit(Unit<Base> *unit, void *pc) {
-    relocate(reinterpret_cast<Instruction<Base> *>(unit), assemblerA64->getPC());
-    return true;
 }

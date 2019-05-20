@@ -162,8 +162,12 @@ void AssemblerA64::Ldr(RegisterA64 &rt, const MemOperand &memOperand) {
     }
 }
 
-void AssemblerA64::Ldr(RegisterA64 &rt, Label &label) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(rt.isX() ? INST_A64(LDR_LIT)::LDR_X : INST_A64(LDR_LIT)::LDR_W, rt, label)));
+void AssemblerA64::Ldr(RegisterA64 &rt, Label* label) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(rt.isX() ? INST_A64(LDR_LIT)::LDR_X : INST_A64(LDR_LIT)::LDR_W, rt, *label)));
+}
+
+void AssemblerA64::Ldrsw(RegisterA64 &rt, Label* label) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(INST_A64(LDR_LIT)::LDR_SW, rt, *label)));
 }
 
 void AssemblerA64::Ldrsw(XRegister &rt, const MemOperand& memOperand) {

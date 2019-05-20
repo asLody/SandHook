@@ -17,7 +17,7 @@ using namespace SandHook::AsmA64;
 
 void (*dosth3Backup)(int, int) = nullptr;
 void (*dosth4Backup)() = nullptr;
-
+void (*dosth4Backup2)() = nullptr;
 
 bool memUnprotect(Addr addr, Addr len) {
     long pagesize = 4096;
@@ -64,6 +64,14 @@ void do4replace() {
     int c = 1 + 1;
     int d = 1 + 1;
     dosth4Backup();
+}
+
+void do4replace2() {
+    int a = 1 + 1;
+    int b = 1 + 1;
+    int c = 1 + 1;
+    int d = 1 + 1;
+    dosth4Backup2();
 }
 
 void do3replace(int x, int y) {
@@ -131,6 +139,10 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
     dosth4Backup = reinterpret_cast<void (*)()>(inlineHookArm64Android.inlineHook(
             reinterpret_cast<void *>(do4),
             reinterpret_cast<void *>(do4replace)));
+
+    dosth4Backup2 = reinterpret_cast<void (*)()>(inlineHookArm64Android.inlineHook(
+            reinterpret_cast<void *>(do4),
+            reinterpret_cast<void *>(do4replace2)));
 
     do4();
 

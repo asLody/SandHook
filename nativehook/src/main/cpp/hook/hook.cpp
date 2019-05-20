@@ -25,7 +25,6 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
 
     void* backup = nullptr;
     AssemblerA64 assemblerBackup(backupBuffer);
-    CodeContainer* codeContainerBackup = &assemblerBackup.codeContainer;
 
     StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin));
     AssemblerA64 assemblerInline(&inlineBuffer);
@@ -34,10 +33,7 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     //build inline trampoline
 #define __ assemblerInline.
     Label* target_addr_label = new Label();
-    __ Push(X0);
-    __ Ldr(IP1, *target_addr_label);
-    __ Ldr(IP1, *target_addr_label);
-    __ Pop(X0);
+    __ Ldr(IP1, target_addr_label);
     __ Br(IP1);
     __ Emit(target_addr_label);
     __ Emit(reinterpret_cast<Addr>(replace));
@@ -48,7 +44,7 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     backup = relocate.relocate(origin, codeContainerInline->size(), nullptr);
 #define __ assemblerBackup.
     Label* origin_addr_label = new Label();
-    __ Ldr(IP1, *origin_addr_label);
+    __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
     __ Emit(origin_addr_label);
     __ Emit(reinterpret_cast<Addr>(origin) + codeContainerInline->size());
