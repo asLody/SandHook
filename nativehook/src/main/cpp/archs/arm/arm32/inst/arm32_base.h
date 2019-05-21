@@ -8,6 +8,7 @@
 #include <ostream>
 #include "arm_base.h"
 #include "register_list_a32.h"
+#include "instruction.h"
 
 #define DECODE_OFFSET(bits, ext) signExtend32(bits + ext, COMBINE(get()->imm##bits, 0, ext))
 #define ENCODE_OFFSET(bits, ext) get()->imm##bits = TruncateToUint##bits(offset >> ext)
@@ -22,6 +23,10 @@ namespace SandHook {
 
         class MemOperand {
         public:
+
+            explicit MemOperand()
+                    : rn(&UnknowRegiser), rm(&UnknowRegiser), offset(0), addr_mode(Offset) {}
+
             explicit MemOperand(RegisterA32* rn, S32 offset = 0, AddrMode am = Offset)
                     : rn(rn), rm(&UnknowRegiser), offset(offset), addr_mode(am) {}
 
@@ -144,6 +149,16 @@ namespace SandHook {
 
         inline bool isThumb32(InstT16 code) {
             return ((code & 0xF000) == 0xF000) || ((code & 0xF800) == 0xE800);
+        }
+
+        inline void* getThumbCodeAddress(void* code) {
+            Addr addr = reinterpret_cast<Addr>(code) & (~0x1);
+            return reinterpret_cast<void*>(addr);
+        }
+
+        inline void* getThumbPC(void* code) {
+            Addr addr = reinterpret_cast<Addr>(code) & (~0x1);
+            return reinterpret_cast<void*>(addr + 1);
         }
 
         std::ostream& operator<<(std::ostream& os, RegisterList registers);

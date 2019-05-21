@@ -48,6 +48,22 @@ DEFINE_STRUCT_T32(LDR_UIMM) {
     InstT32 opcode:12;
 };
 
+
+//ldr imm T4
+DEFINE_OPCODE_T32(LDR_IMM_1, 0b11111000)
+DEFINE_OPCODE_T32(LDR_IMM_2, 0b1)
+DEFINE_STRUCT_T32(LDR_IMM) {
+    InstT32 imm8:8;
+    InstT32 W:1;
+    InstT32 U:1;
+    InstT32 P:1;
+    InstT32 opcode2:1;
+    InstT32 rt:T32_REG_WIDE;
+    InstT32 rn:T32_REG_WIDE;
+    InstT32 op:4;
+    InstT32 opcode1:8;
+};
+
 DEFINE_OPCODE_T32(MOV_MOVT_IMM_1, 0b11110)
 DEFINE_OPCODE_T32(MOV_MOVT_IMM_2, 0b0)
 DEFINE_STRUCT_T32(MOV_MOVT_IMM) {
@@ -60,6 +76,7 @@ DEFINE_STRUCT_T32(MOV_MOVT_IMM) {
     InstT32 i:1;
     InstT32 opcode1:5;
 };
+
 
 
 #endif //SANDHOOK_NH_INST_STRUCT_T32_H

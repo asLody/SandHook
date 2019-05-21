@@ -6,6 +6,7 @@
 #define SANDHOOK_INST_T32_H
 
 #include "arm_base.h"
+#include "arm32_base.h"
 #include "register_list_a32.h"
 #include "inst_struct_t16.h"
 #include "inst_code_arm32.h"
@@ -195,7 +196,63 @@ namespace SandHook {
         };
 
 
+        class INST_T32(MOV_MOVT_IMM) : public InstructionT32<STRUCT_T32(MOV_MOVT_IMM)> {
+        public:
 
+            enum OP {
+                MOV = 0b100100,
+                MOVT = 0b101100
+            };
+
+            T32_MOV_MOVT_IMM();
+
+            T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst);
+
+            T32_MOV_MOVT_IMM(OP op, RegisterA32 *rd, U16 imm16);
+
+            DEFINE_IS_EXT(MOV_MOVT_IMM, TEST_INST_OPCODE(MOV_MOVT_IMM, 1) && TEST_INST_OPCODE(MOV_MOVT_IMM, 2))
+
+            DEFINE_INST_CODE(MOV_MOVT_IMM)
+
+            void decode(T32_STRUCT_MOV_MOVT_IMM *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            RegisterA32* rd;
+            U16 imm16;
+        };
+
+
+        class INST_T32(LDR_IMM) : public InstructionT32<STRUCT_T32(LDR_IMM)> {
+        public:
+
+            enum OP {
+                LDR = 0b0101,
+                LDRB = 0b1001,
+                LDRH = 0b1011,
+                LDRSB = 0b0001,
+                LDRSH = 0b0011
+            };
+
+            T32_LDR_IMM(T32_STRUCT_LDR_IMM *inst);
+
+            T32_LDR_IMM(OP op, RegisterA32 *rt, const MemOperand &operand);
+
+            DEFINE_IS_EXT(LDR_IMM, TEST_INST_OPCODE(LDR_IMM, 1) && TEST_INST_OPCODE(LDR_IMM, 2))
+
+            DEFINE_INST_CODE(LDR_IMM)
+
+            void decode(T32_STRUCT_LDR_IMM *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            RegisterA32* rt;
+            MemOperand operand;
+        };
 
     }
 }

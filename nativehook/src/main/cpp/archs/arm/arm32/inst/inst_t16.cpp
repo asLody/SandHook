@@ -276,6 +276,8 @@ void T16_MOV_REG::assembler() {
     SET_BASE_OPCODE(DATA_PROC);
     SET_OPCODE(MOV_REG);
     ENCODE_RM;
+    get()->rd = BITS(rd->getCode(), 0, 2);
+    get()->D = BIT(rd->getCode(), 3);
 }
 
 bool T16_MOV_REG::pcRelate() {

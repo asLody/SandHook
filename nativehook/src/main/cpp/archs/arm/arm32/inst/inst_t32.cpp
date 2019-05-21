@@ -115,3 +115,86 @@ void T32_LDR_LIT::assembler() {
         get()->imm12 = static_cast<InstT32>(-offset);
     }
 }
+
+
+
+T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM() {}
+
+T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst) : InstructionT32(inst) {}
+
+T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_MOV_MOVT_IMM::OP op, RegisterA32 *rd, U16 imm16) : op(op),
+                                                                                          rd(rd),
+                                                                                          imm16(imm16) {}
+
+void T32_MOV_MOVT_IMM::decode(T32_STRUCT_MOV_MOVT_IMM *inst) {
+    DECODE_RD(Reg);
+    U16 imm4i = COMBINE(inst->imm4, inst->i, 1);
+    U16 imm38 = COMBINE(inst->imm3, inst->imm8, 8);
+    imm16 = COMBINE(imm4i, imm38, 11);
+}
+
+void T32_MOV_MOVT_IMM::assembler() {
+    SET_OPCODE_MULTI(MOV_MOVT_IMM, 1);
+    SET_OPCODE_MULTI(MOV_MOVT_IMM, 2);
+    ENCODE_RD;
+    get()->imm8 = BITS(imm16, 0, 7);
+    get()->imm3 = BITS(imm16, 8 ,10);
+    get()->i = BIT(imm16, 11);
+    get()->imm4 = BITS(imm16, 12, 15);
+}
+
+
+T32_LDR_IMM::T32_LDR_IMM(T32_STRUCT_LDR_IMM *inst) : InstructionT32(inst) {
+    decode(inst);
+}
+
+T32_LDR_IMM::T32_LDR_IMM(T32_LDR_IMM::OP op, RegisterA32 *rt, const MemOperand &operand) : op(op),
+                                                                                           rt(rt),
+                                                                                           operand(operand) {}
+
+void T32_LDR_IMM::decode(T32_STRUCT_LDR_IMM *inst) {
+    DECODE_OP;
+    DECODE_RT(Reg);
+    operand.rn = Reg(static_cast<U8>(inst->rn));
+    if (inst->P == 1 && inst->U == 0 && inst->W == 0) {
+        operand.addr_mode = Offset;
+    } else if (inst->P == 0 && inst->W == 1) {
+        operand.addr_mode = PostIndex;
+    } else if (inst->P == 1 && inst->W == 1) {
+        operand.addr_mode = PreIndex;
+    } else {
+        valid = false;
+    }
+    operand.offset = inst->U == 0 ? -inst->imm8 : inst->imm8;
+}
+
+void T32_LDR_IMM::assembler() {
+    SET_OPCODE_MULTI(LDR_IMM, 1);
+    SET_OPCODE_MULTI(LDR_IMM, 2);
+    ENCODE_OP;
+    get()->rn = operand.rn->getCode();
+    if (operand.offset < 0) {
+        get()->imm8 = static_cast<InstT32>(-operand.offset);
+        get()->U = 0;
+    } else {
+        get()->imm8 = static_cast<InstT32>(operand.offset);
+        get()->U = 1;
+    }
+    switch (operand.addr_mode) {
+        case Offset:
+            get()->P = 1;
+            get()->U = 0;
+            get()->W = 0;
+            break;
+        case PostIndex:
+            get()->P = 0;
+            get()->W = 1;
+            break;
+        case PreIndex:
+            get()->P = 1;
+            get()->W = 1;
+            break;
+        default:
+            valid = false;
+    }
+}
