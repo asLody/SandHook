@@ -71,7 +71,7 @@ namespace SandHook {
             void Pop(RegisterA64& rt);
             void Push(RegisterA64& rt);
 
-            void Subs();
+            void Subs(RegisterA64& rd, RegisterA64& rn, const Operand& operand);
             void Cmp(RegisterA64& rn, const Operand& operand);
 
 

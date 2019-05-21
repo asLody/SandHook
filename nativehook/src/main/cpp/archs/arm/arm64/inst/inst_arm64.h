@@ -616,16 +616,11 @@ namespace SandHook {
         class INST_A64(SUB_EXT_REG) : public InstructionA64<STRUCT_A64(SUB_EXT_REG)> {
         public:
 
-            enum S {
-                Unsign = 0b0,
-                Sign = 0b1,
-            };
-
             A64_SUB_EXT_REG();
 
             A64_SUB_EXT_REG(STRUCT_A64(SUB_EXT_REG) &inst);
 
-            A64_SUB_EXT_REG(S s, RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
+            A64_SUB_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
                              FlagsUpdate flagsUpdate);
 
             DEFINE_IS_EXT(SUB_EXT_REG, TEST_INST_OPCODE(SUB_EXT_REG, 1) && TEST_INST_OPCODE(SUB_EXT_REG, 2))
@@ -638,7 +633,6 @@ namespace SandHook {
 
 
         public:
-            S s;
             RegisterA64* rd;
             RegisterA64* rn;
             Operand operand = Operand();

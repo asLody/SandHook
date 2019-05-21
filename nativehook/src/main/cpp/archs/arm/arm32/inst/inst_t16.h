@@ -337,4 +337,10 @@ namespace SandHook {
     }
 }
 
+#undef DEFINE_IS_EXT
+#undef DEFINE_IS
+#undef TEST_INST_FIELD
+#undef TEST_INST_OPCODE
+#undef DEFINE_INST_CODE
+
 #endif //SANDHOOK_INST_T16_H

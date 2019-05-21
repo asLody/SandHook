@@ -30,6 +30,7 @@ add_library( # Sets the name of the library.
         src/main/cpp/archs/arm/arm32/inst/inst_t16.cpp
         src/main/cpp/archs/arm/arm32/register/register_a32.cpp
         src/main/cpp/archs/arm/arm32/register/register_list_a32.cpp
+        src/main/cpp/archs/arm/arm32/assembler/assembler_a32.cpp
         src/main/cpp/relocate/code_relocate.cpp
         src/main/cpp/elf/elf.cpp
         src/main/cpp/assembler/assembler.cpp
@@ -54,6 +55,7 @@ include_directories(
         src/main/cpp/archs/arm/arm64/relocate
         src/main/cpp/archs/arm/arm32/inst
         src/main/cpp/archs/arm/arm32/register
+        src/main/cpp/archs/arm/arm32/assembler
 )
 
 # Searches for a specified prebuilt library and stores the path as a

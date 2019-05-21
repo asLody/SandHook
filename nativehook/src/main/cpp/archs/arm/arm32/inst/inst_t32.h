@@ -14,7 +14,7 @@
 
 #define INST_T32(X) T32_##X
 
-#define IS_OPCODE_T16(RAW,OP) INST_T32(OP)::is(RAW)
+#define IS_OPCODE_T32(RAW,OP) INST_T32(OP)::is(RAW)
 
 #define DEFINE_IS_EXT(X, COND) \
 inline static bool is(InstT16& inst) { \
@@ -256,5 +256,12 @@ namespace SandHook {
 
     }
 }
+
+
+#undef DEFINE_IS_EXT
+#undef DEFINE_IS
+#undef TEST_INST_FIELD
+#undef TEST_INST_OPCODE
+#undef DEFINE_INST_CODE
 
 #endif //SANDHOOK_INST_T32_H

@@ -42,8 +42,7 @@ void AssemblerA64::Emit(Unit<Base> *unit) {
     codeContainer.append(unit);
 }
 
-void
-AssemblerA64::MoveWide(RegisterA64 &rd, INST_A64(MOV_WIDE)::OP op, U64 imme,
+void AssemblerA64::MoveWide(RegisterA64 &rd, INST_A64(MOV_WIDE)::OP op, U64 imme,
                                             INST_A64(MOV_WIDE)::Shift shift) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MOV_WIDE)(op, &rd, imme, shift)));
 }
@@ -201,7 +200,13 @@ void AssemblerA64::Push(RegisterA64 &rt) {
 }
 
 void AssemblerA64::Cmp(RegisterA64 &rn, const Operand &operand) {
-
+    Subs(*zeroRegFor(rn), rn, operand);
 }
+
+void AssemblerA64::Subs(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(SUB_EXT_REG)(rd, rn, operand, SetFlags)));
+}
+
+
 
 

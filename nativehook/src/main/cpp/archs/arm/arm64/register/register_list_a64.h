@@ -10,7 +10,7 @@
 
 using namespace SandHook::Asm;
 
-    // clang-format off
+// clang-format off
 #define AARCH64_REGISTER_COUNT 32
 
 #define AARCH64_REGISTER_CODE_LIST(R)                                          \
@@ -21,24 +21,35 @@ using namespace SandHook::Asm;
 
 
 namespace SandHook {
-namespace RegistersA64 {
+    namespace RegistersA64 {
 
 #define DEFINE_REGISTERS(N) \
   extern WRegister W##N;  \
   extern XRegister X##N;
-    AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS)
+        AARCH64_REGISTER_CODE_LIST(DEFINE_REGISTERS)
 #undef DEFINE_REGISTERS
 
-    extern WRegister WSP;
-    extern XRegister SP;
-    extern XRegister IP0;
-    extern XRegister IP1;
-    extern XRegister LR;
+        extern WRegister WSP;
+        extern XRegister SP;
+        extern XRegister IP0;
+        extern XRegister IP1;
+        extern XRegister LR;
 //zero reg
-    extern XRegister XZR;
-    extern WRegister WZR;
-    extern RegisterA64 UnknowRegiser;
-}}
+        extern XRegister XZR;
+        extern WRegister WZR;
+        extern RegisterA64 UnknowRegiser;
+
+
+        //cmp....
+        inline RegisterA64 *zeroRegFor(RegisterA64& registerA64) {
+            if (registerA64.isX()) {
+                return &XZR;
+            } else {
+                return &WZR;
+            }
+        }
+    }
+}
 
 #define XReg(N) XRegister::get(N)
 #define WReg(N) WRegister::get(N)
