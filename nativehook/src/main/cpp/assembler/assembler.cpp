@@ -16,7 +16,7 @@ void CodeContainer::setCodeBuffer(CodeBuffer *codeBuffer) {
 
 void CodeContainer::append(Unit<Base> *unit) {
     units.push_back(unit);
-    unit->setVPC(curPc);
+    unit->setVPos(curPc);
     switch (unit->unitType()) {
         case UnitLabel:
             labels.push_back((Label*)unit);

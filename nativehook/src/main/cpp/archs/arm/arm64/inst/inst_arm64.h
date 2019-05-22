@@ -281,23 +281,6 @@ namespace SandHook {
 
             void decode(STRUCT_A64(MOV_WIDE) *decode) override;
 
-
-            inline U8 getShift() {
-                return shift;
-            }
-
-            inline OP getOpt() {
-                return op;
-            }
-
-            inline U16 getImme() {
-                return imme;
-            }
-
-            inline Register* getRd() {
-                return rd;
-            }
-
         public:
             //can be 16/32/64/128
             //hw = shift / 16

@@ -68,9 +68,9 @@ namespace SandHook {
             RegisterList(RegisterA32& reg1, RegisterA32& reg2, RegisterA32& reg3, RegisterA32& reg4)
                     : list_(RegisterToList(reg1) | RegisterToList(reg2) |
                             RegisterToList(reg3) | RegisterToList(reg4)) {}
-            explicit RegisterList(uint32_t list) : list_(list) {}
-            uint32_t GetList() const { return list_; }
-            void SetList(uint32_t list) { list_ = list; }
+            explicit RegisterList(U16 list) : list_(list) {}
+            U16 GetList() const { return list_; }
+            void SetList(U16 list) { list_ = list; }
             bool Includes(RegisterA32& reg) const {
                 return (list_ & RegisterToList(reg)) != 0;
             }
@@ -89,7 +89,6 @@ namespace SandHook {
                 // True if all the registers from the list are not from r8-r13 nor from r15.
                 return (list_ & 0xbf00) == 0;
             }
-            Register GetFirstAvailableRegister() const;
             bool IsEmpty() const { return list_ == 0; }
             static RegisterList Union(const RegisterList& list_1,
                                       const RegisterList& list_2) {
@@ -124,17 +123,17 @@ namespace SandHook {
             }
 
         private:
-            static uint32_t RegisterToList(RegisterA32& reg) {
+            static U16 RegisterToList(RegisterA32& reg) {
                 if (reg.getCode() == UnknowRegiser.getCode()) {
                     return 0;
                 } else {
-                    return UINT32_C(1) << reg.getCode();
+                    return static_cast<U16>(UINT16_C(1) << reg.getCode());
                 }
             }
 
             // Bitfield representation of all registers in the list
             // (1 for r0, 2 for r1, 4 for r2, ...).
-            uint32_t list_;
+            U16 list_;
         };
 
         inline uint32_t GetRegisterListEncoding(const RegisterList& registers,

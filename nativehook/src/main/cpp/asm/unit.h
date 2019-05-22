@@ -34,12 +34,12 @@ namespace SandHook {
                 return auto_alloc ? nullptr : raw;
             }
 
-            inline Addr getVPC() {
-                return vPC;
+            virtual Addr getVPC() {
+                return vPos;
             }
 
-            inline void setVPC(Addr vPC) {
-                this->vPC = vPC;
+            inline void setVPos(Addr vPos) {
+                this->vPos = vPos;
             }
 
             inline Raw* get() const {
@@ -88,7 +88,7 @@ namespace SandHook {
 
         private:
             Raw* raw;
-            Addr vPC;
+            Addr vPos;
             bool auto_alloc = false;
         };
 

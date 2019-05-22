@@ -131,5 +131,19 @@ DEFINE_STRUCT_T16(ADD_REG) {
     InstT16 opcode:7;
 };
 
+DEFINE_OPCODE_T16(POP, 0b1011110)
+DEFINE_STRUCT_T16(POP) {
+    InstT16 regs:8;
+    InstT16 P:1;
+    InstT16 opcode:7;
+};
+
+DEFINE_OPCODE_T16(PUSH, 0b1011010)
+DEFINE_STRUCT_T16(PUSH) {
+    InstT16 regs:8;
+    InstT16 M:1;
+    InstT16 opcode:7;
+};
+
 
 #endif //SANDHOOK_NH_INST_STRUCT_T16_H

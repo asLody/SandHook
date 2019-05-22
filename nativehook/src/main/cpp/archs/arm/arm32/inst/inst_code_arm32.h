@@ -28,6 +28,9 @@ enum class InstCodeT16 {
     CMP_REG_EXT,
     MOV_IMM,
     MOV_REG,
+    ADD_IMM_RND,
+    POP,
+    PUSH
 };
 
 enum class InstCodeT32 {

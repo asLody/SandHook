@@ -61,8 +61,12 @@ namespace SandHook {
                 return 4;
             }
 
-            void onLabelApply(Addr pc) override {
-                this->onOffsetApply(pc - this->getVPC() - 2 * size());
+            void *getPC() override {
+                return reinterpret_cast<void *>((Addr) Instruction<Inst>::getPC() + 2 * size());
+            }
+
+            Addr getVPC() override {
+                return Instruction<Inst>::getVPC() + 2 * size();
             }
 
             static inline S32 signExtend32(unsigned int bits, U32 value) {

@@ -315,7 +315,7 @@ T16_CMP_REG_EXT::T16_CMP_REG_EXT(T16_STRUCT_CMP_REG_EXT *inst) : InstructionT16(
     decode(inst);
 }
 
-T16_CMP_REG_EXT::T16_CMP_REG_EXT(RegisterA32 *rn, RegisterA32 *rm) : rn(rn), rm(rm) {}
+T16_CMP_REG_EXT::T16_CMP_REG_EXT(RegisterA32 &rn, RegisterA32 &rm) : rn(&rn), rm(&rm) {}
 
 void T16_CMP_REG_EXT::decode(T16_STRUCT_CMP_REG_EXT *inst) {
     rn = Reg(COMBINE(inst->N, inst->rn, 3));
@@ -327,4 +327,42 @@ void T16_CMP_REG_EXT::assembler() {
     ENCODE_RM;
     get()->rn = BITS(rn->getCode(), 0, 2);
     get()->N = BIT(rn->getCode(), 3);
+}
+
+
+//POP
+T16_POP::T16_POP(T16_STRUCT_POP *inst) : InstructionT16(inst) {
+    decode(inst);
+}
+
+T16_POP::T16_POP(const RegisterList &registerList) : registerList(registerList) {}
+
+void T16_POP::decode(T16_STRUCT_POP *inst) {
+    registerList.SetList(COMBINE(inst->P << 7, inst->regs, 8));
+}
+
+void T16_POP::assembler() {
+    SET_OPCODE(POP);
+    U16 regs = registerList.GetList();
+    get()->regs = BITS(regs, 0, 7);
+    get()->P = BIT(regs, 15);
+}
+
+
+//PUSH
+T16_PUSH::T16_PUSH(T16_STRUCT_PUSH *inst) : InstructionT16(inst) {
+    decode(inst);
+}
+
+T16_PUSH::T16_PUSH(const RegisterList &registerList) : registerList(registerList) {}
+
+void T16_PUSH::decode(T16_STRUCT_PUSH *inst) {
+    registerList.SetList(COMBINE(inst->M << 7, inst->regs, 8));
+}
+
+void T16_PUSH::assembler() {
+    SET_OPCODE(POP);
+    U16 regs = registerList.GetList();
+    get()->regs = BITS(regs, 0, 7);
+    get()->M = BIT(regs, 15);
 }

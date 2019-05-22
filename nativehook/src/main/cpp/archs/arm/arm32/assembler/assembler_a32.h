@@ -58,6 +58,11 @@ namespace SandHook {
             void Add(RegisterA32 &rd, RegisterA32 &rn, RegisterA32& rm);
 
 
+            void Cmp(RegisterA32 &rn, RegisterA32 &rm);
+
+            void Pop(RegisterA32& rt);
+            void Push(RegisterA32& rt);
+
         public:
             CodeContainer codeContainer = CodeContainer(nullptr);
         };

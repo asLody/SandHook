@@ -17,6 +17,7 @@ namespace SandHook {
             Reg128Bit = 128
         };
 
+        template <typename Data>
         class Register {
         public:
 
@@ -64,8 +65,17 @@ namespace SandHook {
                 return !(rhs == *this);
             }
 
+            virtual void setData(Data data) {
+                this->data = data;
+            }
+
+            virtual Data& getData() {
+                return data;
+            }
+
         private:
             U8 code;
+            Data data;
         };
     }
 }

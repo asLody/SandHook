@@ -11,7 +11,20 @@ namespace SandHook {
 
     namespace Asm {
 
-        class RegisterA64 : public Register {
+        union A64RegisterStruct {
+            struct {
+                U16 d3;
+                U16 d2;
+                U16 d1;
+                U16 d0;
+            } u16;
+            struct {
+                U32 h;
+                U32 l;
+            } u32;
+        };
+
+        class RegisterA64 : public Register<A64RegisterStruct> {
         public:
 
             enum RegisterType {

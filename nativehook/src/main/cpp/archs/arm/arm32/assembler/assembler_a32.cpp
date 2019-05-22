@@ -3,6 +3,7 @@
 //
 
 #include "assembler_a32.h"
+#include "exception.h"
 
 using namespace SandHook::Assembler;
 using namespace SandHook::RegistersA32;
@@ -127,3 +128,29 @@ void AssemblerA32::Add(RegisterA32 &rdn, U8 imm8) {
 void AssemblerA32::Add(RegisterA32 &rd, RegisterA32 &rn, RegisterA32 &rm) {
     Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(ADD_REG)(&rd, &rn, &rm)));
 }
+
+void AssemblerA32::Cmp(RegisterA32 &rd, RegisterA32 &rn) {
+    if (rd.getCode() < 8 && rn.getCode() < 8) {
+        Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(CMP_REG)(rd, rn)));
+    } else {
+        Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(CMP_REG_EXT)(rd, rn)));
+    }
+}
+
+void AssemblerA32::Pop(RegisterA32 &rt) {
+    if (rt.getCode() < 8 || rt == PC) {
+        Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(POP)(RegisterList(rt))));
+    } else {
+        throw ErrorCodeException("error pop inst");
+    }
+}
+
+void AssemblerA32::Push(RegisterA32 &rt) {
+    if (rt.getCode() < 8 || rt == PC) {
+        Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(PUSH)(RegisterList(rt))));
+    } else {
+        throw ErrorCodeException("error pop inst");
+    }
+}
+
+

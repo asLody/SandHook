@@ -9,6 +9,7 @@
 #include "register_list_a32.h"
 #include "inst_struct_t16.h"
 #include "inst_code_arm32.h"
+#include "arm32_base.h"
 
 #define INST_T16(X) T16_##X
 
@@ -59,8 +60,12 @@ namespace SandHook {
                 return 2;
             }
 
-            void onLabelApply(Addr pc) override {
-                this->onOffsetApply(pc - this->getVPC() - 2 * size());
+            void *getPC() override {
+                return reinterpret_cast<void *>((Addr) Instruction<Inst>::getPC() + 2 * size());
+            }
+
+            Addr getVPC() override {
+                return Instruction<Inst>::getVPC() + 2 * size();
             }
 
             static inline U32 zeroExtend32(unsigned int bits, U32 value) {
@@ -252,6 +257,10 @@ namespace SandHook {
 
             T16_ADD_IMM_RDN(RegisterA32 *rdn, U8 imm8);
 
+            DEFINE_IS(ADD_IMM_RDN)
+
+            DEFINE_INST_CODE(ADD_IMM_RND)
+
             void decode(T16_STRUCT_ADD_IMM_RDN *inst) override;
 
             void assembler() override;
@@ -361,7 +370,7 @@ namespace SandHook {
 
             T16_CMP_REG_EXT(T16_STRUCT_CMP_REG_EXT *inst);
 
-            T16_CMP_REG_EXT(RegisterA32 *rn, RegisterA32 *rm);
+            T16_CMP_REG_EXT(RegisterA32 &rn, RegisterA32 &rm);
 
             DEFINE_IS(CMP_REG_EXT)
 
@@ -375,6 +384,44 @@ namespace SandHook {
         public:
             RegisterA32* rn;
             RegisterA32* rm;
+        };
+
+
+        class INST_T16(POP) : public InstructionT16<STRUCT_T16(POP)> {
+        public:
+            T16_POP(T16_STRUCT_POP *inst);
+
+            T16_POP(const RegisterList &registerList);
+
+            DEFINE_IS(POP)
+
+            DEFINE_INST_CODE(POP)
+
+            void decode(T16_STRUCT_POP *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterList registerList;
+        };
+
+
+        class INST_T16(PUSH) : public InstructionT16<STRUCT_T16(PUSH)> {
+        public:
+            T16_PUSH(T16_STRUCT_PUSH *inst);
+
+            T16_PUSH(const RegisterList &registerList);
+
+            DEFINE_IS(PUSH)
+
+            DEFINE_INST_CODE(PUSH)
+
+            void decode(T16_STRUCT_PUSH *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterList registerList;
         };
 
     }
