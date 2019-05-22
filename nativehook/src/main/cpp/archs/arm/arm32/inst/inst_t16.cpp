@@ -184,16 +184,18 @@ T16_ADD_IMM_RDN::T16_ADD_IMM_RDN(T16_STRUCT_ADD_IMM_RDN *inst) : InstructionT16(
 }
 
 
-T16_ADD_IMM_RDN::T16_ADD_IMM_RDN(RegisterA32 *rdn, S32 imm32) : rdn(rdn), imm32(imm32) {}
+T16_ADD_IMM_RDN::T16_ADD_IMM_RDN(RegisterA32 *rdn, U8 imm8) : rdn(rdn), imm8(imm8) {}
 
 
 void T16_ADD_IMM_RDN::decode(T16_STRUCT_ADD_IMM_RDN *inst) {
-    imm32 = inst->imm8;
+    rdn = Reg(inst->rdn);
+    imm8 = inst->imm8;
 }
 
 void T16_ADD_IMM_RDN::assembler() {
     SET_OPCODE(ADD_IMM_RDN);
-    get()->imm8 = imm32;
+    get()->imm8 = imm8;
+    get()->rdn = rdn->getCode();
 }
 
 
@@ -252,10 +254,6 @@ void T16_CMP_REG::assembler() {
     ENCODE_RN;
 }
 
-bool T16_CMP_REG::pcRelate() {
-    return rn == &PC || rm == &PC;
-}
-
 
 
 //MOV REG
@@ -284,3 +282,49 @@ bool T16_MOV_REG::pcRelate() {
     return rd == &PC || rm == &PC;
 }
 
+
+
+T16_ADD_REG::T16_ADD_REG() {}
+
+T16_ADD_REG::T16_ADD_REG(T16_STRUCT_ADD_REG *inst) : InstructionT16(inst) {
+    decode(inst);
+}
+
+T16_ADD_REG::T16_ADD_REG(RegisterA32 *rd, RegisterA32 *rn, RegisterA32 *rm) : rd(rd), rn(rn),
+                                                                              rm(rm) {}
+
+void T16_ADD_REG::decode(T16_STRUCT_ADD_REG *inst) {
+    DECODE_RD(Reg);
+    DECODE_RN(Reg);
+    DECODE_RM(Reg);
+}
+
+void T16_ADD_REG::assembler() {
+    SET_OPCODE(ADD_REG);
+    INST_ASSERT(rd->getCode() > 7);
+    INST_ASSERT(rn->getCode() > 7);
+    INST_ASSERT(rm->getCode() > 7);
+    ENCODE_RD;
+    ENCODE_RN;
+    ENCODE_RM;
+}
+
+
+
+T16_CMP_REG_EXT::T16_CMP_REG_EXT(T16_STRUCT_CMP_REG_EXT *inst) : InstructionT16(inst) {
+    decode(inst);
+}
+
+T16_CMP_REG_EXT::T16_CMP_REG_EXT(RegisterA32 *rn, RegisterA32 *rm) : rn(rn), rm(rm) {}
+
+void T16_CMP_REG_EXT::decode(T16_STRUCT_CMP_REG_EXT *inst) {
+    rn = Reg(COMBINE(inst->N, inst->rn, 3));
+    DECODE_RM(Reg);
+}
+
+void T16_CMP_REG_EXT::assembler() {
+    SET_OPCODE(CMP_REG_EXT);
+    ENCODE_RM;
+    get()->rn = BITS(rn->getCode(), 0, 2);
+    get()->N = BIT(rn->getCode(), 3);
+}

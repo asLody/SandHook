@@ -89,9 +89,16 @@ void T32_LDR_UIMM::assembler() {
 
 T32_LDR_LIT::T32_LDR_LIT() {}
 
-T32_LDR_LIT::T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst) : T32_INST_PC_REL(inst) {}
+T32_LDR_LIT::T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst) : T32_INST_PC_REL(inst) {
+    decode(inst);
+}
 
-T32_LDR_LIT::T32_LDR_LIT(RegisterA32 &rt, Off offset) : rt(&rt), offset(offset) {}
+T32_LDR_LIT::T32_LDR_LIT(OP op, RegisterA32 &rt, Off offset) : op(op), rt(&rt), offset(offset) {}
+
+
+T32_LDR_LIT::T32_LDR_LIT(OP op, RegisterA32 &rt, Label& label) : op(op), rt(&rt) {
+    bindLabel(label);
+}
 
 Off T32_LDR_LIT::getImmPCOffset() {
     return get()->U == add ? get()->imm12 : -get()->imm12;
@@ -122,8 +129,8 @@ T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM() {}
 
 T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst) : InstructionT32(inst) {}
 
-T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_MOV_MOVT_IMM::OP op, RegisterA32 *rd, U16 imm16) : op(op),
-                                                                                          rd(rd),
+T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_MOV_MOVT_IMM::OP op, RegisterA32 &rd, U16 imm16) : op(op),
+                                                                                          rd(&rd),
                                                                                           imm16(imm16) {}
 
 void T32_MOV_MOVT_IMM::decode(T32_STRUCT_MOV_MOVT_IMM *inst) {
@@ -148,8 +155,8 @@ T32_LDR_IMM::T32_LDR_IMM(T32_STRUCT_LDR_IMM *inst) : InstructionT32(inst) {
     decode(inst);
 }
 
-T32_LDR_IMM::T32_LDR_IMM(T32_LDR_IMM::OP op, RegisterA32 *rt, const MemOperand &operand) : op(op),
-                                                                                           rt(rt),
+T32_LDR_IMM::T32_LDR_IMM(T32_LDR_IMM::OP op, RegisterA32 &rt, const MemOperand &operand) : op(op),
+                                                                                           rt(&rt),
                                                                                            operand(operand) {}
 
 void T32_LDR_IMM::decode(T32_STRUCT_LDR_IMM *inst) {

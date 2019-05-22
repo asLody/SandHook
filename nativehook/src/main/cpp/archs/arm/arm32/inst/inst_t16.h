@@ -250,7 +250,7 @@ namespace SandHook {
         public:
             T16_ADD_IMM_RDN(T16_STRUCT_ADD_IMM_RDN *inst);
 
-            T16_ADD_IMM_RDN(RegisterA32 *rdn, S32 imm32);
+            T16_ADD_IMM_RDN(RegisterA32 *rdn, U8 imm8);
 
             void decode(T16_STRUCT_ADD_IMM_RDN *inst) override;
 
@@ -258,7 +258,7 @@ namespace SandHook {
 
         public:
             RegisterA32* rdn;
-            S32 imm32;
+            U8 imm8;
         };
 
         class INST_T16(ADR) : public T16_INST_PC_REL<STRUCT_T16(ADR)> {
@@ -304,8 +304,6 @@ namespace SandHook {
 
             void assembler() override;
 
-            bool pcRelate() override;
-
         public:
             RegisterA32* rm;
             RegisterA32* rn;
@@ -331,6 +329,51 @@ namespace SandHook {
 
         public:
             RegisterA32* rd;
+            RegisterA32* rm;
+        };
+
+
+        class INST_T16(ADD_REG) : public InstructionT16<STRUCT_T16(ADD_REG)> {
+        public:
+            T16_ADD_REG();
+
+            T16_ADD_REG(T16_STRUCT_ADD_REG *inst);
+
+            T16_ADD_REG(RegisterA32 *rd, RegisterA32 *rn, RegisterA32 *rm);
+
+            DEFINE_IS(ADD_REG)
+
+            DEFINE_INST_CODE(ADD_REG)
+
+            void decode(T16_STRUCT_ADD_REG *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterA32* rd;
+            RegisterA32* rn;
+            RegisterA32* rm;
+        };
+
+
+        class INST_T16(CMP_REG_EXT) : public InstructionT16<STRUCT_T16(CMP_REG_EXT)> {
+        public:
+
+            T16_CMP_REG_EXT(T16_STRUCT_CMP_REG_EXT *inst);
+
+            T16_CMP_REG_EXT(RegisterA32 *rn, RegisterA32 *rm);
+
+            DEFINE_IS(CMP_REG_EXT)
+
+            DEFINE_INST_CODE(CMP_REG_EXT)
+
+            void decode(T16_STRUCT_CMP_REG_EXT *inst) override;
+
+            void assembler() override;
+
+
+        public:
+            RegisterA32* rn;
             RegisterA32* rm;
         };
 

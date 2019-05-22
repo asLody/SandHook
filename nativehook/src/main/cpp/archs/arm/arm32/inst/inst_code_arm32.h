@@ -23,7 +23,9 @@ enum class InstCodeT16 {
     ADD_IMM_RDN,
     //rn = pc
     ADR,
+    ADD_REG,
     CMP_REG,
+    CMP_REG_EXT,
     MOV_IMM,
     MOV_REG,
 };

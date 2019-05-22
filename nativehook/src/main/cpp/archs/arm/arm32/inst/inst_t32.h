@@ -177,7 +177,9 @@ namespace SandHook {
 
             T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst);
 
-            T32_LDR_LIT(RegisterA32 &rt, Off offset);
+            T32_LDR_LIT(OP op, RegisterA32 &rt, Off offset);
+
+            T32_LDR_LIT(OP op, RegisterA32 &rt, Label& label);
 
             DEFINE_IS(LDR_LIT)
 
@@ -208,7 +210,7 @@ namespace SandHook {
 
             T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst);
 
-            T32_MOV_MOVT_IMM(OP op, RegisterA32 *rd, U16 imm16);
+            T32_MOV_MOVT_IMM(OP op, RegisterA32 &rd, U16 imm16);
 
             DEFINE_IS_EXT(MOV_MOVT_IMM, TEST_INST_OPCODE(MOV_MOVT_IMM, 1) && TEST_INST_OPCODE(MOV_MOVT_IMM, 2))
 
@@ -238,7 +240,7 @@ namespace SandHook {
 
             T32_LDR_IMM(T32_STRUCT_LDR_IMM *inst);
 
-            T32_LDR_IMM(OP op, RegisterA32 *rt, const MemOperand &operand);
+            T32_LDR_IMM(OP op, RegisterA32 &rt, const MemOperand &operand);
 
             DEFINE_IS_EXT(LDR_IMM, TEST_INST_OPCODE(LDR_IMM, 1) && TEST_INST_OPCODE(LDR_IMM, 2))
 
