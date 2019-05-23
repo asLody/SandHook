@@ -71,16 +71,17 @@ A64_ADR_ADRP::A64_ADR_ADRP(A64_ADR_ADRP::OP op, XRegister &rd, Label &label) {
 Off A64_ADR_ADRP::getImmPCOffset() {
     U32 hi = get()->immhi;
     U32 lo = get()->immlo;
-    Off offset = signExtend64(IMM_LO_W + IMM_HI_W, COMBINE(hi, lo, IMM_LO_W));
+    U64 imm = COMBINE(hi, lo, IMM_LO_W);
     if (isADRP()) {
-        offset *= P_SIZE;
+        return signExtend64(IMM_HI_W + IMM_LO_W + PAGE_OFFSET, imm << PAGE_OFFSET);
+    } else {
+        return signExtend64(IMM_HI_W + IMM_LO_W, imm);
     }
-    return offset;
 }
 
 Addr A64_ADR_ADRP::getImmPCOffsetTarget() {
     void* base = AlignDown(getPC(), P_SIZE);
-    return getImmPCOffset() + reinterpret_cast<Addr>(base);
+    return offset + reinterpret_cast<Addr>(base);
 }
 
 void A64_ADR_ADRP::assembler() {
@@ -90,7 +91,7 @@ void A64_ADR_ADRP::assembler() {
 void A64_ADR_ADRP::decode(STRUCT_A64(ADR_ADRP) *inst) {
     offset = getImmPCOffset();
     DECODE_RD(XReg);
-    op = OP(get()->op);
+    DECODE_OP;
 }
 
 //Mov Wide

@@ -15,6 +15,12 @@ using namespace SandHook::Decoder;
 using namespace SandHook::Hook;
 using namespace SandHook::AsmA64;
 
+
+int m1 = 5;
+int m3 = 5;
+int m2 = 4;
+int m4 = 5;
+
 void (*dosth3Backup)(int, int) = nullptr;
 void (*dosth4Backup)() = nullptr;
 void (*dosth4Backup2)() = nullptr;
@@ -51,6 +57,9 @@ void do5() {
 }
 
 void do4() {
+    if (m2 > m3) {
+        return;
+    }
     int a = 1 + 1;
     int b = a + 1;
     int d = a + 1;
@@ -133,8 +142,6 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
     arm64Decoder.decode(reinterpret_cast<void *>(do1), 4 * 8, visitor);
 
     InlineHookArm64Android inlineHookArm64Android = InlineHookArm64Android();
-
-    do4();
 
     dosth4Backup = reinterpret_cast<void (*)()>(inlineHookArm64Android.inlineHook(
             reinterpret_cast<void *>(do4),
