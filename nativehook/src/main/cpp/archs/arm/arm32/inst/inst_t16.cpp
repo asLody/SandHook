@@ -220,9 +220,9 @@ T16_ADR::T16_ADR(T16_STRUCT_ADR *inst) : T16_INST_PC_REL(inst) {
     decode(inst);
 }
 
-T16_ADR::T16_ADR(RegisterA32 *rd, Off offset) : rd(rd), offset(offset) {}
+T16_ADR::T16_ADR(RegisterA32 &rd, Off offset) : rd(&rd), offset(offset) {}
 
-T16_ADR::T16_ADR(RegisterA32 *rd, Label &label) : rd(rd) {
+T16_ADR::T16_ADR(RegisterA32 &rd, Label &label) : rd(&rd) {
     bindLabel(label);
 }
 
@@ -233,6 +233,11 @@ Off T16_ADR::getImmPCOffset() {
 
 Addr T16_ADR::getImmPCOffsetTarget() {
     return RoundDown((Addr) getPC() + offset, 4);
+}
+
+void T16_ADR::onOffsetApply(Off offset) {
+    this->offset = offset;
+    get()->imm8 = (U32)offset >> 2;
 }
 
 void T16_ADR::decode(T16_STRUCT_ADR *inst) {

@@ -37,6 +37,8 @@ namespace SandHook {
             void Ldr(RegisterA32 &rt, Label* label);
             void Ldrb(RegisterA32 &rt, Label* label);
             void Ldrh(RegisterA32 &rt, Label* label);
+            void Ldrsb(RegisterA32 &rt, Label* label);
+            void Ldrsh(RegisterA32 &rt, Label* label);
 
             void Ldr(RegisterA32 &rt, const MemOperand& operand);
             void Ldrb(RegisterA32 &rt, const MemOperand& operand);
@@ -62,6 +64,8 @@ namespace SandHook {
 
             void Pop(RegisterA32& rt);
             void Push(RegisterA32& rt);
+
+            void Adr(RegisterA32& rd, Label* label);
 
         public:
             CodeContainer codeContainer = CodeContainer(nullptr);

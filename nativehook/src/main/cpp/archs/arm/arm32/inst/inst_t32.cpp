@@ -31,7 +31,9 @@ void T32_UNKNOW::assembler() {
 }
 
 
-T32_B32::T32_B32(T32_STRUCT_B32 *inst) : T32_INST_PC_REL(inst) {}
+T32_B32::T32_B32(T32_STRUCT_B32 *inst) : T32_INST_PC_REL(inst) {
+    decode(inst);
+}
 
 T32_B32::T32_B32(T32_B32::OP op, T32_B32::X x, Off offset) : op(op), x(x), offset(offset) {}
 
@@ -42,15 +44,14 @@ T32_B32::T32_B32(T32_B32::OP op, T32_B32::X x, Label &label) : op(op), x(x) {
 Off T32_B32::getImmPCOffset() {
     U32 S = get()->S;
     U32 imm21 = COMBINE(get()->imm10, get()->imm11, 11);
-    U32 i1 = (get()->J1 ^ S) ? 0 : 1;
-    U32 i2 = (get()->J2 ^ S) ? 0 : 1;
-    U32 i1i2 = COMBINE(i1, i2, 1);
-    U32 Si1i2 = COMBINE(S, i1i2, 2);
-    //BLX
-    if (op == BL && x == thumb) {
-        INST_ASSERT((imm21 & 0x1) == 0x1);
+    if (get()->X == 0) {
+        imm21 -= BIT(imm21, 0);
     }
-    return signExtend32(25, COMBINE(Si1i2, imm21, 21) << 0);
+    U32 i1 = !(get()->J1 ^ S);
+    U32 i2 = !(get()->J2 ^ S);
+    U32 i1i2 = COMBINE(i1, i2, 1);
+    U32 Si1i2 = COMBINE(-S, i1i2, 2);
+    return signExtend32(25, COMBINE(Si1i2, imm21, 21) << 1);
 }
 
 void T32_B32::decode(T32_STRUCT_B32 *inst) {
@@ -63,7 +64,7 @@ void T32_B32::assembler() {
     SET_OPCODE(B32);
     ENCODE_OP;
     get()->X = x;
-    U32 imm24 = TruncateToUint25(offset) >> 0;
+    U32 imm24 = TruncateToUint25(offset) >> 1;
     get()->imm11 = BITS(imm24, 0, 10);
     get()->imm10 = BITS(imm24, 11, 20);
     get()->S = BIT(imm24, 23);
@@ -72,15 +73,23 @@ void T32_B32::assembler() {
     if (i1 == 1) {
         get()->J1 = get()->S;
     } else {
-        get()->J1 = ~get()->S;
+        get()->J1 = !get()->S;
     }
     if (i2 == 1) {
         get()->J2 = get()->S;
     } else {
-        get()->J2 = ~get()->S;
+        get()->J2 = !get()->S;
     }
 }
 
+Addr T32_B32::getImmPCOffsetTarget() {
+    if (x == arm) {
+        void* base = reinterpret_cast<void *>(ALIGN((Addr)getPC(), 4));
+        return offset + reinterpret_cast<Addr>(base);
+    } else {
+        return T32_INST_PC_REL::getImmPCOffsetTarget();
+    }
+}
 
 
 T32_LDR_UIMM::T32_LDR_UIMM(T32_STRUCT_LDR_UIMM *inst) : InstructionT32(inst) {}
@@ -109,10 +118,10 @@ T32_LDR_LIT::T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst) : T32_INST_PC_REL(inst) {
     decode(inst);
 }
 
-T32_LDR_LIT::T32_LDR_LIT(OP op, RegisterA32 &rt, Off offset) : op(op), rt(&rt), offset(offset) {}
+T32_LDR_LIT::T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Off offset) : op(op), s(s), rt(&rt), offset(offset) {}
 
 
-T32_LDR_LIT::T32_LDR_LIT(OP op, RegisterA32 &rt, Label& label) : op(op), rt(&rt) {
+T32_LDR_LIT::T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Label& label) : op(op), s(s), rt(&rt) {
     bindLabel(label);
 }
 
@@ -134,6 +143,7 @@ void T32_LDR_LIT::onOffsetApply(Off offset) {
 void T32_LDR_LIT::decode(T32_STRUCT_LDR_LIT *inst) {
     DECODE_OP;
     DECODE_RT(Reg);
+    s = S(inst->S);
     offset = getImmPCOffset();
 }
 
@@ -141,6 +151,7 @@ void T32_LDR_LIT::assembler() {
     SET_OPCODE(LDR_LIT);
     ENCODE_OP;
     ENCODE_RT;
+    get()->S = s;
     if (offset >= 0) {
         get()->U = add;
         get()->imm12 = static_cast<InstT32>(offset);
@@ -160,6 +171,7 @@ T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_MOV_MOVT_IMM::OP op, RegisterA32 &rd, U16
                                                                                           imm16(imm16) {}
 
 void T32_MOV_MOVT_IMM::decode(T32_STRUCT_MOV_MOVT_IMM *inst) {
+    DECODE_OP;
     DECODE_RD(Reg);
     U16 imm4i = COMBINE(inst->imm4, inst->i, 1);
     U16 imm38 = COMBINE(inst->imm3, inst->imm8, 8);
@@ -169,6 +181,7 @@ void T32_MOV_MOVT_IMM::decode(T32_STRUCT_MOV_MOVT_IMM *inst) {
 void T32_MOV_MOVT_IMM::assembler() {
     SET_OPCODE_MULTI(MOV_MOVT_IMM, 1);
     SET_OPCODE_MULTI(MOV_MOVT_IMM, 2);
+    ENCODE_OP;
     ENCODE_RD;
     get()->imm8 = BITS(imm16, 0, 7);
     get()->imm3 = BITS(imm16, 8 ,10);

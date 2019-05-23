@@ -35,13 +35,13 @@ namespace SandHook {
                 delete laterBindlabels;
             }
 
-        protected:
+        public:
             CodeContainer* codeContainer;
             std::mutex* relocateLock = new std::mutex();
             std::map<Addr, Label*>* laterBindlabels = new std::map<Addr, Label*>();
-            Addr startAddr;
-            Addr length;
-            Addr curOffset;
+            Addr startAddr = 0;
+            Addr length = 0;
+            Addr curOffset = 0;
         };
 
     }

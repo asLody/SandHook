@@ -62,11 +62,11 @@ namespace SandHook {
             }
 
             void *getPC() override {
-                return reinterpret_cast<void *>((Addr) Instruction<Inst>::getPC() + 2 * size());
+                return reinterpret_cast<void *>((Addr) Instruction<Inst>::getPC() + 2 * 2);
             }
 
             Addr getVPC() override {
-                return Instruction<Inst>::getVPC() + 2 * size();
+                return Instruction<Inst>::getVPC() + 2 * 2;
             }
 
             static inline S32 signExtend32(unsigned int bits, U32 value) {
@@ -150,6 +150,8 @@ namespace SandHook {
 
             DEFINE_IS(B32)
 
+            Addr getImmPCOffsetTarget() override;
+
             Off getImmPCOffset() override;
 
             void decode(T32_STRUCT_B32 *inst) override;
@@ -192,18 +194,23 @@ namespace SandHook {
                 LDRH = 0b0111111
             };
 
-            enum S {
+            enum U {
                 cmp = 0b0,
                 add = 0b1
+            };
+
+            enum S {
+                UnSign = 0b0,
+                Sign = 0b1
             };
 
             T32_LDR_LIT();
 
             T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst);
 
-            T32_LDR_LIT(OP op, RegisterA32 &rt, Off offset);
+            T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Off offset);
 
-            T32_LDR_LIT(OP op, RegisterA32 &rt, Label& label);
+            T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Label& label);
 
             DEFINE_IS(LDR_LIT)
 
@@ -219,6 +226,7 @@ namespace SandHook {
 
         public:
             OP op;
+            S s;
             RegisterA32* rt;
             Off offset;
         };

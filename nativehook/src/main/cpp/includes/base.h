@@ -94,6 +94,8 @@ T AlignDown(T pointer,
     return (T)(pointer_raw & ~mask);
 }
 
+#define ALIGN(value, align) value - value % align
+
 template<typename T>
 struct Identity {
     using type = T;
@@ -201,6 +203,16 @@ inline int32_t ExtractSignedBitfield32(int msb, int lsb, U32 x) {
     int32_t result;
     memcpy(&result, &temp, sizeof(result));
     return result;
+}
+
+
+template <typename T>
+inline T SignExtend(T val, int bitSize) {
+    T mask = (T(2) << (bitSize - 1)) - T(1);
+    val &= mask;
+    T sign_bits = -((val >> (bitSize - 1)) << bitSize);
+    val |= sign_bits;
+    return val;
 }
 
 

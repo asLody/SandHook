@@ -34,11 +34,12 @@ DEFINE_STRUCT_T32(B32) {
     InstT32 op:2;
 };
 
-DEFINE_OPCODE_T32(LDR_LIT, 0b11111000)
+DEFINE_OPCODE_T32(LDR_LIT, 0b1111100)
 DEFINE_STRUCT_T32(LDR_LIT) {
     InstT32 op:7;
     InstT32 U:1;
-    InstT32 opcode:8;
+    InstT32 S:1;
+    InstT32 opcode:7;
     InstT32 imm12:12;
     InstT32 rt:T32_REG_WIDE;
 };

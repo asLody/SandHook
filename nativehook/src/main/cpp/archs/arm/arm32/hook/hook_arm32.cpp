@@ -49,7 +49,7 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
     Label* origin_addr_label = new Label();
     __ Ldr(PC, origin_addr_label);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + codeContainerInline->size())));
+    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
     __ finish();
 #undef __
 

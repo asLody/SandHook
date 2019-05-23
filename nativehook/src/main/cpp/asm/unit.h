@@ -80,6 +80,18 @@ namespace SandHook {
                 return sizeof(Raw);
             }
 
+            inline U8 ref() {
+                return ++ref_count;
+            }
+
+            inline U8 release() {
+                return --ref_count;
+            }
+
+            inline U8 refcount() {
+                return ref_count;
+            }
+
             virtual ~Unit() {
                 if (auto_alloc) {
                     free(raw);
@@ -87,9 +99,10 @@ namespace SandHook {
             }
 
         private:
-            Raw* raw;
-            Addr vPos;
+            Raw* raw = nullptr;
+            Addr vPos = 0;
             bool auto_alloc = false;
+            U8 ref_count = 0;
         };
 
     }

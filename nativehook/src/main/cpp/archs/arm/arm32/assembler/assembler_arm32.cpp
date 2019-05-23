@@ -47,22 +47,30 @@ void AssemblerA32::Movt(RegisterA32 &rd, U16 imm16) {
 }
 
 void AssemblerA32::Mov(RegisterA32 &rd, U32 imm32) {
-    U16 immH = BITS16H(imm32);
     U16 immL = BITS16L(imm32);
+    U16 immH = BITS16H(imm32);
     Mov(rd, immL);
     Movt(rd, immH);
 }
 
 void AssemblerA32::Ldr(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDR, rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDR, INST_T32(LDR_LIT)::UnSign, rt, *label)));
 }
 
 void AssemblerA32::Ldrb(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRB, rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRB, INST_T32(LDR_LIT)::UnSign,rt, *label)));
 }
 
 void AssemblerA32::Ldrh(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRH, rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRH, INST_T32(LDR_LIT)::UnSign,rt, *label)));
+}
+
+void AssemblerA32::Ldrsb(RegisterA32 &rt, Label *label) {
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRB, INST_T32(LDR_LIT)::Sign,rt, *label)));
+}
+
+void AssemblerA32::Ldrsh(RegisterA32 &rt, Label *label) {
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRH, INST_T32(LDR_LIT)::Sign,rt, *label)));
 }
 
 void AssemblerA32::Ldr(RegisterA32 &rt, const MemOperand &operand) {
@@ -151,6 +159,10 @@ void AssemblerA32::Push(RegisterA32 &rt) {
     } else {
         throw ErrorCodeException("error pop inst");
     }
+}
+
+void AssemblerA32::Adr(RegisterA32 &rd, Label *label) {
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(ADR)(rd, *label)));
 }
 
 

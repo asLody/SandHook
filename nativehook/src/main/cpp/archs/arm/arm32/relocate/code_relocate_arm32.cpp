@@ -27,6 +27,9 @@ CodeRelocateA32::CodeRelocateA32(AssemblerA32 &assembler) : CodeRelocate(assembl
 bool CodeRelocateA32::visit(Unit<Base> *unit, void *pc) {
     relocate(reinterpret_cast<Instruction<Base> *>(unit), __ getPC());
     curOffset += unit->size();
+    if (unit->refcount() == 0) {
+        delete unit;
+    }
     return true;
 }
 
@@ -56,12 +59,33 @@ void* CodeRelocateA32::relocate(Instruction<Base> *instruction, void *toPc) thro
 
     if (!instruction->pcRelate()) {
         __ Emit(instruction);
+        instruction->ref();
         return curPc;
     }
-    switch (instruction->instCode()) {
-        CASE(T16, B)
-        default:
-            __ Emit(instruction);
+
+    if (instruction->instType() == thumb32) {
+        switch (instruction->instCode()) {
+            CASE(T32, B32)
+            CASE(T32, LDR_LIT)
+            default:
+                __ Emit(instruction);
+                instruction->ref();
+        }
+    } else if (instruction->instType() == thumb16) {
+        switch (instruction->instCode()) {
+            CASE(T16, B)
+            CASE(T16, B_COND)
+            CASE(T16, BX_BLX)
+            CASE(T16, CBZ_CBNZ)
+            CASE(T16, ADR)
+            CASE(T16, LDR_LIT)
+            default:
+                __ Emit(instruction);
+                instruction->ref();
+        }
+    } else {
+        __ Emit(instruction);
+        instruction->ref();
     }
     return curPc;
 }
@@ -69,16 +93,41 @@ void* CodeRelocateA32::relocate(Instruction<Base> *instruction, void *toPc) thro
 
 IMPL_RELOCATE(T16, B_COND) {
 
+    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        __ B(inst->condition, getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        return;
+    }
+
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    if (inst->condition == al) {
+        Label* target_label = new Label;
+        __ Ldr(PC, target_label);
+        __ Emit(target_label);
+        __ Emit(targetAddr);
+    } else {
+        Label* true_label = new Label();
+        Label* false_label = new Label();
+        Label* target_label = new Label;
+        __ B(inst->condition, true_label);
+        __ B(false_label);
+        __ Emit(true_label);
+        __ Ldr(PC, target_label);
+        __ Emit(target_label);
+        __ Emit(targetAddr);
+        __ Emit(false_label);
+    }
+
 }
 
 IMPL_RELOCATE(T16, B) {
-
-    Addr targetAddr = inst->getImmPCOffsetTarget();
 
     if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
         __ B(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
         return;
     }
+
+    Addr targetAddr = inst->getImmPCOffsetTarget();
 
     Label* target_label = new Label();
     __ Ldr(PC, target_label);
@@ -88,25 +137,130 @@ IMPL_RELOCATE(T16, B) {
 }
 
 IMPL_RELOCATE(T16, BX_BLX) {
-
+    __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+    inst->ref();
 }
 
 IMPL_RELOCATE(T16, CBZ_CBNZ) {
+
+    inst->ref();
+
+    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        inst->bindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        return;
+    }
+
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    Label* true_label = new Label;
+    Label* false_label = new Label;
+    Label* target_label = new Label();
+
+    inst->bindLabel(*true_label);
+    __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+    __ B(false_label);
+    __ Emit(true_label);
+    __ Ldr(PC, target_label);
+    __ Emit(target_label);
+    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(targetAddr)));
+    __ Emit(false_label);
 
 }
 
 IMPL_RELOCATE(T16, LDR_LIT) {
 
+    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        __ Ldr(*inst->rt, getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        return;
+    }
+
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    __ Mov(*inst->rt, targetAddr);
+    __ Ldr(*inst->rt, MemOperand(inst->rt, 0));
 }
 
 IMPL_RELOCATE(T16, ADR) {
+
+    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        __ Adr(*inst->rd, getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        return;
+    }
+
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    __ Mov(*inst->rd, targetAddr);
 
 }
 
 IMPL_RELOCATE(T32, B32) {
 
+    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        inst->ref();
+        inst->bindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        return;
+    }
+
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+
+    if (inst->x == T32_B32::thumb) {
+        //Thumb mode
+        if (inst->op == T32_B32::BL) {
+            __ Mov(LR, U32((Addr) toPc + inst->size() + 2 * 2));
+        }
+        targetAddr = reinterpret_cast<Addr>(getThumbPC(reinterpret_cast<void *>(targetAddr)));
+        Label* target_label = new Label();
+        __ Ldr(PC, target_label);
+        __ Emit(target_label);
+        __ Emit(reinterpret_cast<Addr>(targetAddr));
+    } else {
+        //to A32 mode
+        __ Mov(IP, targetAddr);
+        if (inst->op == T32_B32::BL) {
+            __ Blx(IP);
+        } else {
+            __ Bx(IP);
+        }
+    }
+
 }
 
 IMPL_RELOCATE(T32, LDR_LIT) {
+
+    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        inst->ref();
+        inst->bindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        return;
+    }
+
+    Addr targetAddr = inst->getImmPCOffsetTarget();
+
+    __ Mov(*inst->rt, targetAddr);
+    switch (inst->op) {
+        case T32_LDR_LIT::LDR:
+            __ Ldr(*inst->rt, MemOperand(inst->rt, 0));
+            break;
+        case T32_LDR_LIT::LDRB:
+            if (inst->s == T32_LDR_LIT::UnSign) {
+                __ Ldrb(*inst->rt, MemOperand(inst->rt, 0));
+            } else {
+                __ Ldrsb(*inst->rt, MemOperand(inst->rt, 0));
+            }
+            break;
+        case T32_LDR_LIT::LDRH:
+            if (inst->s == T32_LDR_LIT::UnSign) {
+                __ Ldrh(*inst->rt, MemOperand(inst->rt, 0));
+            } else {
+                __ Ldrsh(*inst->rt, MemOperand(inst->rt, 0));
+            }
+            break;
+        default:
+            inst->ref();
+            __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+    }
 
 }
