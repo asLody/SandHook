@@ -375,7 +375,7 @@ void T16_PUSH::decode(T16_STRUCT_PUSH *inst) {
 }
 
 void T16_PUSH::assembler() {
-    SET_OPCODE(POP);
+    SET_OPCODE(PUSH);
     U16 regs = registerList.GetList();
     get()->regs = BITS(regs, 0, 7);
     get()->M = BIT(regs, 14);
