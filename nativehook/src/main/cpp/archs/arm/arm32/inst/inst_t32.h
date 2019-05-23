@@ -7,7 +7,7 @@
 
 #include "arm_base.h"
 #include "arm32_base.h"
-#include "register_list_a32.h"
+#include "register_list_arm32.h"
 #include "inst_struct_t16.h"
 #include "inst_code_arm32.h"
 #include "inst_struct_t32.h"
@@ -17,7 +17,7 @@
 #define IS_OPCODE_T32(RAW,OP) INST_T32(OP)::is(RAW)
 
 #define DEFINE_IS_EXT(X, COND) \
-inline static bool is(InstT16& inst) { \
+inline static bool is(InstT32& inst) { \
 union { \
     InstT32 raw; \
     STRUCT_T32(X) inst; \
@@ -104,6 +104,26 @@ namespace SandHook {
                 return true;
             };
 
+        };
+
+
+        class INST_T32(UNKNOW) : public InstructionT32<STRUCT_T32(UNKNOW)> {
+        public:
+
+            T32_UNKNOW(STRUCT_T32(UNKNOW) &inst);
+
+            DEFINE_INST_CODE(UNKNOW)
+
+            inline bool unknow() override {
+                return true;
+            }
+
+            void decode(T32_STRUCT_UNKNOW *inst) override;
+
+            void assembler() override;
+
+        private:
+            STRUCT_T32(UNKNOW) inst_backup;
         };
 
 

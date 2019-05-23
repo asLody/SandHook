@@ -2,7 +2,7 @@
 // Created by swift on 2019/5/16.
 //
 
-#include "register_list_a32.h"
+#include "register_list_arm32.h"
 
 namespace SandHook {
 namespace RegistersA32 {

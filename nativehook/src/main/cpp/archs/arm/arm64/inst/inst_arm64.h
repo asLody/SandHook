@@ -8,7 +8,7 @@
 #include "inst_struct_aarch64.h"
 #include "instruction.h"
 #include "base.h"
-#include "register_list_a64.h"
+#include "register_list_arm64.h"
 
 
 #define INST_A64(X) A64_##X

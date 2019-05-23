@@ -6,7 +6,7 @@
 #define SANDHOOK_ASSEMBLER_A32_H
 
 #include "assembler.h"
-#include "register_a32.h"
+#include "register_arm32.h"
 #include "inst_t16.h"
 #include "inst_t32.h"
 

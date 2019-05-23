@@ -4,6 +4,7 @@
 
 #include <sys/mman.h>
 #include <platform.h>
+#include "log.h"
 #include "code_buffer.h"
 #include "lock.h"
 
@@ -42,7 +43,9 @@ AndroidCodeBuffer::AndroidCodeBuffer() {}
 StaticCodeBuffer::StaticCodeBuffer(Addr pc) : pc(pc) {}
 
 void *StaticCodeBuffer::getBuffer(U32 bufferSize) {
-    memUnprotect(pc, bufferSize);
+    if (!memUnprotect(pc, bufferSize)) {
+        LOGE("error memUnprotect!");
+    }
     return reinterpret_cast<void *>(pc);
 }
 

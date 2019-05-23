@@ -10,6 +10,7 @@ enum class InstCodeA32 {
 };
 
 enum class InstCodeT16 {
+    UNKNOW,
     BASE_SASMC,
     DATA_PROC,
     SPDIABE,
@@ -19,7 +20,6 @@ enum class InstCodeT16 {
     BX_BLX,
     CBZ_CBNZ,
     LDR_LIT,
-    //when rd = rn
     ADD_IMM_RDN,
     //rn = pc
     ADR,
@@ -28,17 +28,16 @@ enum class InstCodeT16 {
     CMP_REG_EXT,
     MOV_IMM,
     MOV_REG,
-    ADD_IMM_RND,
     POP,
     PUSH
 };
 
 enum class InstCodeT32 {
+    UNKNOW,
     B32,
     LDR_LIT,
     LDR_IMM,
     LDR_UIMM,
-    LDRB_LIT,
     MOV_MOVT_IMM
 };
 

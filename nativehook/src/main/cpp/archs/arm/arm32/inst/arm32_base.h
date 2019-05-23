@@ -7,7 +7,7 @@
 
 #include <ostream>
 #include "arm_base.h"
-#include "register_list_a32.h"
+#include "register_list_arm32.h"
 #include "instruction.h"
 
 #define DECODE_OFFSET(bits, ext) signExtend32(bits + ext, COMBINE(get()->imm##bits, 0, ext))

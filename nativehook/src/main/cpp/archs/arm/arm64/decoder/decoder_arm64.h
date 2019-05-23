@@ -13,6 +13,8 @@ namespace SandHook {
         class Arm64Decoder : public InstDecoder {
         public:
             void decode(void *codeStart, Addr codeLen, InstVisitor &visitor) override;
+        public:
+            static Arm64Decoder* instant;
         };
 
     }

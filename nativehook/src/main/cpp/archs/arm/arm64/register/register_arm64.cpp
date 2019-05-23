@@ -2,8 +2,8 @@
 // Created by swift on 2019/5/8.
 //
 
-#include "register_a64.h"
-#include "register_list_a64.h"
+#include "register_arm64.h"
+#include "register_list_arm64.h"
 
 using namespace SandHook::Asm;
 using namespace SandHook::RegistersA64;

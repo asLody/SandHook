@@ -5,7 +5,7 @@
 #ifndef SANDHOOK_NH_REGISTER_LIST_A64_H
 #define SANDHOOK_NH_REGISTER_LIST_A64_H
 
-#include "register_a64.h"
+#include "register_arm64.h"
 #include "base.h"
 
 using namespace SandHook::Asm;

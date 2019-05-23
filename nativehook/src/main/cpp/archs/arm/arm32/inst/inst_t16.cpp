@@ -4,7 +4,7 @@
 
 #include "inst_t16.h"
 #include "arm32_base.h"
-#include "register_list_a32.h"
+#include "register_list_arm32.h"
 
 #define SET_BASE_OPCODE(X) get()->opcode_base = OPCODE_T16(X)
 
@@ -14,6 +14,20 @@
 using namespace SandHook::AsmA32;
 using namespace SandHook::RegistersA32;
 
+
+//Unknow
+
+T16_UNKNOW::T16_UNKNOW(STRUCT_T16(UNKNOW) &inst) : InstructionT16(&inst) {
+    decode(&inst);
+}
+
+void T16_UNKNOW::decode(T16_STRUCT_UNKNOW *inst) {
+    inst_backup = *inst;
+}
+
+void T16_UNKNOW::assembler() {
+    set(inst_backup);
+}
 
 //B
 T16_B::T16_B() {}

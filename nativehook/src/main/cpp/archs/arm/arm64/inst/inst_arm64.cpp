@@ -88,8 +88,8 @@ void A64_ADR_ADRP::assembler() {
 }
 
 void A64_ADR_ADRP::decode(STRUCT_A64(ADR_ADRP) *inst) {
-    offset = getImmPCOffsetTarget();
-    rd = XReg(static_cast<U8>(get()->rd));
+    offset = getImmPCOffset();
+    DECODE_RD(XReg);
     op = OP(get()->op);
 }
 

@@ -2,8 +2,8 @@
 // Created by swift on 2019/5/12.
 //
 
-#include "register_a32.h"
-#include "register_list_a32.h"
+#include "register_arm32.h"
+#include "register_list_arm32.h"
 
 using namespace SandHook::RegistersA32;
 

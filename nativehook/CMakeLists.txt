@@ -19,18 +19,19 @@ add_library( # Sets the name of the library.
         # Provides a relative path to your source file(s).
         src/main/cpp/sandhook_native.cpp
         src/main/cpp/decoder/decoder.cpp
-        src/main/cpp/archs/arm/arm64/assembler/assembler_a64.cpp
+        src/main/cpp/archs/arm/arm64/assembler/assembler_arm64.cpp
         src/main/cpp/archs/arm/arm64/inst/inst_arm64.cpp
-        src/main/cpp/archs/arm/arm64/register/register_a64.cpp
-        src/main/cpp/archs/arm/arm64/register/register_list_a64.cpp
+        src/main/cpp/archs/arm/arm64/register/register_arm64.cpp
+        src/main/cpp/archs/arm/arm64/register/register_list_arm64.cpp
         src/main/cpp/archs/arm/arm64/decoder/decoder_arm64.cpp
-        src/main/cpp/archs/arm/arm64/relocate/code_relocate_a64.cpp
+        src/main/cpp/archs/arm/arm64/relocate/code_relocate_arm64.cpp
         src/main/cpp/archs/arm/arm32/inst/inst_arm32.cpp
         src/main/cpp/archs/arm/arm32/inst/inst_t32.cpp
         src/main/cpp/archs/arm/arm32/inst/inst_t16.cpp
-        src/main/cpp/archs/arm/arm32/register/register_a32.cpp
-        src/main/cpp/archs/arm/arm32/register/register_list_a32.cpp
-        src/main/cpp/archs/arm/arm32/assembler/assembler_a32.cpp
+        src/main/cpp/archs/arm/arm32/register/register_arm32.cpp
+        src/main/cpp/archs/arm/arm32/register/register_list_arm32.cpp
+        src/main/cpp/archs/arm/arm32/assembler/assembler_arm32.cpp
+        src/main/cpp/archs/arm/arm32/decoder/decoder_arm32.cpp
         src/main/cpp/relocate/code_relocate.cpp
         src/main/cpp/elf/elf.cpp
         src/main/cpp/assembler/assembler.cpp
@@ -56,6 +57,7 @@ include_directories(
         src/main/cpp/archs/arm/arm32/inst
         src/main/cpp/archs/arm/arm32/register
         src/main/cpp/archs/arm/arm32/assembler
+        src/main/cpp/archs/arm/arm32/decoder
 )
 
 # Searches for a specified prebuilt library and stores the path as a

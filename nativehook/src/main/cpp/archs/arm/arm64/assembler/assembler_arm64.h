@@ -6,7 +6,7 @@
 #define SANDHOOK_NH_ASSEMBLER_A64_H
 
 #include "assembler.h"
-#include "register_a64.h"
+#include "register_arm64.h"
 #include "inst_arm64.h"
 
 using namespace SandHook::AsmA64;

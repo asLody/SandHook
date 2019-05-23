@@ -8,7 +8,7 @@
 #include <mutex>
 #include <map>
 #include "code_relocate.h"
-#include "assembler_a64.h"
+#include "assembler_arm64.h"
 
 using namespace SandHook::Assembler;
 using namespace SandHook::Decoder;

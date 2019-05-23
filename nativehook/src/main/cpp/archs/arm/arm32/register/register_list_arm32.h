@@ -5,7 +5,7 @@
 #ifndef SANDHOOK_NH_REGISTER_LIST_A32_H
 #define SANDHOOK_NH_REGISTER_LIST_A32_H
 
-#include "register_a32.h"
+#include "register_arm32.h"
 
 using namespace SandHook::Asm;
 

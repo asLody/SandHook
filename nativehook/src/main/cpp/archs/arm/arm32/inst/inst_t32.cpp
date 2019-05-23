@@ -15,6 +15,22 @@ using namespace SandHook::Asm;
 using namespace SandHook::AsmA32;
 
 
+
+//Unknow
+
+T32_UNKNOW::T32_UNKNOW(STRUCT_T32(UNKNOW) &inst) : InstructionT32(&inst) {
+    decode(&inst);
+}
+
+void T32_UNKNOW::decode(T32_STRUCT_UNKNOW *inst) {
+    inst_backup = *inst;
+}
+
+void T32_UNKNOW::assembler() {
+    set(inst_backup);
+}
+
+
 T32_B32::T32_B32(T32_STRUCT_B32 *inst) : T32_INST_PC_REL(inst) {}
 
 T32_B32::T32_B32(T32_B32::OP op, T32_B32::X x, Off offset) : op(op), x(x), offset(offset) {}

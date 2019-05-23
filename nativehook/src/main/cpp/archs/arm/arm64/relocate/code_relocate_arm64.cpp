@@ -2,7 +2,7 @@
 // Created by swift on 2019/5/12.
 //
 
-#include "code_relocate_a64.h"
+#include "code_relocate_arm64.h"
 #include "decoder_arm64.h"
 #include "lock.h"
 

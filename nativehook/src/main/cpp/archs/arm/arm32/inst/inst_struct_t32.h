@@ -16,6 +16,12 @@
 #define T32_REG_WIDE 4
 
 
+//unknow inst
+DEFINE_STRUCT_T32(UNKNOW) {
+    InstT32 raw;
+};
+
+
 DEFINE_OPCODE_T32(B32, 0b11110)
 DEFINE_STRUCT_T32(B32) {
     InstT32 imm11:11;

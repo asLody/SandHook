@@ -15,6 +15,8 @@ unit = reinterpret_cast<Unit<Base> *>(new INST_A64(X)(*s)); \
 goto label_matched; \
 }
 
+Arm64Decoder* Arm64Decoder::instant = new Arm64Decoder();
+
 void Arm64Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor) {
     InstA64 *pc = reinterpret_cast<InstA64 *>(codeStart);
     Addr endAddr = (Addr) codeStart + codeLen;
@@ -40,7 +42,7 @@ void Arm64Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor) {
         CASE(EXCEPTION_GEN)
         label_matched:
         if (unit == nullptr) {
-            unit = reinterpret_cast<Unit<Base> *>(new A64_UNKNOW(*reinterpret_cast<STRUCT_A64(UNKNOW) *>(pc)));
+            unit = reinterpret_cast<Unit<Base> *>(new INST_A64(UNKNOW)(*reinterpret_cast<STRUCT_A64(UNKNOW) *>(pc)));
         }
         if (!visitor.visit(unit, pc)) {
             break;

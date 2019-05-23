@@ -6,14 +6,14 @@
 #define SANDHOOK_INST_T16_H
 
 #include "arm_base.h"
-#include "register_list_a32.h"
+#include "register_list_arm32.h"
 #include "inst_struct_t16.h"
 #include "inst_code_arm32.h"
 #include "arm32_base.h"
 
 #define INST_T16(X) T16_##X
 
-#define IS_OPCODE_T16(RAW,OP) INST_T16(OP)::is(RAW)
+#define IS_OPCODE_T16(RAW, OP) INST_T16(OP)::is(RAW)
 
 #define DEFINE_IS_EXT(X, COND) \
 inline static bool is(InstT16& inst) { \
@@ -27,7 +27,7 @@ return COND; \
 
 #define DEFINE_IS(X) DEFINE_IS_EXT(X, TEST_INST_FIELD(opcode,OPCODE_T16(X)))
 
-#define TEST_INST_FIELD(F,V) inst_test.inst.F == V
+#define TEST_INST_FIELD(F, V) inst_test.inst.F == V
 
 #define INST_FIELD(F) inst_test.inst.F
 
@@ -87,7 +87,7 @@ namespace SandHook {
         };
 
 
-        template <typename Inst>
+        template<typename Inst>
         class T16_INST_PC_REL : public InstructionT16<Inst> {
         public:
 
@@ -110,6 +110,26 @@ namespace SandHook {
         };
 
 
+        class INST_T16(UNKNOW) : public InstructionT16<STRUCT_T16(UNKNOW)> {
+        public:
+
+            T16_UNKNOW(STRUCT_T16(UNKNOW) &inst);
+
+            DEFINE_INST_CODE(UNKNOW)
+
+            inline bool unknow() override {
+                return true;
+            }
+
+            void decode(T16_STRUCT_UNKNOW *inst) override;
+
+            void assembler() override;
+
+        private:
+            STRUCT_T16(UNKNOW) inst_backup;
+        };
+
+
         class INST_T16(B) : public T16_INST_PC_REL<STRUCT_T16(B)> {
         public:
             T16_B();
@@ -118,7 +138,7 @@ namespace SandHook {
 
             T16_B(Off offset);
 
-            T16_B(Label& label);
+            T16_B(Label &label);
 
             DEFINE_IS(B)
 
@@ -144,9 +164,10 @@ namespace SandHook {
 
             T16_B_COND(Condition condition, Off offset);
 
-            T16_B_COND(Condition condition, Label& label);
+            T16_B_COND(Condition condition, Label &label);
 
-            DEFINE_IS_EXT(B_COND, TEST_INST_FIELD(opcode, OPCODE_T16(B_COND)) && INST_FIELD(cond) != 0b1110 && INST_FIELD(cond) != 0b1111)
+            DEFINE_IS_EXT(B_COND, TEST_INST_FIELD(opcode, OPCODE_T16(B_COND)) &&
+                                  INST_FIELD(cond) != 0b1110 && INST_FIELD(cond) != 0b1111)
 
             DEFINE_INST_CODE(B_COND)
 
@@ -186,7 +207,7 @@ namespace SandHook {
 
         public:
             OP op;
-            RegisterA32* rm;
+            RegisterA32 *rm;
         };
 
 
@@ -201,9 +222,11 @@ namespace SandHook {
 
             T16_CBZ_CBNZ(OP op, Off offset, RegisterA32 &rn);
 
-            T16_CBZ_CBNZ(OP op, Label& label, RegisterA32 &rn);
+            T16_CBZ_CBNZ(OP op, Label &label, RegisterA32 &rn);
 
-            DEFINE_IS_EXT(CBZ_CBNZ, TEST_INST_OPCODE(CBZ_CBNZ, 1) && TEST_INST_OPCODE(CBZ_CBNZ, 2) && TEST_INST_OPCODE(CBZ_CBNZ, 3))
+            DEFINE_IS_EXT(CBZ_CBNZ,
+                          TEST_INST_OPCODE(CBZ_CBNZ, 1) && TEST_INST_OPCODE(CBZ_CBNZ, 2) &&
+                          TEST_INST_OPCODE(CBZ_CBNZ, 3))
 
             DEFINE_INST_CODE(CBZ_CBNZ)
 
@@ -218,7 +241,7 @@ namespace SandHook {
         public:
             OP op;
             Off offset;
-            RegisterA32* rn;
+            RegisterA32 *rn;
         };
 
 
@@ -247,7 +270,7 @@ namespace SandHook {
 
         public:
             Off offset;
-            RegisterA32* rt;
+            RegisterA32 *rt;
         };
 
 
@@ -259,14 +282,14 @@ namespace SandHook {
 
             DEFINE_IS(ADD_IMM_RDN)
 
-            DEFINE_INST_CODE(ADD_IMM_RND)
+            DEFINE_INST_CODE(ADD_IMM_RDN)
 
             void decode(T16_STRUCT_ADD_IMM_RDN *inst) override;
 
             void assembler() override;
 
         public:
-            RegisterA32* rdn;
+            RegisterA32 *rdn;
             U8 imm8;
         };
 
@@ -277,7 +300,7 @@ namespace SandHook {
 
             T16_ADR(RegisterA32 *rd, Off offset);
 
-            T16_ADR(RegisterA32 *rd, Label& label);
+            T16_ADR(RegisterA32 *rd, Label &label);
 
             DEFINE_IS(ADR)
 
@@ -292,7 +315,7 @@ namespace SandHook {
             void assembler() override;
 
         public:
-            RegisterA32* rd;
+            RegisterA32 *rd;
             Off offset;
         };
 
@@ -307,15 +330,16 @@ namespace SandHook {
 
             DEFINE_INST_CODE(CMP_REG)
 
-            DEFINE_IS_EXT(CMP_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) && TEST_INST_FIELD(opcode, OPCODE_T16(CMP_REG)))
+            DEFINE_IS_EXT(CMP_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) &&
+                                   TEST_INST_FIELD(opcode, OPCODE_T16(CMP_REG)))
 
             void decode(T16_STRUCT_CMP_REG *inst) override;
 
             void assembler() override;
 
         public:
-            RegisterA32* rm;
-            RegisterA32* rn;
+            RegisterA32 *rm;
+            RegisterA32 *rn;
         };
 
 
@@ -328,7 +352,8 @@ namespace SandHook {
 
             DEFINE_INST_CODE(MOV_REG)
 
-            DEFINE_IS_EXT(MOV_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) && TEST_INST_FIELD(opcode, OPCODE_T16(MOV_REG)))
+            DEFINE_IS_EXT(MOV_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) &&
+                                   TEST_INST_FIELD(opcode, OPCODE_T16(MOV_REG)))
 
             void decode(T16_STRUCT_MOV_REG *inst) override;
 
@@ -337,8 +362,8 @@ namespace SandHook {
             bool pcRelate() override;
 
         public:
-            RegisterA32* rd;
-            RegisterA32* rm;
+            RegisterA32 *rd;
+            RegisterA32 *rm;
         };
 
 
@@ -359,9 +384,9 @@ namespace SandHook {
             void assembler() override;
 
         public:
-            RegisterA32* rd;
-            RegisterA32* rn;
-            RegisterA32* rm;
+            RegisterA32 *rd;
+            RegisterA32 *rn;
+            RegisterA32 *rm;
         };
 
 
@@ -382,8 +407,8 @@ namespace SandHook {
 
 
         public:
-            RegisterA32* rn;
-            RegisterA32* rm;
+            RegisterA32 *rn;
+            RegisterA32 *rm;
         };
 
 
