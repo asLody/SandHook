@@ -255,10 +255,7 @@ namespace SandHook {
 
             DEFINE_INST_CODE(LDR_LIT)
 
-        private:
             Addr getImmPCOffsetTarget() override;
-
-        public:
 
             Off getImmPCOffset() override;
 

@@ -5,6 +5,8 @@
 #ifndef SANDHOOK_NH_CODE_RELOCATE_H
 #define SANDHOOK_NH_CODE_RELOCATE_H
 
+#include <mutex>
+#include <map>
 #include "exception.h"
 #include "instruction.h"
 #include "assembler.h"
@@ -24,8 +26,22 @@ namespace SandHook {
             virtual void* relocate(Instruction<Base> *instruction, void* toPc) throw(ErrorCodeException) = 0;
             virtual void* relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) = 0;
 
-        private:
+            bool inRelocateRange(Off targetOffset, Addr targetLen);
+
+            Label* getLaterBindLabel(Addr offset);
+
+            virtual ~CodeRelocate() {
+                delete relocateLock;
+                delete laterBindlabels;
+            }
+
+        protected:
             CodeContainer* codeContainer;
+            std::mutex* relocateLock = new std::mutex();
+            std::map<Addr, Label*>* laterBindlabels = new std::map<Addr, Label*>();
+            Addr startAddr;
+            Addr length;
+            Addr curOffset;
         };
 
     }

@@ -6,10 +6,9 @@
 #define SANDHOOK_NH_HOOK_H
 
 #include <mutex>
-#include <hook.h>
-#include <decoder.h>
 
-#include "hook.h"
+#include "code_buffer.h"
+#include "decoder.h"
 #include "assembler.h"
 #include "code_relocate.h"
 
@@ -20,20 +19,11 @@ namespace SandHook {
         public:
             //return == backup method
             virtual void* inlineHook(void* origin, void* replace) = 0;
-        };
 
-
-        class InlineHookArm64Android : InlineHook {
-        public:
-            inline InlineHookArm64Android() {
-                hookLock = new std::mutex();
-            };
-            inline ~InlineHookArm64Android() {
-                delete hookLock;
-            }
-            void *inlineHook(void *origin, void *replace) override;
         protected:
-            std::mutex* hookLock;
+            static AndroidCodeBuffer* backupBuffer;
+        public:
+            static InlineHook* instance;
         };
 
     }

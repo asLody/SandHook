@@ -193,8 +193,8 @@ namespace SandHook {
             };
 
             enum S {
-                cmp = 0,
-                add = 1
+                cmp = 0b0,
+                add = 0b1
             };
 
             T32_LDR_LIT();
@@ -210,6 +210,8 @@ namespace SandHook {
             DEFINE_INST_CODE(LDR_LIT)
 
             Off getImmPCOffset() override;
+
+            void onOffsetApply(Off offset) override;
 
             void decode(T32_STRUCT_LDR_LIT *inst) override;
 

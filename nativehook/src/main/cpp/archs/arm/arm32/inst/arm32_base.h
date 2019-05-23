@@ -13,6 +13,8 @@
 #define DECODE_OFFSET(bits, ext) signExtend32(bits + ext, COMBINE(get()->imm##bits, 0, ext))
 #define ENCODE_OFFSET(bits, ext) get()->imm##bits = TruncateToUint##bits(offset >> ext)
 
+#define CODE_OFFSET(I) inst->offset + 2 * inst->size()
+
 using namespace SandHook::RegistersA32;
 
 namespace SandHook {
@@ -161,6 +163,7 @@ namespace SandHook {
         }
 
         std::ostream& operator<<(std::ostream& os, RegisterList registers);
+
     }
 }
 

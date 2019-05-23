@@ -120,6 +120,17 @@ Off T32_LDR_LIT::getImmPCOffset() {
     return get()->U == add ? get()->imm12 : -get()->imm12;
 }
 
+void T32_LDR_LIT::onOffsetApply(Off offset) {
+    this->offset = offset;
+    if (offset >= 0) {
+        get()->U = add;
+        get()->imm12 = static_cast<InstT32>(offset);
+    } else {
+        get()->U = cmp;
+        get()->imm12 = static_cast<InstT32>(-offset);
+    }
+}
+
 void T32_LDR_LIT::decode(T32_STRUCT_LDR_LIT *inst) {
     DECODE_OP;
     DECODE_RT(Reg);
@@ -138,7 +149,6 @@ void T32_LDR_LIT::assembler() {
         get()->imm12 = static_cast<InstT32>(-offset);
     }
 }
-
 
 
 T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM() {}

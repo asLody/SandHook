@@ -25,6 +25,7 @@ add_library( # Sets the name of the library.
         src/main/cpp/archs/arm/arm64/register/register_list_arm64.cpp
         src/main/cpp/archs/arm/arm64/decoder/decoder_arm64.cpp
         src/main/cpp/archs/arm/arm64/relocate/code_relocate_arm64.cpp
+        src/main/cpp/archs/arm/arm64/hook/hook_arm64.cpp
         src/main/cpp/archs/arm/arm32/inst/inst_arm32.cpp
         src/main/cpp/archs/arm/arm32/inst/inst_t32.cpp
         src/main/cpp/archs/arm/arm32/inst/inst_t16.cpp
@@ -32,6 +33,8 @@ add_library( # Sets the name of the library.
         src/main/cpp/archs/arm/arm32/register/register_list_arm32.cpp
         src/main/cpp/archs/arm/arm32/assembler/assembler_arm32.cpp
         src/main/cpp/archs/arm/arm32/decoder/decoder_arm32.cpp
+        src/main/cpp/archs/arm/arm32/hook/hook_arm32.cpp
+        src/main/cpp/archs/arm/arm32/relocate/code_relocate_arm32.cpp
         src/main/cpp/relocate/code_relocate.cpp
         src/main/cpp/elf/elf.cpp
         src/main/cpp/assembler/assembler.cpp
@@ -54,10 +57,13 @@ include_directories(
         src/main/cpp/archs/arm/arm64/decoder
         src/main/cpp/archs/arm/arm64/assembler
         src/main/cpp/archs/arm/arm64/relocate
+        src/main/cpp/archs/arm/arm64/hook
         src/main/cpp/archs/arm/arm32/inst
         src/main/cpp/archs/arm/arm32/register
         src/main/cpp/archs/arm/arm32/assembler
         src/main/cpp/archs/arm/arm32/decoder
+        src/main/cpp/archs/arm/arm32/hook
+        src/main/cpp/archs/arm/arm32/relocate
 )
 
 # Searches for a specified prebuilt library and stores the path as a

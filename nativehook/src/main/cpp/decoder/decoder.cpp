@@ -12,7 +12,7 @@
 using namespace SandHook::Decoder;
 
 //do not support now
-InstDecoder* Decoder::get(Arch arch) {
+InstDecoder* Disassembler::get(Arch arch) {
     switch (arch) {
         case arm32:
             return get();
@@ -23,7 +23,7 @@ InstDecoder* Decoder::get(Arch arch) {
     }
 }
 
-InstDecoder *Decoder::get() {
+InstDecoder *Disassembler::get() {
 #if defined(__arm__)
     return Arm32Decoder::instant;
 #elif defined(__aarch64__)
