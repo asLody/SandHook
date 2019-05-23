@@ -371,12 +371,12 @@ T16_PUSH::T16_PUSH(T16_STRUCT_PUSH *inst) : InstructionT16(inst) {
 T16_PUSH::T16_PUSH(const RegisterList &registerList) : registerList(registerList) {}
 
 void T16_PUSH::decode(T16_STRUCT_PUSH *inst) {
-    registerList.SetList(COMBINE(inst->M << 7, inst->regs, 8));
+    registerList.SetList(COMBINE(inst->M << 6, inst->regs, 8));
 }
 
 void T16_PUSH::assembler() {
     SET_OPCODE(POP);
     U16 regs = registerList.GetList();
     get()->regs = BITS(regs, 0, 7);
-    get()->M = BIT(regs, 15);
+    get()->M = BIT(regs, 14);
 }

@@ -26,6 +26,7 @@ namespace SandHook {
 
 
         class Decoder {
+        public:
             static InstDecoder* get(Arch arch);
             static InstDecoder* get();
         };

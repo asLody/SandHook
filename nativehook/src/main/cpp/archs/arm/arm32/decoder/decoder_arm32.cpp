@@ -24,14 +24,15 @@ goto label_matched; \
 Arm32Decoder* Arm32Decoder::instant = new Arm32Decoder();
 
 void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor) {
+    bool thumb = isThumbCode(reinterpret_cast<Addr>(codeStart));
+    if (thumb) {
+        codeStart = getThumbCodeAddress(codeStart);
+    }
     void *pc = codeStart;
     Addr endAddr = (Addr) codeStart + codeLen;
     Unit<Base>* unit = nullptr;
     while((Addr) pc < endAddr) {
-
-        bool thumb = isThumbCode(reinterpret_cast<Addr>(pc));
         bool thumb32 = isThumb32(*reinterpret_cast<InstT16*>(pc));
-
         if (thumb && thumb32) {
             CASE_T32(B32)
             CASE_T32(LDR_LIT)
@@ -62,7 +63,6 @@ void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor) {
             //TODO
             unit = reinterpret_cast<Unit<Base> *>(new INST_T32(UNKNOW)(*reinterpret_cast<STRUCT_T32(UNKNOW) *>(pc)));
         }
-
 
         label_matched:
         if (!visitor.visit(unit, pc)) {
