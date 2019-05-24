@@ -98,7 +98,7 @@ void AssemblerA32::Ldrsh(RegisterA32 &rt, const MemOperand &operand) {
 }
 
 void AssemblerA32::B(Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(B32)(INST_T32(B32)::B, INST_T32(B32)::arm, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(B)(*label)));
 }
 
 void AssemblerA32::Bl(Label *label) {

@@ -170,8 +170,10 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
 
 IMPL_RELOCATE(T16, LDR_LIT) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
-        __ Ldr(*inst->rt, getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+    if (inRelocateRange(CODE_OFFSET(inst), inst->rt->getWide())) {
+        inst->ref();
+        inst->bindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
         return;
     }
 
@@ -183,8 +185,10 @@ IMPL_RELOCATE(T16, LDR_LIT) {
 
 IMPL_RELOCATE(T16, ADR) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
-        __ Adr(*inst->rd, getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+    if (inRelocateRange(CODE_OFFSET(inst), inst->rd->getWide())) {
+        inst->ref();
+        inst->bindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
         return;
     }
 

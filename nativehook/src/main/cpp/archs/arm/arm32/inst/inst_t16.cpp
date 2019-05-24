@@ -43,7 +43,7 @@ T16_B::T16_B(Label &label) {
 }
 
 Off T16_B::getImmPCOffset() {
-    return signExtend32(11 + 1, COMBINE(get()->imm11, 0, 1));
+    return DECODE_OFFSET(11, 1);
 }
 
 void T16_B::decode(T16_STRUCT_B *inst) {
@@ -52,12 +52,12 @@ void T16_B::decode(T16_STRUCT_B *inst) {
 
 void T16_B::assembler() {
     SET_OPCODE(B);
-    get()->imm11 = TruncateToUint11(offset >> 1);
+    DECODE_OFFSET(11, 1);
 }
 
 void T16_B::onOffsetApply(Off offset) {
     this->offset = offset;
-    get()->imm11 = TruncateToUint11(offset >> 1);
+    DECODE_OFFSET(11, 1);
 }
 
 
