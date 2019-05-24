@@ -9,6 +9,28 @@ cmake_minimum_required(VERSION 3.4.1)
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
 # Gradle automatically packages shared libraries with your APK.
+if(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
+    set(OS_DEPENDENDED_SRC
+            src/main/cpp/archs/arm/arm64/assembler/assembler_arm64.cpp
+            src/main/cpp/archs/arm/arm64/inst/inst_arm64.cpp
+            src/main/cpp/archs/arm/arm64/register/register_arm64.cpp
+            src/main/cpp/archs/arm/arm64/register/register_list_arm64.cpp
+            src/main/cpp/archs/arm/arm64/decoder/decoder_arm64.cpp
+            src/main/cpp/archs/arm/arm64/relocate/code_relocate_arm64.cpp
+            src/main/cpp/archs/arm/arm64/hook/hook_arm64.cpp)
+
+elseif (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
+    set(OS_DEPENDENDED_SRC
+            src/main/cpp/archs/arm/arm32/inst/inst_arm32.cpp
+            src/main/cpp/archs/arm/arm32/inst/inst_t32.cpp
+            src/main/cpp/archs/arm/arm32/inst/inst_t16.cpp
+            src/main/cpp/archs/arm/arm32/register/register_arm32.cpp
+            src/main/cpp/archs/arm/arm32/register/register_list_arm32.cpp
+            src/main/cpp/archs/arm/arm32/assembler/assembler_arm32.cpp
+            src/main/cpp/archs/arm/arm32/decoder/decoder_arm32.cpp
+            src/main/cpp/archs/arm/arm32/hook/hook_arm32.cpp
+            src/main/cpp/archs/arm/arm32/relocate/code_relocate_arm32.cpp)
+endif()
 
 add_library( # Sets the name of the library.
         sandhook-native
@@ -19,29 +41,13 @@ add_library( # Sets the name of the library.
         # Provides a relative path to your source file(s).
         src/main/cpp/sandhook_native.cpp
         src/main/cpp/decoder/decoder.cpp
-        src/main/cpp/archs/arm/arm64/assembler/assembler_arm64.cpp
-        src/main/cpp/archs/arm/arm64/inst/inst_arm64.cpp
-        src/main/cpp/archs/arm/arm64/register/register_arm64.cpp
-        src/main/cpp/archs/arm/arm64/register/register_list_arm64.cpp
-        src/main/cpp/archs/arm/arm64/decoder/decoder_arm64.cpp
-        src/main/cpp/archs/arm/arm64/relocate/code_relocate_arm64.cpp
-        src/main/cpp/archs/arm/arm64/hook/hook_arm64.cpp
-        src/main/cpp/archs/arm/arm32/inst/inst_arm32.cpp
-        src/main/cpp/archs/arm/arm32/inst/inst_t32.cpp
-        src/main/cpp/archs/arm/arm32/inst/inst_t16.cpp
-        src/main/cpp/archs/arm/arm32/register/register_arm32.cpp
-        src/main/cpp/archs/arm/arm32/register/register_list_arm32.cpp
-        src/main/cpp/archs/arm/arm32/assembler/assembler_arm32.cpp
-        src/main/cpp/archs/arm/arm32/decoder/decoder_arm32.cpp
-        src/main/cpp/archs/arm/arm32/hook/hook_arm32.cpp
-        src/main/cpp/archs/arm/arm32/relocate/code_relocate_arm32.cpp
         src/main/cpp/relocate/code_relocate.cpp
         src/main/cpp/elf/elf.cpp
         src/main/cpp/assembler/assembler.cpp
         src/main/cpp/buffer/code_buffer.cpp
         src/main/cpp/utils/platform.cpp
         src/main/cpp/hook/hook.cpp
-        )
+        ${OS_DEPENDENDED_SRC})
 
 
 include_directories(

@@ -4,17 +4,13 @@
 
 #include <jni.h>
 #include <sys/mman.h>
+#include <log.h>
 #include "sandhook_native.h"
-#include "inst_arm64.h"
-#include "decoder_arm64.h"
 #include "hook.h"
-#include "log.h"
+#include "elf.h"
 
-using namespace SandHook::Asm;
-using namespace SandHook::Decoder;
 using namespace SandHook::Hook;
-using namespace SandHook::AsmA64;
-
+using namespace SandHook::Elf;
 
 int m1 = 5;
 int m3 = 1036;
@@ -25,15 +21,12 @@ void (*dosth3Backup)(int, int) = nullptr;
 void (*dosth4Backup)() = nullptr;
 void (*dosth4Backup2)() = nullptr;
 
-bool memUnprotect(Addr addr, Addr len) {
-    long pagesize = 4096;
-    unsigned alignment = (unsigned)((unsigned long long)addr % pagesize);
-    int i = mprotect((void *) (addr - alignment), (size_t) (alignment + len),
-                     PROT_READ | PROT_WRITE | PROT_EXEC);
-    if (i == -1) {
-        return false;
-    }
-    return true;
+void (*innerSuspendVM)() = nullptr;
+
+
+void SuspendVMReplace() {
+    LOGE("VM Suspend!");
+    innerSuspendVM();
 }
 
 void do2() {
@@ -57,10 +50,6 @@ void do5() {
 }
 
 void do4() {
-    if (m3 > m2) {
-        return;
-    }
-    do5();
     int a = 1 + 1;
     int b = a + 1;
     int d = a + 1;
@@ -78,7 +67,6 @@ void do4replace() {
 
 void do4replace2() {
     int a = 1 + 1;
-    int b = 1 + 1;
     int c = 1 + 1;
     int d = 1 + 1;
     dosth4Backup2();
@@ -96,6 +84,7 @@ void do1() {
     do2();
 }
 
+
 class Visitor : public InstVisitor {
     bool visit(Unit<Base> *unit, void *pc) override {
         Instruction<Base>* instruction = reinterpret_cast<Instruction<Base> *>(unit);
@@ -108,44 +97,6 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) {
 
-//    union {
-//        InstA64 raw = 0xF9001043;
-//        STRUCT_A64(STR_UIMM) str;
-//    } test;
-//
-//    InstA64* codebl = reinterpret_cast<InstA64 *>((Addr)do1 + 8);
-//
-//    if (IS_OPCODE_A64(*codebl, B_BL)) {
-//
-//        //decode
-//        A64_B_BL a64bl(*reinterpret_cast<STRUCT_A64(B_BL)*>(codebl));
-//        Off off = a64bl.offset;
-//        void (*dosth2)() =reinterpret_cast<void (*)()>(a64bl.getImmPCOffsetTarget());
-//        dosth2();
-//
-//        //asm
-//        memUnprotect(reinterpret_cast<Addr>(a64bl.get()), a64bl.size());
-//        a64bl.assembler();
-//        Off off1 = a64bl.getImmPCOffset();
-//
-//        do1();
-//
-//    }
-//
-//    if (IS_OPCODE_A64(test.raw, STR_UIMM)) {
-//        A64_STR_UIMM str(test.str);
-//        str.assembler();
-//        str.get();
-//    }
-//
-//    Arm64Decoder arm64Decoder = Arm64Decoder();
-//
-//    Visitor visitor = Visitor();
-//
-//    arm64Decoder.decode(reinterpret_cast<void *>(do1), 4 * 8, visitor);
-//
-//    InlineHookArm64Android inlineHookArm64Android = InlineHookArm64Android();
-//
 
     void* do5addr = reinterpret_cast<void *>(do5);
     void* do4addr = reinterpret_cast<void *>(do4);
@@ -154,11 +105,27 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
             reinterpret_cast<void *>(do4),
             reinterpret_cast<void *>(do4replace)));
 
-    dosth4Backup2 = reinterpret_cast<void (*)()>(InlineHook::instance->inlineHook(
-            reinterpret_cast<void *>(do4),
-            reinterpret_cast<void *>(do4replace2)));
-
     do4();
 
 
+    //innerSuspendVM = reinterpret_cast<void (*)()>(SandInlineHookSym("/system/lib/libart.so", "_ZN3art3Dbg9SuspendVMEv",
+//                                                               reinterpret_cast<void *>(SuspendVMReplace)));
+
+
+
+}
+
+
+extern "C"
+EXPORT void* SandInlineHook(void* origin, void* replace) {
+    return InlineHook::instance->inlineHook(origin, replace);
+}
+
+extern "C"
+EXPORT void* SandInlineHookSym(const char* so, const char* symb, void* replace) {
+    ElfImg elfImg(so);
+    void* origin = reinterpret_cast<void *>(elfImg.getSymbAddress(symb));
+    if (origin == nullptr)
+        return nullptr;
+    return InlineHook::instance->inlineHook(origin, replace);
 }

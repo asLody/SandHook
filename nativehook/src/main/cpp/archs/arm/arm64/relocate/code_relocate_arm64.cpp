@@ -85,7 +85,7 @@ IMPL_RELOCATE(B_BL) {
     Addr targetAddr = inst->getImmPCOffsetTarget();
 
     if (inst->op == inst->BL) {
-        __ Mov(LR, (Addr)toPc + inst->size());
+        __ Mov(LR, (Addr)inst->getPC() + inst->size());
     }
     __ Mov(IP1, targetAddr);
     __ Br(IP1);
@@ -207,10 +207,5 @@ IMPL_RELOCATE(LDR_LIT) {
 }
 
 IMPL_RELOCATE(ADR_ADRP) {
-
-    if (inRelocateRange(inst->offset, sizeof(Addr))) {
-        __ Mov(*inst->rd, (Addr) toPc);
-    }
-
     __ Mov(*inst->rd, inst->getImmPCOffsetTarget());
 }
