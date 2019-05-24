@@ -165,4 +165,8 @@ void AssemblerA32::Adr(RegisterA32 &rd, Label *label) {
     Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(ADR)(rd, *label)));
 }
 
+void AssemblerA32::Nop16() {
+    Mov(IP, IP);
+}
+
 

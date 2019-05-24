@@ -31,7 +31,7 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     __ Ldr(IP1, target_addr_label);
     __ Br(IP1);
     __ Emit(target_addr_label);
-    __ Emit(reinterpret_cast<Addr>(replace));
+    __ Emit((Addr) replace);
 #undef __
 
     //build backup method
@@ -42,7 +42,7 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
     __ Emit(origin_addr_label);
-    __ Emit(reinterpret_cast<Addr>(origin) + codeContainerInline->size());
+    __ Emit((Addr) origin + codeContainerInline->size());
     __ finish();
 #undef __
 

@@ -94,7 +94,7 @@ T AlignDown(T pointer,
     return (T)(pointer_raw & ~mask);
 }
 
-#define ALIGN(value, align) value - value % align
+#define ALIGN(value, align) ((uintptr_t)value & ~((uintptr_t)align - 1))
 
 template<typename T>
 struct Identity {

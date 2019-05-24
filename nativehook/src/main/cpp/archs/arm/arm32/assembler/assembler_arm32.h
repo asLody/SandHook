@@ -67,6 +67,8 @@ namespace SandHook {
 
             void Adr(RegisterA32& rd, Label* label);
 
+            void Nop16();
+
         public:
             CodeContainer codeContainer = CodeContainer(nullptr);
         };

@@ -19,11 +19,11 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
     AutoLock lock(hookLock);
 
     void* originCode = origin;
-    if (isThumbCode(reinterpret_cast<Addr>(origin))) {
+    if (isThumbCode((Addr)origin)) {
         originCode = getThumbCodeAddress(origin);
     }
 
-    if (isThumbCode(reinterpret_cast<Addr>(replace))) {
+    if (isThumbCode((Addr)origin)) {
         replace = getThumbPC(replace);
     }
 
@@ -39,17 +39,15 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
     Label* target_addr_label = new Label();
     __ Ldr(PC, target_addr_label);
     __ Emit(target_addr_label);
-    __ Emit(reinterpret_cast<Addr>(replace));
+    __ Emit((Addr)replace);
 #undef __
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
     backup = relocate.relocate(origin, codeContainerInline->size(), nullptr);
 #define __ assemblerBackup.
-    Label* origin_addr_label = new Label();
-    __ Ldr(PC, origin_addr_label);
-    __ Emit(origin_addr_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
+    __ Mov(IP ,(Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
+    __ Bx(IP);
     __ finish();
 #undef __
 

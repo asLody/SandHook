@@ -168,11 +168,11 @@ T16_LDR_LIT::T16_LDR_LIT(Off offset, RegisterA32 &rt) : offset(offset), rt(&rt) 
 }
 
 Off T16_LDR_LIT::getImmPCOffset() {
-    return get()->imm8 >> 2;
+    return get()->imm8 << 2;
 }
 
 Addr T16_LDR_LIT::getImmPCOffsetTarget() {
-    return RoundDown((Addr) getPC() + offset, 4);
+    return ALIGN((Addr) getPC() + offset, 4);
 }
 
 void T16_LDR_LIT::onOffsetApply(Off offset) {

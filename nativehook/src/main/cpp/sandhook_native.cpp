@@ -17,8 +17,8 @@ using namespace SandHook::AsmA64;
 
 
 int m1 = 5;
-int m3 = 5;
-int m2 = 4;
+int m3 = 1036;
+int m2 = 1035;
 int m4 = 5;
 
 void (*dosth3Backup)(int, int) = nullptr;
@@ -57,9 +57,10 @@ void do5() {
 }
 
 void do4() {
-    if (m2 > m3) {
+    if (m3 > m2) {
         return;
     }
+    do5();
     int a = 1 + 1;
     int b = a + 1;
     int d = a + 1;
@@ -97,6 +98,8 @@ void do1() {
 
 class Visitor : public InstVisitor {
     bool visit(Unit<Base> *unit, void *pc) override {
+        Instruction<Base>* instruction = reinterpret_cast<Instruction<Base> *>(unit);
+        instruction->assembler();
         return true;
     }
 };
@@ -105,52 +108,57 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) {
 
-    union {
-        InstA64 raw = 0xF9001043;
-        STRUCT_A64(STR_UIMM) str;
-    } test;
+//    union {
+//        InstA64 raw = 0xF9001043;
+//        STRUCT_A64(STR_UIMM) str;
+//    } test;
+//
+//    InstA64* codebl = reinterpret_cast<InstA64 *>((Addr)do1 + 8);
+//
+//    if (IS_OPCODE_A64(*codebl, B_BL)) {
+//
+//        //decode
+//        A64_B_BL a64bl(*reinterpret_cast<STRUCT_A64(B_BL)*>(codebl));
+//        Off off = a64bl.offset;
+//        void (*dosth2)() =reinterpret_cast<void (*)()>(a64bl.getImmPCOffsetTarget());
+//        dosth2();
+//
+//        //asm
+//        memUnprotect(reinterpret_cast<Addr>(a64bl.get()), a64bl.size());
+//        a64bl.assembler();
+//        Off off1 = a64bl.getImmPCOffset();
+//
+//        do1();
+//
+//    }
+//
+//    if (IS_OPCODE_A64(test.raw, STR_UIMM)) {
+//        A64_STR_UIMM str(test.str);
+//        str.assembler();
+//        str.get();
+//    }
+//
+//    Arm64Decoder arm64Decoder = Arm64Decoder();
+//
+//    Visitor visitor = Visitor();
+//
+//    arm64Decoder.decode(reinterpret_cast<void *>(do1), 4 * 8, visitor);
+//
+//    InlineHookArm64Android inlineHookArm64Android = InlineHookArm64Android();
+//
 
-    InstA64* codebl = reinterpret_cast<InstA64 *>((Addr)do1 + 8);
+    void* do5addr = reinterpret_cast<void *>(do5);
+    void* do4addr = reinterpret_cast<void *>(do4);
 
-    if (IS_OPCODE_A64(*codebl, B_BL)) {
-
-        //decode
-        A64_B_BL a64bl(*reinterpret_cast<STRUCT_A64(B_BL)*>(codebl));
-        Off off = a64bl.offset;
-        void (*dosth2)() =reinterpret_cast<void (*)()>(a64bl.getImmPCOffsetTarget());
-        dosth2();
-
-        //asm
-        memUnprotect(reinterpret_cast<Addr>(a64bl.get()), a64bl.size());
-        a64bl.assembler();
-        Off off1 = a64bl.getImmPCOffset();
-
-        do1();
-
-    }
-
-    if (IS_OPCODE_A64(test.raw, STR_UIMM)) {
-        A64_STR_UIMM str(test.str);
-        str.assembler();
-        str.get();
-    }
-
-    Arm64Decoder arm64Decoder = Arm64Decoder();
-
-    Visitor visitor = Visitor();
-
-    arm64Decoder.decode(reinterpret_cast<void *>(do1), 4 * 8, visitor);
-
-    InlineHookArm64Android inlineHookArm64Android = InlineHookArm64Android();
-
-    dosth4Backup = reinterpret_cast<void (*)()>(inlineHookArm64Android.inlineHook(
+    dosth4Backup = reinterpret_cast<void (*)()>(InlineHook::instance->inlineHook(
             reinterpret_cast<void *>(do4),
             reinterpret_cast<void *>(do4replace)));
 
-    dosth4Backup2 = reinterpret_cast<void (*)()>(inlineHookArm64Android.inlineHook(
+    dosth4Backup2 = reinterpret_cast<void (*)()>(InlineHook::instance->inlineHook(
             reinterpret_cast<void *>(do4),
             reinterpret_cast<void *>(do4replace2)));
 
     do4();
+
 
 }

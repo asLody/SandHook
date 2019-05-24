@@ -45,7 +45,7 @@ Off T32_B32::getImmPCOffset() {
     U32 S = get()->S;
     U32 imm21 = COMBINE(get()->imm10, get()->imm11, 11);
     if (get()->X == 0) {
-        imm21 -= BIT(imm21, 0);
+        imm21 &= ~(1 << 0);
     }
     U32 i1 = !(get()->J1 ^ S);
     U32 i2 = !(get()->J2 ^ S);
@@ -67,6 +67,9 @@ void T32_B32::assembler() {
     U32 imm24 = TruncateToUint25(offset) >> 1;
     get()->imm11 = BITS(imm24, 0, 10);
     get()->imm10 = BITS(imm24, 11, 20);
+    if (get()->X == 0) {
+        get()->imm11 |= (1 << 0);
+    }
     get()->S = BIT(imm24, 23);
     U32 i1 = BIT(imm24, 22);
     U32 i2 = BIT(imm24, 21);
@@ -84,7 +87,7 @@ void T32_B32::assembler() {
 
 Addr T32_B32::getImmPCOffsetTarget() {
     if (x == arm) {
-        void* base = reinterpret_cast<void *>(ALIGN((Addr)getPC(), 4));
+        void* base = reinterpret_cast<void *>(ALIGN((Addr) getPC(), 4));
         return offset + reinterpret_cast<Addr>(base);
     } else {
         return T32_INST_PC_REL::getImmPCOffsetTarget();
@@ -164,7 +167,9 @@ void T32_LDR_LIT::assembler() {
 
 T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM() {}
 
-T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst) : InstructionT32(inst) {}
+T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst) : InstructionT32(inst) {
+    decode(inst);
+}
 
 T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_MOV_MOVT_IMM::OP op, RegisterA32 &rd, U16 imm16) : op(op),
                                                                                           rd(&rd),
