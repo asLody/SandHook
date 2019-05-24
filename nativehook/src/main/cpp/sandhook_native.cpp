@@ -50,6 +50,10 @@ void do5() {
 }
 
 void do4() {
+    if (m3 > m2) {
+        return;
+    }
+    do5();
     int a = 1 + 1;
     int b = a + 1;
     int d = a + 1;
@@ -98,18 +102,16 @@ JNIEXPORT void JNICALL
 Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) {
 
 
-    void* do5addr = reinterpret_cast<void *>(do5);
-    void* do4addr = reinterpret_cast<void *>(do4);
-
     dosth4Backup = reinterpret_cast<void (*)()>(InlineHook::instance->inlineHook(
             reinterpret_cast<void *>(do4),
             reinterpret_cast<void *>(do4replace)));
 
+
     do4();
 
 
-    //innerSuspendVM = reinterpret_cast<void (*)()>(SandInlineHookSym("/system/lib/libart.so", "_ZN3art3Dbg9SuspendVMEv",
-//                                                               reinterpret_cast<void *>(SuspendVMReplace)));
+    innerSuspendVM = reinterpret_cast<void (*)()>(SandInlineHookSym("/system/lib64/libart.so", "_ZN3art3Dbg9SuspendVMEv",
+                                                              reinterpret_cast<void *>(SuspendVMReplace)));
 
 
 

@@ -45,7 +45,7 @@ namespace SandHook {
 
     private:
         const char* elf = nullptr;
-        uint8_t * base = nullptr;
+        void* base = nullptr;
         char* buffer = nullptr;
         off_t size = 0;
         off_t bias = -4396;

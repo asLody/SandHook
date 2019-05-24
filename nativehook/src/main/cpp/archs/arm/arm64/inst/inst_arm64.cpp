@@ -467,7 +467,7 @@ void A64_STR_UIMM::decode(STRUCT_A64(STR_UIMM) *inst) {
 }
 
 void A64_STR_UIMM::assembler() {
-    SET_OPCODE(STR_IMM);
+    SET_OPCODE(STR_UIMM);
     ENCODE_RT;
     get()->rn = operand.base->getCode();
     if (rt->isX()) {
