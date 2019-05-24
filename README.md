@@ -204,7 +204,7 @@ To bypass hidden api on P & Q
 #include "includes/sandhook.h"
 bool nativeHookNoBackup(void* origin, void* hook);
 
-## need backup origin method
+## need backup origin method(unstabitily)
 #include "sanhook_native.h"
 void* SandInlineHook(void* origin, void* replace);
 void* SandInlineHookSym(const char* so, const char* symb, void* replace);
