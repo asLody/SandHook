@@ -25,6 +25,7 @@ namespace SandHook {
             void* finish();
 
             void Emit(U32 data32);
+            void Emit(U16 data16);
             void Emit(Unit<Base>* unit);
 
 

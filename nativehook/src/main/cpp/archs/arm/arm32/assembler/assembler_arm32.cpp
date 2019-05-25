@@ -34,6 +34,10 @@ void AssemblerA32::Emit(U32 data32) {
     Emit(reinterpret_cast<Unit<Base>*>(new Data32(data32)));
 }
 
+void AssemblerA32::Emit(U16 data16) {
+    Emit(reinterpret_cast<Unit<Base>*>(new Data16(data16)));
+}
+
 void AssemblerA32::Emit(Unit<Base> *unit) {
     codeContainer.append(unit);
 }

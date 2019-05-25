@@ -213,7 +213,12 @@ IMPL_RELOCATE(T32, B32) {
     if (inst->x == T32_B32::thumb) {
         //Thumb mode
         if (inst->op == T32_B32::BL) {
-            __ Mov(LR, U32((Addr) toPc + inst->size() + 2 * 2));
+            Addr lr = reinterpret_cast<Addr>(toPc);
+            lr += 2 * 2; // 2级流水线
+            lr += 2 * 4; // Mov + Movt 长度
+            lr += 4; // Ldr Lit 长度
+            lr += 4; // targetAddr 长度
+            __ Mov(LR, lr);
         }
         targetAddr = reinterpret_cast<Addr>(getThumbPC(reinterpret_cast<void *>(targetAddr)));
         Label* target_label = new Label();
