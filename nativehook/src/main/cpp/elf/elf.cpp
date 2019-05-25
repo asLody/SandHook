@@ -32,53 +32,57 @@ ElfImg::ElfImg(const char *elf) {
 
     close(fd);
 
-    Elf_Off symtab_entsize = 0;
-
     section_header = reinterpret_cast<Elf_Shdr *>(((size_t) header) + header->e_shoff);
 
     size_t shoff = reinterpret_cast<size_t>(section_header);
-    char* section_str = reinterpret_cast<char *>(section_header[header->e_shstrndx].sh_offset + ((size_t) header));
-
-    bool has_strtab = false;
-    bool has_dynsym = false;
+    char *section_str = reinterpret_cast<char *>(section_header[header->e_shstrndx].sh_offset +
+                                                 ((size_t) header));
 
     for (int i = 0; i < header->e_shnum; i++, shoff += header->e_shentsize) {
         Elf_Shdr *section_h = (Elf_Shdr *) shoff;
-        char* sname = section_h->sh_name + section_str;
+        char *sname = section_h->sh_name + section_str;
+        Elf_Off entsize = section_h->sh_entsize;
         switch (section_h->sh_type) {
             case SHT_DYNSYM:
-                has_dynsym = true;
-                dynsym = section_h;
+                if (bias == -4396) {
+                    dynsym = section_h;
+                    dynsym_offset = section_h->sh_offset;
+                    dynsym_size = section_h->sh_size;
+                    dynsym_count = dynsym_size / entsize;
+                    dynsym_start = reinterpret_cast<Elf_Sym *>(((size_t) header) + dynsym_offset);
+                }
                 break;
             case SHT_SYMTAB:
                 if (strcmp(sname, ".symtab") == 0) {
                     symtab = section_h;
                     symtab_offset = section_h->sh_offset;
                     symtab_size = section_h->sh_size;
-                    symtab_entsize = section_h->sh_entsize;
-                    symtab_count = symtab_size / symtab_entsize;
+                    symtab_count = symtab_size / entsize;
+                    symtab_start = reinterpret_cast<Elf_Sym *>(((size_t) header) + symtab_offset);
                 }
                 break;
             case SHT_STRTAB:
-                has_strtab = true;
-                if (strcmp(sname, ".strtab") == 0) {
+                if (bias == -4396) {
                     strtab = section_h;
                     symstr_offset = section_h->sh_offset;
+                    strtab_start = reinterpret_cast<Elf_Sym *>(((size_t) header) + symstr_offset);
+                }
+                if (strcmp(sname, ".strtab") == 0) {
+                    symstr_offset_for_symtab = section_h->sh_offset;
                 }
                 break;
             case SHT_PROGBITS:
-                if (has_dynsym && has_strtab && bias == -4396) {
+                if (strtab == nullptr || dynsym == nullptr) break;
+                if (bias == -4396) {
                     bias = (off_t) section_h->sh_addr - (off_t) section_h->sh_offset;
                 }
                 break;
         }
     }
 
-    if(!symtab_offset) {
+    if (!symtab_offset) {
         LOGW("can't find symtab from sections\n");
     }
-
-    sym_start = reinterpret_cast<Elf_Sym *>(((size_t) header) + symtab_offset);
 
     //load module base
     base = getModuleBase(elf);
@@ -98,24 +102,42 @@ ElfImg::~ElfImg() {
 
 Elf_Addr ElfImg::getSymbOffset(const char *name) {
     Elf_Addr _offset = 0;
-    for(int i = 0 ; i < symtab_count; i++) {
-        unsigned int st_type = ELF_ST_TYPE(sym_start[i].st_info);
-        char* st_name = reinterpret_cast<char *>(((size_t) header) + symstr_offset + sym_start[i].st_name);
-        if (st_type == STT_FUNC && sym_start[i].st_size) {
-            if(strcmp(st_name, name) == 0) {
-                _offset = sym_start[i].st_value;
-                LOGD("find %s: %x\n", elf ,_offset);
-                break;
+
+    //search dynmtab
+    if (dynsym_start != nullptr && strtab_start != nullptr) {
+        Elf_Sym *sym = dynsym_start;
+        char *strings = (char *) strtab_start;
+        int k;
+        for (k = 0; k < dynsym_count; k++, sym++)
+            if (strcmp(strings + sym->st_name, name) == 0) {
+                _offset = sym->st_value;
+                LOGD("find %s: %x\n", elf, _offset);
+                return _offset;
+            }
+    }
+
+    //search symtab
+    if (symtab_start != nullptr && symstr_offset_for_symtab != 0) {
+        for (int i = 0; i < symtab_count; i++) {
+            unsigned int st_type = ELF_ST_TYPE(symtab_start[i].st_info);
+            char *st_name = reinterpret_cast<char *>(((size_t) header) + symstr_offset_for_symtab +
+                    symtab_start[i].st_name);
+            if (st_type == STT_FUNC && symtab_start[i].st_size) {
+                if (strcmp(st_name, name) == 0) {
+                    _offset = symtab_start[i].st_value;
+                    LOGD("find %s: %x\n", elf, _offset);
+                    return _offset;
+                }
             }
         }
     }
-    return _offset;
+    return 0;
 }
 
 Elf_Addr ElfImg::getSymbAddress(const char *name) {
     Elf_Addr offset = getSymbOffset(name);
     if (offset > 0 && base != nullptr) {
-        return static_cast<Elf_Addr>((size_t)base + offset - bias);
+        return static_cast<Elf_Addr>((size_t) base + offset - bias);
     } else {
         return 0;
     }
