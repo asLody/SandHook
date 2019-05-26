@@ -148,7 +148,7 @@ namespace SandHook {
 
             DEFINE_INST_CODE(B32)
 
-            DEFINE_IS(B32)
+            DEFINE_IS_EXT(B32, TEST_INST_FIELD(opcode, OPCODE_T32(B32)) && (TEST_INST_FIELD(op, B) || TEST_INST_FIELD(op, BL)))
 
             Addr getImmPCOffsetTarget() override;
 
@@ -212,7 +212,7 @@ namespace SandHook {
 
             T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Label& label);
 
-            DEFINE_IS(LDR_LIT)
+            DEFINE_IS_EXT(LDR_LIT, TEST_INST_FIELD(opcode, OPCODE_T32(LDR_LIT)) && (TEST_INST_FIELD(op, LDR) || TEST_INST_FIELD(op, LDRB) || TEST_INST_FIELD(op, LDRH)))
 
             DEFINE_INST_CODE(LDR_LIT)
 
@@ -246,7 +246,7 @@ namespace SandHook {
 
             T32_MOV_MOVT_IMM(OP op, RegisterA32 &rd, U16 imm16);
 
-            DEFINE_IS_EXT(MOV_MOVT_IMM, TEST_INST_OPCODE(MOV_MOVT_IMM, 1) && TEST_INST_OPCODE(MOV_MOVT_IMM, 2))
+            DEFINE_IS_EXT(MOV_MOVT_IMM, TEST_INST_OPCODE(MOV_MOVT_IMM, 1) && TEST_INST_OPCODE(MOV_MOVT_IMM, 2) && (TEST_INST_FIELD(op, MOV) || TEST_INST_FIELD(op, MOVT)))
 
             DEFINE_INST_CODE(MOV_MOVT_IMM)
 
@@ -288,6 +288,22 @@ namespace SandHook {
             OP op;
             RegisterA32* rt;
             MemOperand operand;
+        };
+
+
+        class INST_T32(SUB_IMM) : public InstructionT32<STRUCT_T32(SUB_IMM)> {
+        public:
+
+            enum OP {
+                T3 = 0b01101,
+                T4 = 0b10101
+            };
+
+            T32_SUB_IMM(T32_STRUCT_SUB_IMM *inst);
+
+            DEFINE_IS_EXT(SUB_IMM, TEST_INST_OPCODE(SUB_IMM, 1) && TEST_INST_OPCODE(SUB_IMM, 2) && (TEST_INST_FIELD(op, T3) || TEST_INST_FIELD(op, T4)))
+
+            DEFINE_INST_CODE(SUB_IMM)
         };
 
     }

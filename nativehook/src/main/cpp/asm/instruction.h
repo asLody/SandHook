@@ -82,13 +82,18 @@ namespace SandHook {
                 l.addBinder(this);
             }
 
-            virtual void decode(Inst* inst) {}
+            virtual void decode(Inst* inst) {
+                inst_backup = *inst;
+            }
 
-            virtual void assembler() {}
+            virtual void assembler() {
+                this->set(inst_backup);
+            }
 
         protected:
             bool valid = true;
             Label* label = nullptr;
+            Inst inst_backup;
         };
 
         class Void : public Unit<Base> {

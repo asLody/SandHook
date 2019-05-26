@@ -44,7 +44,7 @@ T32_B32::T32_B32(T32_B32::OP op, T32_B32::X x, Label &label) : op(op), x(x) {
 Off T32_B32::getImmPCOffset() {
     U32 S = get()->S;
     U32 imm21 = COMBINE(get()->imm10, get()->imm11, 11);
-    if (get()->X == 0) {
+    if (get()->X == 0 && op == BL) {
         imm21 &= ~(1 << 0);
     }
     U32 i1 = !(get()->J1 ^ S);
@@ -86,7 +86,7 @@ void T32_B32::assembler() {
 }
 
 Addr T32_B32::getImmPCOffsetTarget() {
-    if (x == arm) {
+    if (x == arm && op == BL) {
         void* base = reinterpret_cast<void *>(ALIGN((Addr) getPC(), 4));
         return offset + reinterpret_cast<Addr>(base);
     } else {
@@ -248,4 +248,10 @@ void T32_LDR_IMM::assembler() {
         default:
             valid = false;
     }
+}
+
+
+
+T32_SUB_IMM::T32_SUB_IMM(T32_STRUCT_SUB_IMM *inst) : InstructionT32(inst) {
+    decode(inst);
 }

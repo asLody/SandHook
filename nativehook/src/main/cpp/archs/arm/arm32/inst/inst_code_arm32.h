@@ -39,7 +39,8 @@ enum class InstCodeT32 {
     LDR_LIT,
     LDR_IMM,
     LDR_UIMM,
-    MOV_MOVT_IMM
+    MOV_MOVT_IMM,
+    SUB_IMM,
 };
 
 #endif //SANDHOOK_INST_CODE_ARM32_H

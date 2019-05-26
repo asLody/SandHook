@@ -221,7 +221,7 @@ IMPL_RELOCATE(T32, B32) {
     if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
         inst->ref();
         inst->bindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
-        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        __ Emit(reinterpret_cast<Instruction<Base> *>(inst));
         return;
     }
 
@@ -230,27 +230,13 @@ IMPL_RELOCATE(T32, B32) {
 
     if (inst->x == T32_B32::thumb) {
         //Thumb mode
-        if (inst->op == T32_B32::BL) {
-            Addr lr = reinterpret_cast<Addr>(toPc);
-            lr += 2 * 2; // 2级流水线
-            lr += 2 * 4; // Mov + Movt 长度
-            lr += 4; // Ldr Lit 长度
-            lr += 4; // targetAddr 长度
-            __ Mov(LR, lr);
-        }
         targetAddr = reinterpret_cast<Addr>(getThumbPC(reinterpret_cast<void *>(targetAddr)));
-        Label* target_label = new Label();
-        __ Ldr(PC, target_label);
-        __ Emit(target_label);
-        __ Emit(reinterpret_cast<Addr>(targetAddr));
+    }
+    __ Mov(IP, targetAddr);
+    if (inst->op == T32_B32::BL) {
+        __ Blx(IP);
     } else {
-        //to A32 mode
-        __ Mov(IP, targetAddr);
-        if (inst->op == T32_B32::BL) {
-            __ Blx(IP);
-        } else {
-            __ Bx(IP);
-        }
+        __ Bx(IP);
     }
 
 }

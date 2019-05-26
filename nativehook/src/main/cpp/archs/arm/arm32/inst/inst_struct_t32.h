@@ -83,6 +83,18 @@ DEFINE_STRUCT_T32(MOV_MOVT_IMM) {
     InstT32 opcode2:1;
 };
 
-
+DEFINE_OPCODE_T32(SUB_IMM_1, 0b11110)
+DEFINE_OPCODE_T32(SUB_IMM_2, 0b0)
+DEFINE_STRUCT_T32(SUB_IMM) {
+    InstT32 rn:T32_REG_WIDE;
+    InstT32 S:1;
+    InstT32 op:5;
+    InstT32 i:1;
+    InstT32 opcode1:5;
+    InstT32 imm8:8;
+    InstT32 rd:T32_REG_WIDE;
+    InstT32 imm3:3;
+    InstT32 opcode2:1;
+};
 
 #endif //SANDHOOK_NH_INST_STRUCT_T32_H

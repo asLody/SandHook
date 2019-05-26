@@ -34,6 +34,7 @@ void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, b
     while((Addr) pc < endAddr) {
         bool thumb32 = isThumb32(*reinterpret_cast<InstT16*>(pc));
         if (thumb && thumb32) {
+            CASE_T32(SUB_IMM)
             CASE_T32(B32)
             CASE_T32(LDR_LIT)
             if (!onlyPcRelInst) {
