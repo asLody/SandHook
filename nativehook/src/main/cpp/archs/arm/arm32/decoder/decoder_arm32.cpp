@@ -23,7 +23,7 @@ goto label_matched; \
 
 Arm32Decoder* Arm32Decoder::instant = new Arm32Decoder();
 
-void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor) {
+void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, bool onlyPcRelInst) {
     bool thumb = isThumbCode(reinterpret_cast<Addr>(codeStart));
     if (thumb) {
         codeStart = getThumbCodeAddress(codeStart);
@@ -36,9 +36,11 @@ void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor) {
         if (thumb && thumb32) {
             CASE_T32(B32)
             CASE_T32(LDR_LIT)
-            CASE_T32(LDR_IMM)
-            CASE_T32(LDR_UIMM)
-            CASE_T32(MOV_MOVT_IMM)
+            if (!onlyPcRelInst) {
+                CASE_T32(LDR_IMM)
+                CASE_T32(LDR_UIMM)
+                CASE_T32(MOV_MOVT_IMM)
+            }
             if (unit == nullptr) {
                 unit = reinterpret_cast<Unit<Base> *>(new INST_T32(UNKNOW)(*reinterpret_cast<STRUCT_T32(UNKNOW) *>(pc)));
             }
@@ -50,17 +52,19 @@ void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor) {
             CASE_T16(LDR_LIT)
             CASE_T16(ADD_IMM_RDN)
             CASE_T16(ADR)
-            CASE_T16(ADD_REG)
-            CASE_T16(CMP_REG)
-            CASE_T16(CMP_REG_EXT)
-            CASE_T16(MOV_REG)
-            CASE_T16(POP)
-            CASE_T16(PUSH)
+            if (!onlyPcRelInst) {
+                CASE_T16(ADD_REG)
+                CASE_T16(CMP_REG)
+                CASE_T16(CMP_REG_EXT)
+                CASE_T16(MOV_REG)
+                CASE_T16(POP)
+                CASE_T16(PUSH)
+            }
             if (unit == nullptr) {
                 unit = reinterpret_cast<Unit<Base> *>(new INST_T16(UNKNOW)(*reinterpret_cast<STRUCT_T16(UNKNOW) *>(pc)));
             }
         } else {
-            //TODO
+            //TODO arm32 support
             unit = reinterpret_cast<Unit<Base> *>(new INST_T32(UNKNOW)(*reinterpret_cast<STRUCT_T32(UNKNOW) *>(pc)));
         }
 

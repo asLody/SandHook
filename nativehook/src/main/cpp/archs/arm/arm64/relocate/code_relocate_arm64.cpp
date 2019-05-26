@@ -41,7 +41,7 @@ void* CodeRelocateA64::relocate(void *startPc, Addr len, void *toPc = nullptr) t
     __ allocBufferFirst(static_cast<U32>(len * 8));
     void* curPc = __ getPC();
     if (toPc == nullptr) {
-        Disassembler::get()->decode(startPc, len, *this);
+        Disassembler::get()->decode(startPc, len, *this, true);
     } else {
         //TODO
     }

@@ -21,7 +21,7 @@ namespace SandHook {
 
         class InstDecoder {
         public:
-            virtual void decode(void* codeStart, Addr codeLen, InstVisitor& visitor) = 0;
+            virtual void decode(void* codeStart, Addr codeLen, InstVisitor& visitor, bool onlyPcRelInst = false) = 0;
         };
 
 
