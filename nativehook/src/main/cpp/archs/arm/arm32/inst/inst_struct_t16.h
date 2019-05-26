@@ -136,6 +136,14 @@ DEFINE_STRUCT_T16(ADD_REG) {
     InstT16 opcode:7;
 };
 
+DEFINE_OPCODE_T16(ADD_REG_RDN, 0b01000100)
+DEFINE_STRUCT_T16(ADD_REG_RDN) {
+    InstT16 rdn:T16_REG_WIDE;
+    InstT16 rm:4;
+    InstT16 unknow:1;
+    InstT16 opcode:8;
+};
+
 DEFINE_OPCODE_T16(POP, 0b1011110)
 DEFINE_STRUCT_T16(POP) {
     InstT16 regs:8;

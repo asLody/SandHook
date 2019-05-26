@@ -29,7 +29,8 @@ enum class InstCodeT16 {
     MOV_IMM,
     MOV_REG,
     POP,
-    PUSH
+    PUSH,
+    ADD_REG_RDN
 };
 
 enum class InstCodeT32 {

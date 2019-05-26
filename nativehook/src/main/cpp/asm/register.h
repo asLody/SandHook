@@ -62,7 +62,7 @@ namespace SandHook {
             }
 
             bool operator!=(const Register &rhs) const {
-                return !(rhs == *this);
+                return code != rhs.code;
             }
 
             virtual void setData(Data data) {

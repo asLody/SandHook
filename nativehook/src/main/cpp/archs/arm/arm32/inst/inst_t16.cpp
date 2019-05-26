@@ -385,3 +385,26 @@ void T16_PUSH::assembler() {
     get()->regs = BITS(regs, 0, 7);
     get()->M = BIT(regs, 14);
 }
+
+
+// Add reg rdn T2
+T16_ADD_REG_RDN::T16_ADD_REG_RDN(T16_STRUCT_ADD_REG_RDN *inst) : InstructionT16(inst) {
+    decode(inst);
+}
+
+T16_ADD_REG_RDN::T16_ADD_REG_RDN(RegisterA32 &rdn, RegisterA32 &rm) : rdn(&rdn), rm(&rm) {}
+
+bool T16_ADD_REG_RDN::pcRelate() {
+    return *rm == PC;
+}
+
+void T16_ADD_REG_RDN::decode(T16_STRUCT_ADD_REG_RDN *inst) {
+    DECODE_RM(Reg);
+    rdn = Reg(inst->rdn);
+}
+
+void T16_ADD_REG_RDN::assembler() {
+    SET_OPCODE(ADD_REG_RDN);
+    ENCODE_RM;
+    get()->rdn = rdn->getCode();
+}

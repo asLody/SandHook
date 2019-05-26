@@ -444,6 +444,30 @@ namespace SandHook {
             RegisterList registerList;
         };
 
+
+        class INST_T16(ADD_REG_RDN) : public InstructionT16<STRUCT_T16(ADD_REG_RDN)> {
+        public:
+            T16_ADD_REG_RDN(T16_STRUCT_ADD_REG_RDN *inst);
+
+
+            T16_ADD_REG_RDN(RegisterA32 &rdn, RegisterA32 &rm);
+
+
+            DEFINE_IS(ADD_REG_RDN)
+
+            DEFINE_INST_CODE(ADD_REG_RDN)
+
+            bool pcRelate() override;
+
+            void decode(T16_STRUCT_ADD_REG_RDN *inst) override;
+
+            void assembler() override;
+
+        public:
+            RegisterA32* rdn;
+            RegisterA32* rm;
+        };
+
     }
 }
 

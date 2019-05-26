@@ -41,6 +41,8 @@ namespace SandHook {
 
             DEFINE_RELOCATE(T16, ADR)
 
+            DEFINE_RELOCATE(T16, ADD_REG_RDN)
+
             DEFINE_RELOCATE(T32, B32)
 
             DEFINE_RELOCATE(T32, LDR_LIT)

@@ -79,6 +79,7 @@ void* CodeRelocateA32::relocate(Instruction<Base> *instruction, void *toPc) thro
             CASE(T16, CBZ_CBNZ)
             CASE(T16, ADR)
             CASE(T16, LDR_LIT)
+            CASE(T16, ADD_REG_RDN)
             default:
                 __ Emit(instruction);
                 instruction->ref();
@@ -198,6 +199,23 @@ IMPL_RELOCATE(T16, ADR) {
 
 }
 
+IMPL_RELOCATE(T16, ADD_REG_RDN) {
+
+    if (*inst->rm != PC) {
+        inst->ref();
+        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        return;
+    }
+
+    RegisterA32& tmpReg = *inst->rdn != R0 ? R0 : R1;
+
+    __ Push(tmpReg);
+    __ Mov(tmpReg,(Addr)inst->getPC());
+    __ Add(*inst->rdn, *inst->rdn, tmpReg);
+    __ Pop(tmpReg);
+
+}
+
 IMPL_RELOCATE(T32, B32) {
 
     if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
@@ -239,7 +257,7 @@ IMPL_RELOCATE(T32, B32) {
 
 IMPL_RELOCATE(T32, LDR_LIT) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+    if (inRelocateRange(CODE_OFFSET(inst), sizeof(Addr))) {
         inst->ref();
         inst->bindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
         __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
