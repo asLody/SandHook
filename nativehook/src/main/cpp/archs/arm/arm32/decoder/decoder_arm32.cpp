@@ -50,12 +50,12 @@ void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, b
             CASE_T16(BX_BLX)
             CASE_T16(CBZ_CBNZ)
             CASE_T16(LDR_LIT)
-            CASE_T16(ADD_IMM_RDN)
             CASE_T16(ADR)
             CASE_T16(ADD_REG_RDN)
             if (!onlyPcRelInst) {
                 CASE_T16(ADD_REG)
                 CASE_T16(CMP_REG)
+                CASE_T16(ADD_IMM_RDN)
                 CASE_T16(CMP_REG_EXT)
                 CASE_T16(MOV_REG)
                 CASE_T16(POP)
