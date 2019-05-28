@@ -26,7 +26,8 @@ enum class InstCodeA64 {
     TBZ_TBNZ,
     SUB_EXT_REG,
     EXCEPTION_GEN,
-    SVC
+    SVC,
+    STP_LDP,
 };
 
 #endif //SANDHOOK_NH_INST_CODE_ARM64_H

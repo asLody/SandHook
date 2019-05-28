@@ -789,3 +789,61 @@ void A64_LDRSW_UIMM::assembler() {
     get()->rn = operand.base->getCode();
     get()->imm12 = operand.offset >> Size32;
 }
+
+
+
+A64_STP_LDP::A64_STP_LDP(A64_STRUCT_STP_LDP &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
+
+A64_STP_LDP::A64_STP_LDP(OP op, RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand &operand) : op(op), rt1(&rt1),
+                                                                                          rt2(&rt2),
+                                                                                          operand(operand) {}
+
+void A64_STP_LDP::decode(A64_STRUCT_STP_LDP *inst) {
+    DECODE_OP;
+    Size s = Size(inst->size);
+    if (s == Size64) {
+        rt1 = XReg(inst->rt);
+        rt2 = XReg(inst->rt2);
+        operand.offset = signExtend64(7, inst->imm7) << 3;
+    } else {
+        rt1 = WReg(inst->rt);
+        rt2 = WReg(inst->rt2);
+        operand.offset = signExtend64(7, inst->imm7) << 2;
+    }
+    operand.base = XReg(inst->rn);
+    AdMod adMod = AdMod(inst->addrmode);
+    switch (adMod) {
+        case SignOffset:
+            operand.addr_mode = AddrMode::Offset;
+            break;
+        case PostIndex:
+            operand.addr_mode = AddrMode::PostIndex;
+            break;
+        case PreIndex:
+            operand.addr_mode = AddrMode::PreIndex;
+            break;
+    }
+}
+
+void A64_STP_LDP::assembler() {
+    SET_OPCODE(STP_LDP);
+    ENCODE_OP;
+    get()->size = rt1->isX() ? Size64 : Size32;
+    get()->rt = rt1->getCode();
+    get()->rt2 = rt2->getCode();
+    get()->rn = operand.base->getCode();
+    switch (operand.addr_mode) {
+        case Offset:
+            get()->addrmode = SignOffset;
+            break;
+        case AddrMode::PostIndex:
+            get()->addrmode = PostIndex;
+            break;
+        case AddrMode::PreIndex:
+            get()->addrmode = PreIndex;
+            break;
+    }
+    get()->imm7 = TruncateToUint7(operand.offset >> (rt1->isX() ? 3 : 2));
+}

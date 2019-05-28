@@ -739,6 +739,44 @@ namespace SandHook {
             void assembler() override;
         };
 
+
+        class INST_A64(STP_LDP) : public InstructionA64<STRUCT_A64(STP_LDP)> {
+        public:
+            enum OP {
+                STP = 0b0,
+                LDP = 0b1
+            };
+
+            enum AdMod {
+                SignOffset = 0b10,
+                PostIndex = 0b01,
+                PreIndex = 0b11
+            };
+
+            enum Size {
+                Size32 = 0b00,
+                Size64 = 0b10
+            };
+
+            A64_STP_LDP(A64_STRUCT_STP_LDP &inst);
+
+            A64_STP_LDP(OP op, RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand &operand);
+
+            DEFINE_IS(STP_LDP)
+
+            DEFINE_INST_CODE(STP_LDP)
+
+            void decode(A64_STRUCT_STP_LDP *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            RegisterA64* rt1;
+            RegisterA64* rt2;
+            MemOperand operand;
+        };
+
     }
 
 }
