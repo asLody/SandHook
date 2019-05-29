@@ -74,8 +74,14 @@ namespace SandHook {
             void Subs(RegisterA64& rd, RegisterA64& rn, const Operand& operand);
             void Cmp(RegisterA64& rn, const Operand& operand);
 
-            void stp(RegisterA64& rt1, RegisterA64& rt2, const MemOperand operand);
-            void ldp(RegisterA64& rt1, RegisterA64& rt2, const MemOperand operand);
+            void Stp(RegisterA64& rt1, RegisterA64& rt2, const MemOperand operand);
+            void Ldp(RegisterA64& rt1, RegisterA64& rt2, const MemOperand operand);
+
+            void Add(RegisterA64& rd, const Operand& operand);
+            void Adds(RegisterA64& rd, const Operand& operand);
+
+            void Sub(RegisterA64& rd, const Operand& operand);
+            void Subs(RegisterA64& rd, const Operand& operand);
 
 
         public:

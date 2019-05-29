@@ -847,3 +847,51 @@ void A64_STP_LDP::assembler() {
     }
     get()->imm7 = TruncateToUint7(operand.offset >> (rt1->isX() ? 3 : 2));
 }
+
+
+
+A64_ADD_SUB_IMM::A64_ADD_SUB_IMM() {}
+
+A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(A64_STRUCT_ADD_SUB_IMM &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
+
+A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(A64_ADD_SUB_IMM::OP op, A64_ADD_SUB_IMM::S sign, RegisterA64 &rd,
+                         const Operand &operand) : op(op), sign(sign), rd(&rd), operand(operand) {}
+
+void A64_ADD_SUB_IMM::decode(A64_STRUCT_ADD_SUB_IMM *inst) {
+    DECODE_OP;
+    if (inst->sf == Size64) {
+        DECODE_RD(XReg);
+        operand.reg = XReg(inst->rn);
+    } else {
+        DECODE_RD(XReg);
+        operand.reg = WReg(inst->rn);
+    }
+    sign = S(inst->S);
+    DECODE_SHIFT;
+    if (operand.shift == LSL) {
+        operand.immediate = get()->imm12;
+    } else if (operand.shift == LSR) {
+        operand.immediate = get()->imm12 << 12;
+    } else {
+        valid = false;
+    }
+}
+
+void A64_ADD_SUB_IMM::assembler() {
+    SET_OPCODE(ADD_SUB_IMM);
+    ENCODE_OP;
+    ENCODE_RD;
+    get()->rn = operand.reg->getCode();
+    get()->sf = rd->isX() ? Size64 : Size32;
+    get()->S = sign;
+    ENCODE_SHIFT;
+    if (operand.shift == LSL) {
+        get()->imm12 = static_cast<InstA64>(operand.immediate);
+    } else if (operand.shift == LSR) {
+        get()->imm12 = static_cast<InstA64>(operand.immediate) >> 12;
+    } else {
+        valid = false;
+    }
+}

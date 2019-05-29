@@ -215,6 +215,18 @@ DEFINE_STRUCT_A64(STP_LDP) {
     InstA64 size:2;
 };
 
+DEFINE_OPCODE_A64(ADD_SUB_IMM, 0b10001)
+DEFINE_STRUCT_A64(ADD_SUB_IMM) {
+    InstA64 rd:WideReg;
+    InstA64 rn:WideReg;
+    InstA64 imm12:12;
+    InstA64 shift:2;
+    InstA64 opcode:5;
+    InstA64 S:2;
+    InstA64 op:1;
+    InstA64 sf:1;
+};
+
 
 
 #endif //SANDHOOK_NH_INST_AARCH64_H

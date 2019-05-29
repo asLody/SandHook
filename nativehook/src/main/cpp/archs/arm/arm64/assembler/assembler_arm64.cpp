@@ -207,12 +207,28 @@ void AssemblerA64::Subs(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(SUB_EXT_REG)(rd, rn, operand, SetFlags)));
 }
 
-void AssemblerA64::stp(RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand operand) {
+void AssemblerA64::Stp(RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand operand) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(STP_LDP)(INST_A64(STP_LDP)::STP, rt1, rt2, operand)));
 }
 
-void AssemblerA64::ldp(RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand operand) {
+void AssemblerA64::Ldp(RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand operand) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(STP_LDP)(INST_A64(STP_LDP)::LDP, rt1, rt2, operand)));
+}
+
+void AssemblerA64::Add(RegisterA64 &rd, const Operand &operand) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(ADD_SUB_IMM)(INST_A64(ADD_SUB_IMM)::ADD, INST_A64(ADD_SUB_IMM)::UnSign, rd, operand)));
+}
+
+void AssemblerA64::Adds(RegisterA64 &rd, const Operand &operand) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(ADD_SUB_IMM)(INST_A64(ADD_SUB_IMM)::ADD, INST_A64(ADD_SUB_IMM)::Sign, rd, operand)));
+}
+
+void AssemblerA64::Sub(RegisterA64 &rd, const Operand &operand) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(ADD_SUB_IMM)(INST_A64(ADD_SUB_IMM)::SUB, INST_A64(ADD_SUB_IMM)::UnSign, rd, operand)));
+}
+
+void AssemblerA64::Subs(RegisterA64 &rd, const Operand &operand) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(ADD_SUB_IMM)(INST_A64(ADD_SUB_IMM)::SUB, INST_A64(ADD_SUB_IMM)::Sign, rd, operand)));
 }
 
 

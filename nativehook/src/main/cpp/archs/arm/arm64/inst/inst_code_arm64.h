@@ -28,6 +28,7 @@ enum class InstCodeA64 {
     EXCEPTION_GEN,
     SVC,
     STP_LDP,
+    ADD_SUB_IMM
 };
 
 #endif //SANDHOOK_NH_INST_CODE_ARM64_H

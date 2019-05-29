@@ -777,6 +777,46 @@ namespace SandHook {
             MemOperand operand;
         };
 
+
+        class INST_A64(ADD_SUB_IMM) : public InstructionA64<STRUCT_A64(ADD_SUB_IMM)> {
+        public:
+
+            enum OP {
+                ADD = 0b0,
+                SUB = 0b1
+            };
+
+            enum S {
+                Sign = 0b0,
+                UnSign = 0b1
+            };
+
+            enum Size {
+                Size32 = 0b0,
+                Size64 = 0b1
+            };
+
+            A64_ADD_SUB_IMM();
+
+            A64_ADD_SUB_IMM(A64_STRUCT_ADD_SUB_IMM &inst);
+
+            A64_ADD_SUB_IMM(OP op, S sign, RegisterA64 &rd, const Operand &operand);
+
+            DEFINE_IS(ADD_SUB_IMM)
+
+            DEFINE_INST_CODE(ADD_SUB_IMM)
+
+            void decode(A64_STRUCT_ADD_SUB_IMM *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            S sign;
+            RegisterA64* rd;
+            Operand operand;
+        };
+
     }
 
 }

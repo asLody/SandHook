@@ -44,6 +44,8 @@ void Arm64Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, b
         CASE(SVC)
         CASE(EXCEPTION_GEN)
         CASE(STP_LDP)
+        CASE(ADD_SUB_IMM)
+
         label_matched:
         if (unit == nullptr) {
             unit = reinterpret_cast<Unit<Base> *>(new INST_A64(UNKNOW)(*reinterpret_cast<STRUCT_A64(UNKNOW) *>(pc)));

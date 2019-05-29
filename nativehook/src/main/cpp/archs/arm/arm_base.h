@@ -66,5 +66,8 @@ enum AddrMode { Offset, PreIndex, PostIndex, NonAddrMode};
 #define DECODE_OP op = OP(inst->op)
 #define ENCODE_OP get()->op = op
 
+#define DECODE_SHIFT operand.shift = Shift(inst->shift)
+#define ENCODE_SHIFT get()->shift = operand.shift
+
 
 #endif //SANDHOOK_ARM_BASE_H
