@@ -227,6 +227,12 @@ DEFINE_STRUCT_A64(ADD_SUB_IMM) {
     InstA64 sf:1;
 };
 
-
+DEFINE_OPCODE_A64(MSR_MRS, 0b1101010100)
+DEFINE_STRUCT_A64(MSR_MRS) {
+    InstA64 rt:WideReg;
+    InstA64 sysreg:16;
+    InstA64 op:1;
+    InstA64 opcode:10;
+};
 
 #endif //SANDHOOK_NH_INST_AARCH64_H

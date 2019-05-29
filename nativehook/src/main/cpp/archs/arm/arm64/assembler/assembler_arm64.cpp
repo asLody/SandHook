@@ -231,6 +231,14 @@ void AssemblerA64::Subs(RegisterA64 &rd, const Operand &operand) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(ADD_SUB_IMM)(INST_A64(ADD_SUB_IMM)::SUB, INST_A64(ADD_SUB_IMM)::Sign, rd, operand)));
 }
 
+void AssemblerA64::Mrs(SystemRegister &sysReg, RegisterA64 &rt) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MSR_MRS)(INST_A64(MSR_MRS)::MRS, sysReg, rt)));
+}
+
+void AssemblerA64::Msr(SystemRegister &sysReg, RegisterA64 &rt) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MSR_MRS)(INST_A64(MSR_MRS)::MSR, sysReg, rt)));
+}
+
 
 
 

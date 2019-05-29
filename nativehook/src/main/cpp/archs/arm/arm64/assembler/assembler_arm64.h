@@ -83,6 +83,9 @@ namespace SandHook {
             void Sub(RegisterA64& rd, const Operand& operand);
             void Subs(RegisterA64& rd, const Operand& operand);
 
+            void Msr(SystemRegister &sysReg, RegisterA64& rt);
+            void Mrs(SystemRegister &sysReg, RegisterA64& rt);
+
 
         public:
             CodeContainer codeContainer = CodeContainer(nullptr);

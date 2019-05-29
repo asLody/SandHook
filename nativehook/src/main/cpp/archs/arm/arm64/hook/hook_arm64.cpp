@@ -50,3 +50,7 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     assemblerInline.finish();
     return backup;
 }
+
+bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[], void* sp)) {
+    return false;
+}

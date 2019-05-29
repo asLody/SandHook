@@ -48,6 +48,12 @@ namespace SandHook {
                 return &WZR;
             }
         }
+
+        // System/special register names.
+        // This information is not encoded as one field but as the concatenation of
+        // multiple fields (Op0<0>, Op1, Crn, Crm, Op2).
+        extern SystemRegister NZCV;
+        extern SystemRegister FPCR;
     }
 }
 

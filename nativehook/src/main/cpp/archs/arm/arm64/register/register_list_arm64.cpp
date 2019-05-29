@@ -22,5 +22,8 @@ namespace SandHook {
         XRegister XZR = X31;
         WRegister WZR = W31;
         RegisterA64 UnknowRegiser = RegisterA64(38);
+
+        SystemRegister NZCV = SystemRegister(3, 3, 4, 2, 0);
+        SystemRegister FPCR = SystemRegister(3, 3, 4, 4, 0);
     }
 }

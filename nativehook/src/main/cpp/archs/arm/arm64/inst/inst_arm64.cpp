@@ -844,6 +844,8 @@ void A64_STP_LDP::assembler() {
         case AddrMode::PreIndex:
             get()->addrmode = PreIndex;
             break;
+        default:
+            valid = false;
     }
     get()->imm7 = TruncateToUint7(operand.offset >> (rt1->isX() ? 3 : 2));
 }
@@ -894,4 +896,24 @@ void A64_ADD_SUB_IMM::assembler() {
     } else {
         valid = false;
     }
+}
+
+A64_MSR_MRS::A64_MSR_MRS(A64_STRUCT_MSR_MRS &inst) : InstructionA64(&inst) {
+    decode(&inst);
+}
+
+A64_MSR_MRS::A64_MSR_MRS(OP op, SystemRegister &systemRegister, RegisterA64 &rt) : op(op), systemRegister(
+        &systemRegister), rt(&rt) {}
+
+void A64_MSR_MRS::decode(A64_STRUCT_MSR_MRS *inst) {
+    DECODE_OP;
+    DECODE_RT(XReg);
+    //TODO
+}
+
+void A64_MSR_MRS::assembler() {
+    SET_OPCODE(MSR_MRS);
+    ENCODE_OP;
+    ENCODE_RT;
+    get()->sysreg = systemRegister->value();
 }

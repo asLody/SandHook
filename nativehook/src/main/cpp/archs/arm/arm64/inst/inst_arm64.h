@@ -36,6 +36,8 @@ inline U32 instCode() override { \
 return ENUM_VALUE(InstCodeA64, InstCodeA64::X); \
 }
 
+#define DEFINE_INST(X) class INST_A64(X) : public InstructionA64<STRUCT_A64(X)>
+
 using namespace SandHook::RegistersA64;
 using namespace SandHook::Asm;
 
@@ -471,7 +473,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(BR_BLR_RET) : public InstructionA64<STRUCT_A64(BR_BLR_RET)> {
+        DEFINE_INST(BR_BLR_RET) {
         public:
 
             enum OP {
@@ -573,7 +575,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(MOV_REG) : public InstructionA64<STRUCT_A64(MOV_REG)> {
+        DEFINE_INST(MOV_REG) {
         public:
 
             A64_MOV_REG();
@@ -596,7 +598,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(SUB_EXT_REG) : public InstructionA64<STRUCT_A64(SUB_EXT_REG)> {
+        DEFINE_INST(SUB_EXT_REG) {
         public:
 
             A64_SUB_EXT_REG();
@@ -623,7 +625,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(EXCEPTION_GEN) : public InstructionA64<STRUCT_A64(EXCEPTION_GEN)> {
+        DEFINE_INST(EXCEPTION_GEN) {
         public:
 
             enum OP {
@@ -740,7 +742,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(STP_LDP) : public InstructionA64<STRUCT_A64(STP_LDP)> {
+        DEFINE_INST(STP_LDP) {
         public:
             enum OP {
                 STP = 0b0,
@@ -778,7 +780,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(ADD_SUB_IMM) : public InstructionA64<STRUCT_A64(ADD_SUB_IMM)> {
+        DEFINE_INST(ADD_SUB_IMM) {
         public:
 
             enum OP {
@@ -815,6 +817,33 @@ namespace SandHook {
             S sign;
             RegisterA64* rd;
             Operand operand;
+        };
+
+
+        DEFINE_INST(MSR_MRS) {
+        public:
+
+            enum OP {
+                MSR = 0,
+                MRS = 1
+            };
+
+            A64_MSR_MRS(A64_STRUCT_MSR_MRS &inst);
+
+            A64_MSR_MRS(OP op, SystemRegister &systemRegister, RegisterA64 &rt);
+
+            DEFINE_INST_CODE(MSR_MRS)
+
+            DEFINE_IS(MSR_MRS)
+
+            void decode(A64_STRUCT_MSR_MRS *inst) override;
+
+            void assembler() override;
+
+        public:
+            OP op;
+            SystemRegister* systemRegister;
+            RegisterA64* rt;
         };
 
     }

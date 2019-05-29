@@ -12,6 +12,8 @@
 #include "assembler.h"
 #include "code_relocate.h"
 
+typedef Addr REG;
+
 namespace SandHook {
     namespace Hook {
 
@@ -19,7 +21,9 @@ namespace SandHook {
         public:
             //return == backup method
             virtual void* inlineHook(void* origin, void* replace) = 0;
-
+            virtual bool breakPoint(void* point, void (*callback)(REG[], void *)) {
+                return false;
+            };
         protected:
             static AndroidCodeBuffer* backupBuffer;
         public:
