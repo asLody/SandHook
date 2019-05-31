@@ -24,6 +24,14 @@ void (*dosth4Backup2)() = nullptr;
 void (*innerSuspendVM)() = nullptr;
 
 
+static void (*heapPreForkBackup)(void *) = nullptr;
+
+
+static void myHeapPreFork(void *heap) {
+    heapPreForkBackup(heap);
+}
+
+
 void SuspendVMReplace() {
     LOGE("VM Suspend!");
     innerSuspendVM();
@@ -42,7 +50,7 @@ void do3(int x, int y) {
     int b = 1 + 1;
     int c = 1 + 1;
     int d = a + b + c;
-    LOGE("x = %d", x);
+    LOGE("do3 = %d", y);
 }
 
 void do5() {
@@ -50,9 +58,6 @@ void do5() {
 }
 
 void do4() {
-    if (m3 > m2) {
-        return;
-    }
     do5();
     int a = 1 + 1;
     int b = a + 1;
@@ -88,6 +93,10 @@ void do1() {
     do2();
 }
 
+void breakCallback(REG regs[]) {
+    LOGE("breakCallback");
+}
+
 
 class Visitor : public InstVisitor {
     bool visit(Unit<Base> *unit, void *pc) override {
@@ -106,17 +115,32 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
             reinterpret_cast<void *>(do4),
             reinterpret_cast<void *>(do4replace)));
 
+//    dosth4Backup2 = reinterpret_cast<void (*)()>(InlineHook::instance->inlineHook(
+//            reinterpret_cast<void *>(do4),
+//            reinterpret_cast<void *>(do4replace2)));
+
 
     do4();
 
     if (sizeof(void*) == 8) {
+        heapPreForkBackup = reinterpret_cast<void (*)(void *)>(SandInlineHookSym("/system/lib64/libart.so", "_ZN3art2gc4Heap13PreZygoteForkEv",
+                                                                            reinterpret_cast<void *>(myHeapPreFork)));
         innerSuspendVM = reinterpret_cast<void (*)()>(SandInlineHookSym("/system/lib64/libart.so", "_ZN3art3Dbg9SuspendVMEv",
                                                                         reinterpret_cast<void *>(SuspendVMReplace)));
     } else {
+        heapPreForkBackup = reinterpret_cast<void (*)(void *)>(SandInlineHookSym("/system/lib/libart.so", "_ZN3art2gc4Heap13PreZygoteForkEv",
+                                                                                 reinterpret_cast<void *>(myHeapPreFork)));
         innerSuspendVM = reinterpret_cast<void (*)()>(SandInlineHookSym("/system/lib/libart.so", "_ZN3art3Dbg9SuspendVMEv",
                                                                         reinterpret_cast<void *>(SuspendVMReplace)));
     }
 
+    void* do3P = reinterpret_cast<void *>(do3);
+
+    InlineHook::instance->breakPoint(reinterpret_cast<void *>(do3), breakCallback);
+
+    LOGE("ok");
+
+    do3(100, 2);
 
 
 }
@@ -131,6 +155,7 @@ extern "C"
 EXPORT void* SandInlineHookSym(const char* so, const char* symb, void* replace) {
     ElfImg elfImg(so);
     void* origin = reinterpret_cast<void *>(elfImg.getSymbAddress(symb));
+
     if (origin == nullptr)
         return nullptr;
     return InlineHook::instance->inlineHook(origin, replace);

@@ -64,13 +64,13 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
 
     //build backup inst
     CodeRelocateA64 relocate = CodeRelocateA64(assemblerBackup);
-    backup = relocate.relocate(point, 6 * 4, nullptr);
+    backup = relocate.relocate(point, 4 * 4, nullptr);
 #define __ assemblerBackup.
     Label* origin_addr_label = new Label();
     __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) point + 5 * 4);
+    __ Emit((Addr) point + 4 * 4);
     __ finish();
 #undef __
 
@@ -80,12 +80,12 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     //backup NZCV
     __ Sub(SP, Operand(&SP, 0x20));
 
-    __ Mrs(NZCV, X0);
     __ Str(X0, MemOperand(&SP, 0x10));
+    __ Mrs(NZCV, X0);
     __ Str(X30, MemOperand(&SP));
     __ Add(X30, Operand(&SP, 0x20));
     __ Str(X30, MemOperand(&SP, 0x8));
-    __ Ldr(X0, MemOperand(&SP, 0x18));
+    __ Ldr(X0, MemOperand(&SP, 0x10));
 
     //backup X0 - X29
     U8 douRegCount = 30 / 2;
@@ -95,8 +95,8 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     }
 
     __ Mov(X0, SP);
-    __ Mov(X3, (Addr) callback);
-    __ Blr(X3);
+    __ Mov(IP1, (Addr) callback);
+    __ Blr(IP1);
     __ Ldr(X0, MemOperand(&SP, 0x100));
     __ Msr(NZCV, X0);
 
@@ -109,11 +109,10 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
 
     __ Ldr(X30, MemOperand(&SP, (Off) 0));
     __ Add(SP, Operand(&SP, 0x20));
-    __ Stp(X1, X0, MemOperand(&SP, -0x10));
 
     //jump to origin
-    __ Mov(X0, (Addr) backup);
-    __ Br(X0);
+    __ Mov(IP1, (Addr) backup);
+    __ Br(IP1);
 
     __ finish();
 #undef __
@@ -123,12 +122,10 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     //build inline trampoline
 #define __ assemblerInline.
     Label* target_addr_label = new Label();
-    __ Stp(X1, X0, MemOperand(&SP, -0x10));
-    __ Ldr(X0, target_addr_label);
-    __ Br(X0);
+    __ Ldr(IP1, target_addr_label);
+    __ Br(IP1);
     __ Emit(target_addr_label);
     __ Emit((Addr) secondTrampoline);
-    __ Ldr(X0, MemOperand(&SP, -0x8));
     __ finish();
 #undef __
 
