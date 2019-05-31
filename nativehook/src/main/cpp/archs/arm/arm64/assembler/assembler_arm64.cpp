@@ -243,8 +243,12 @@ void AssemblerA64::Msr(SystemRegister &sysReg, RegisterA64 &rt) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MSR_MRS)(INST_A64(MSR_MRS)::MSR, sysReg, rt)));
 }
 
-void AssemblerA64::Mov(RegisterA64 &rd, RegisterA64 rt) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MOV_REG)(rd, rt)));
+void AssemblerA64::Mov(RegisterA64 &rd, RegisterA64& rt) {
+    if (rd == SP || rt == SP) {
+        Add(rd, Operand(&rt, 0));
+    } else {
+        Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MOV_REG)(rd, rt)));
+    }
 }
 
 
