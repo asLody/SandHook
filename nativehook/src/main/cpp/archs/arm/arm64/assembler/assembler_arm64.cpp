@@ -158,7 +158,7 @@ void AssemblerA64::Str(RegisterA64 &rt, const MemOperand& memOperand) {
 }
 
 void AssemblerA64::Ldr(RegisterA64 &rt, const MemOperand &memOperand) {
-    if (memOperand.addr_mode == Offset) {
+    if (memOperand.addr_mode == Offset && memOperand.offset >= 0) {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_UIMM)(rt, memOperand)));
     } else {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_IMM)(rt, memOperand)));

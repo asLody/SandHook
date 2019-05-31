@@ -91,7 +91,7 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     U8 douRegCount = 30 / 2;
     __ Sub(SP, Operand(&SP, 0xf0));
     for (int i = 0; i < douRegCount; ++i) {
-        __ Stp(*XReg(i), *XReg(i + 1), MemOperand(&SP, i * 16));
+        __ Stp(*XReg(2 * i), *XReg(2 * i + 1), MemOperand(&SP, i * 16));
     }
 
     __ Mov(X0, SP);
@@ -102,7 +102,7 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
 
     //restore X0 - X29
     for (int i = 0; i < douRegCount; ++i) {
-        __ Ldp(*XReg(i), *XReg(i + 1), MemOperand(&SP, i * 16));
+        __ Ldp(*XReg(2 * i), *XReg(2 * i + 1), MemOperand(&SP, i * 16));
     }
 
     __ Add(SP, Operand(&SP, 0xf0));

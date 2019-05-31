@@ -873,9 +873,9 @@ void A64_ADD_SUB_IMM::decode(A64_STRUCT_ADD_SUB_IMM *inst) {
     sign = S(inst->S);
     DECODE_SHIFT;
     if (operand.shift == LSL) {
-        operand.immediate = get()->imm12;
+        operand.shift_extend_imm = get()->imm12;
     } else if (operand.shift == LSR) {
-        operand.immediate = get()->imm12 << 12;
+        operand.shift_extend_imm = get()->imm12 << 12;
     } else {
         valid = false;
     }
@@ -890,9 +890,9 @@ void A64_ADD_SUB_IMM::assembler() {
     get()->S = sign;
     ENCODE_SHIFT;
     if (operand.shift == LSL) {
-        get()->imm12 = static_cast<InstA64>(operand.immediate);
+        get()->imm12 = operand.shift_extend_imm;
     } else if (operand.shift == LSR) {
-        get()->imm12 = static_cast<InstA64>(operand.immediate) >> 12;
+        get()->imm12 = operand.shift_extend_imm >> 12;
     } else {
         valid = false;
     }

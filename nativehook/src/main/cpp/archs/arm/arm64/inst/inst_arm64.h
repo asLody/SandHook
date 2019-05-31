@@ -789,8 +789,8 @@ namespace SandHook {
             };
 
             enum S {
-                Sign = 0b0,
-                UnSign = 0b1
+                Sign = 0b1,
+                UnSign = 0b0
             };
 
             enum Size {

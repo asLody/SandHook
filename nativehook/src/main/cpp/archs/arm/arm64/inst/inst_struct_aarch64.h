@@ -222,7 +222,7 @@ DEFINE_STRUCT_A64(ADD_SUB_IMM) {
     InstA64 imm12:12;
     InstA64 shift:2;
     InstA64 opcode:5;
-    InstA64 S:2;
+    InstA64 S:1;
     InstA64 op:1;
     InstA64 sf:1;
 };
