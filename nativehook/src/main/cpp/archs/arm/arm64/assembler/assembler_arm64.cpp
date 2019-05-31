@@ -86,6 +86,10 @@ void AssemblerA64::Br(XRegister &rn) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(BR_BLR_RET)(INST_A64(BR_BLR_RET)::BR, rn)));
 }
 
+void AssemblerA64::Blr(XRegister &rn) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(BR_BLR_RET)(INST_A64(BR_BLR_RET)::BLR, rn)));
+}
+
 void AssemblerA64::B(Off offset) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::B, offset)));
 }
@@ -237,6 +241,10 @@ void AssemblerA64::Mrs(SystemRegister &sysReg, RegisterA64 &rt) {
 
 void AssemblerA64::Msr(SystemRegister &sysReg, RegisterA64 &rt) {
     Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MSR_MRS)(INST_A64(MSR_MRS)::MSR, sysReg, rt)));
+}
+
+void AssemblerA64::Mov(RegisterA64 &rd, RegisterA64 rt) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(MOV_REG)(rd, rt)));
 }
 
 

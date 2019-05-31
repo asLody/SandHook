@@ -101,9 +101,9 @@ namespace SandHook {
             inline explicit Operand(){};
             inline explicit Operand(S64 imm)
                     : immediate(imm), reg(&UnknowRegiser), shift(NO_SHIFT), extend(NO_EXTEND), shift_extend_imm(0) {}
-            inline Operand(RegisterA64* reg, Shift shift = LSL, int32_t imm = 0)
+            inline explicit Operand(RegisterA64* reg, int32_t imm = 0, Shift shift = LSL)
                     : immediate(0), reg(reg), shift(shift), extend(NO_EXTEND), shift_extend_imm(imm) {}
-            inline Operand(RegisterA64* reg, Extend extend, int32_t imm = 0)
+            inline explicit Operand(RegisterA64* reg, Extend extend, int32_t imm = 0)
                     : immediate(0), reg(reg), shift(NO_SHIFT), extend(extend), shift_extend_imm(imm) {}
 
             // =====
@@ -547,7 +547,7 @@ namespace SandHook {
 
             DEFINE_IS(STR_IMM)
 
-            DEFINE_INST_CODE(MOV_REG)
+            DEFINE_INST_CODE(STR_IMM)
 
             void decode(STRUCT_A64(STR_IMM) *inst) override;
 

@@ -19,7 +19,7 @@ namespace SandHook {
             }
             void *inlineHook(void *origin, void *replace) override;
 
-            bool breakPoint(void *point, void (*callback)(REG[], void*)) override;
+            bool breakPoint(void *point, void (*callback)(REG[])) override;
 
         protected:
             std::mutex* hookLock;

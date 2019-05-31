@@ -21,7 +21,7 @@ namespace SandHook {
         public:
             //return == backup method
             virtual void* inlineHook(void* origin, void* replace) = 0;
-            virtual bool breakPoint(void* point, void (*callback)(REG[], void *)) {
+            virtual bool breakPoint(void* point, void (*callback)(REG[])) {
                 return false;
             };
         protected:

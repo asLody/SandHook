@@ -51,6 +51,86 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     return backup;
 }
 
-bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[], void* sp)) {
-    return false;
+bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[])) {
+    AutoLock lock(hookLock);
+
+    void* backup = nullptr;
+    AssemblerA64 assemblerBackup(backupBuffer);
+    AssemblerA64 assemblerTrampoline(backupBuffer);
+
+    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(point));
+    AssemblerA64 assemblerInline(&inlineBuffer);
+
+
+    //build backup inst
+    CodeRelocateA64 relocate = CodeRelocateA64(assemblerBackup);
+    backup = relocate.relocate(point, 6 * 4, nullptr);
+#define __ assemblerBackup.
+    Label* origin_addr_label = new Label();
+    __ Ldr(IP1, origin_addr_label);
+    __ Br(IP1);
+    __ Emit(origin_addr_label);
+    __ Emit((Addr) point + 5 * 4);
+    __ finish();
+#undef __
+
+
+    //build shell code
+#define __ assemblerTrampoline.
+    //backup NZCV
+    __ Sub(SP, Operand(&SP, 0x20));
+
+    __ Mrs(NZCV, X0);
+    __ Str(X0, MemOperand(&SP, 0x10));
+    __ Str(X30, MemOperand(&SP));
+    __ Add(X30, Operand(&SP, 0x20));
+    __ Str(X30, MemOperand(&SP, 0x8));
+    __ Ldr(X0, MemOperand(&SP, 0x18));
+
+    //backup X0 - X29
+    U8 douRegCount = 30 / 2;
+    __ Sub(SP, Operand(&SP, 0xf0));
+    for (int i = 0; i < douRegCount; ++i) {
+        __ Stp(*XReg(i), *XReg(i + 1), MemOperand(&SP, i * 16));
+    }
+
+    __ Mov(X0, SP);
+    __ Mov(X3, (Addr) callback);
+    __ Blr(X3);
+    __ Ldr(X0, MemOperand(&SP, 0x100));
+    __ Msr(NZCV, X0);
+
+    //restore X0 - X29
+    for (int i = 0; i < douRegCount; ++i) {
+        __ Ldp(*XReg(i), *XReg(i + 1), MemOperand(&SP, i * 16));
+    }
+
+    __ Add(SP, Operand(&SP, 0xf0));
+
+    __ Ldr(X30, MemOperand(&SP, (Off) 0));
+    __ Add(SP, Operand(&SP, 0x20));
+    __ Stp(X1, X0, MemOperand(&SP, -0x10));
+
+    //jump to origin
+    __ Mov(X0, (Addr) backup);
+    __ Br(X0);
+
+    __ finish();
+#undef __
+
+
+    void* secondTrampoline = assemblerTrampoline.getStartPC();
+    //build inline trampoline
+#define __ assemblerInline.
+    Label* target_addr_label = new Label();
+    __ Stp(X1, X0, MemOperand(&SP, -0x10));
+    __ Ldr(X0, target_addr_label);
+    __ Br(X0);
+    __ Emit(target_addr_label);
+    __ Emit((Addr) secondTrampoline);
+    __ Ldr(X0, MemOperand(&SP, -0x8));
+    __ finish();
+#undef __
+
+    return true;
 }

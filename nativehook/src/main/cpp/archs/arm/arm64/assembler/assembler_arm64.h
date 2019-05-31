@@ -38,6 +38,7 @@ namespace SandHook {
             void Mov(XRegister& rd, U64 imme);
 
             void Br(XRegister& rn);
+            void Blr(XRegister& rn);
 
             void B(Off offset);
             void B(Label* label);
@@ -85,6 +86,8 @@ namespace SandHook {
 
             void Msr(SystemRegister &sysReg, RegisterA64& rt);
             void Mrs(SystemRegister &sysReg, RegisterA64& rt);
+
+            void Mov(RegisterA64& rd, RegisterA64 rt);
 
 
         public:
