@@ -207,7 +207,7 @@ To bypass hidden api on P & Q
 
 bool nativeHookNoBackup(void* origin, void* hook);
 
-## need backup origin method(unstabitily)
+## need backup origin method
 #include "sanhook_native.h"  
 
 void* SandInlineHook(void* origin, void* replace);  
@@ -216,6 +216,13 @@ void* SandInlineHookSym(const char* so, const char* symb, void* replace);
 
 
 return is backup method
+
+## break point
+
+you can insert a break point in body of method(not only start of method), so you can read/write registers in break point.  
+
+
+bool SandBreakpoint(void* origin, void (*callback)(REG[]));
 
 ## more
 
