@@ -136,7 +136,7 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
 
     void* do3P = reinterpret_cast<void *>(do3);
 
-    InlineHook::instance->breakPoint(reinterpret_cast<void *>(do3), breakCallback);
+    InlineHook::instance->breakPoint(reinterpret_cast<void *>((Addr)do3 + 16), breakCallback);
 
     LOGE("ok");
 
@@ -145,6 +145,12 @@ Java_com_swift_sandhook_nativehook_NativeHook_test(JNIEnv *env, jclass jclass1) 
 
 }
 
+
+extern "C"
+EXPORT void* SandGetSym(const char* so, const char* symb) {
+    ElfImg elfImg(so);
+    return reinterpret_cast<void *>(elfImg.getSymbAddress(symb));
+}
 
 extern "C"
 EXPORT void* SandInlineHook(void* origin, void* replace) {
@@ -159,4 +165,9 @@ EXPORT void* SandInlineHookSym(const char* so, const char* symb, void* replace) 
     if (origin == nullptr)
         return nullptr;
     return InlineHook::instance->inlineHook(origin, replace);
+}
+
+extern "C"
+EXPORT bool SandBreakpoint(void* origin, void (*callback)(REG[])) {
+    return InlineHook::instance->breakPoint(origin, callback);
 }
