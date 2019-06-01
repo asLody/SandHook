@@ -13,7 +13,7 @@
 #define DECODE_OFFSET(bits, ext) signExtend32(bits + ext, COMBINE(get()->imm##bits, 0, ext))
 #define ENCODE_OFFSET(bits, ext) get()->imm##bits = TruncateToUint##bits(offset >> ext)
 
-#define CODE_OFFSET(I) I->offset + I->instType() == A32 ? 2 * 4 : 2 * 2
+#define CODE_OFFSET(I) I->offset + (I->instType() == A32 ? 2 * 4 : 2 * 2)
 
 using namespace SandHook::RegistersA32;
 

@@ -78,17 +78,13 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
 
     StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(originCode));
     AssemblerA32 assemblerInline(&inlineBuffer);
-    CodeContainer* codeContainerInline = &assemblerInline.codeContainer;
-
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
     backup = relocate.relocate(origin, 4 * 2, nullptr);
 #define __ assemblerBackup.
-    Label* origin_addr_label = new Label();
-    __ Ldr(PC, origin_addr_label);
-    __ Emit(origin_addr_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
+    __ Mov(IP ,(Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
+    __ Bx(IP);
     __ finish();
 #undef __
 
