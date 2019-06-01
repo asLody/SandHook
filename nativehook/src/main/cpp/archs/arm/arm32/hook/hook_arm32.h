@@ -19,6 +19,9 @@ namespace SandHook {
                 delete hookLock;
             }
             void *inlineHook(void *origin, void *replace) override;
+
+            bool breakPoint(void *point, void (*callback)(REG *)) override;
+
         protected:
             std::mutex* hookLock;
         };

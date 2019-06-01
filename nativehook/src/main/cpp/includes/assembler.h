@@ -8,6 +8,7 @@
 #include "label.h"
 #include "instruction.h"
 #include "data.h"
+#include "platform.h"
 
 namespace SandHook {
 
@@ -23,6 +24,14 @@ namespace SandHook {
         public:
             virtual void* getBuffer(U32 size) = 0;
             virtual void resetLastBufferSize(U32 size){};
+            virtual void* copy(void* start, U32 size) {
+                void* bufferStart = getBuffer(size);
+                if (bufferStart == nullptr)
+                    return nullptr;
+                memcpy(bufferStart, start, size);
+                flushCache((Addr)bufferStart, size);
+                return bufferStart;
+            };
         };
 
         class CodeContainer {

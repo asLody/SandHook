@@ -6,6 +6,7 @@
 #include "hook_arm32.h"
 #include "code_buffer.h"
 #include "lock.h"
+#include "shellcode_arm.h"
 
 using namespace SandHook::Hook;
 using namespace SandHook::Decoder;
@@ -54,4 +55,56 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
     //commit inline trampoline
     assemblerInline.finish();
     return getThumbPC(backup);
+}
+
+
+IMPORT_SHELLCODE(BP_SHELLCODE)
+IMPORT_LABEL(callback_addr_s, Addr)
+IMPORT_LABEL(origin_addr_s, Addr)
+bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
+    AutoLock lock(hookLock);
+
+    void* originCode = origin;
+    if (isThumbCode((Addr)origin)) {
+        originCode = getThumbCodeAddress(origin);
+    }
+
+    if (isThumbCode((Addr)origin)) {
+        callback = reinterpret_cast<void (*)(REG *)>(getThumbPC((void*)callback));
+    }
+
+    void* backup = nullptr;
+    AssemblerA32 assemblerBackup(backupBuffer);
+
+    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(originCode));
+    AssemblerA32 assemblerInline(&inlineBuffer);
+    CodeContainer* codeContainerInline = &assemblerInline.codeContainer;
+
+
+    //build backup method
+    CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
+    backup = relocate.relocate(origin, 4 * 2, nullptr);
+#define __ assemblerBackup.
+    Label* origin_addr_label = new Label();
+    __ Ldr(PC, origin_addr_label);
+    __ Emit(origin_addr_label);
+    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
+    __ finish();
+#undef __
+
+    //build trampoline
+    origin_addr_s = (Addr) getThumbPC(backup);
+    callback_addr_s = (Addr) callback;
+    void* trampoline = backupBuffer->copy((void*)BP_SHELLCODE, SHELLCODE_LEN(BP_SHELLCODE));
+
+    //build inline trampoline
+#define __ assemblerInline.
+    Label* target_addr_label = new Label();
+    __ Ldr(PC, target_addr_label);
+    __ Emit(target_addr_label);
+    __ Emit((Addr) trampoline);
+    __ finish();
+#undef __
+
+    return true;
 }

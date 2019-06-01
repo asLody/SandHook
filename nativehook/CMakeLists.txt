@@ -29,6 +29,7 @@ elseif (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
             src/main/cpp/archs/arm/arm32/assembler/assembler_arm32.cpp
             src/main/cpp/archs/arm/arm32/decoder/decoder_arm32.cpp
             src/main/cpp/archs/arm/arm32/hook/hook_arm32.cpp
+            src/main/cpp/archs/arm/arm32/hook/breakpoint_shellcode.S
             src/main/cpp/archs/arm/arm32/relocate/code_relocate_arm32.cpp)
 endif()
 

@@ -25,7 +25,7 @@ namespace SandHook {
                 return false;
             };
         protected:
-            static AndroidCodeBuffer* backupBuffer;
+            static CodeBuffer* backupBuffer;
         public:
             static InlineHook* instance;
         };

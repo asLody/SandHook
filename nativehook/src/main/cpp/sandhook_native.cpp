@@ -93,8 +93,8 @@ void do1() {
     do2();
 }
 
-void breakCallback(REG* regs) {
-    LOGE("breakCallback = %d", regs[1]);
+void breakCallback(REG regs[]) {
+    LOGE("breakCallback = %d SP = %d", regs[0], regs);
 }
 
 
