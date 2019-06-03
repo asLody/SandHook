@@ -1,20 +1,39 @@
 package com.swift.sandhook.wrapper;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 
-public class BackupMethodStubs {
+public class StubMethodsFactory {
 
     final static int maxStub = 300;
     private static volatile int curStub = 0;
 
+    private static Method proxyGenClass;
+
+    static {
+        try {
+            proxyGenClass = Proxy.class.getDeclaredMethod("generateProxy",String.class,Class[].class,ClassLoader.class,Method[].class,Class[][].class);
+            proxyGenClass.setAccessible(true);
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
     public static synchronized Method getStubMethod() {
         while (curStub <= maxStub) {
             try {
-                return BackupMethodStubs.class.getDeclaredMethod("stub" + curStub++);
+                return StubMethodsFactory.class.getDeclaredMethod("stub" + curStub++);
             } catch (NoSuchMethodException e) {
             }
         }
-        return null;
+        try {
+            curStub++;
+            Class proxyClass = (Class)proxyGenClass.invoke(null,"SandHookerStubClass_" + curStub, null, StubMethodsFactory.class.getClassLoader(), new Method[]{proxyGenClass}, null);
+            return proxyClass.getDeclaredMethods()[0];
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public void stub0() {}

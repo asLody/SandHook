@@ -365,6 +365,8 @@ public class SandHook {
 
     public static native boolean disableDex2oatInline(boolean disableDex2oat);
 
+    public static native boolean setNativeEntry(Member origin, Member hook, long nativeEntry);
+
     @FunctionalInterface
     public interface HookModeCallBack {
         int hookMode(Member originMethod);

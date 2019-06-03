@@ -15,7 +15,7 @@ import com.swift.sandhook.testHookers.LogHooker;
 import com.swift.sandhook.testHookers.NewAnnotationApiHooker;
 import com.swift.sandhook.testHookers.ObjectHooker;
 import com.swift.sandhook.wrapper.HookErrorException;
-import com.swift.sandhook.xposedcompat.XposedCompat;
+import com.swift.sandhook.xposedcompat_new.XposedCompat;
 
 import dalvik.system.DexClassLoader;
 import de.robv.android.xposed.XC_MethodHook;
@@ -58,25 +58,24 @@ public class MyApp extends Application {
             e.printStackTrace();
         }
 
-        //setup for xposed
-        XposedCompat.cacheDir = getCacheDir();
+        //setup for xposed\
         XposedCompat.context = this;
         XposedCompat.classLoader = getClassLoader();
         XposedCompat.isFirstApplication= true;
 
-        XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
-            }
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
-            }
-        });
+//        XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
+//            @Override
+//            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+//                super.beforeHookedMethod(param);
+//                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
+//            }
+//
+//            @Override
+//            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                super.afterHookedMethod(param);
+//                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+//            }
+//        });
 
 
         XposedHelpers.findAndHookMethod(MainActivity.class, "testStub", TestClass.class, int.class, String.class, boolean.class, char.class, String.class, new XC_MethodHook() {
