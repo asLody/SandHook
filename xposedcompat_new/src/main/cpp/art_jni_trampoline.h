@@ -8,12 +8,16 @@
 #include <cstdint>
 #include <jni.h>
 #include <list>
+#include <set>
 #include "ffi_cxx.h"
 
 jclass java_lang_Object;
 JavaVM* javaVM;
 jclass bridgeClass;
 jmethodID bridgeMethod;
+
+
+void* (*GetOatQuickMethodHeaderBackup)(void*,uintptr_t) = nullptr;
 
 
 struct ArtHookParam {
@@ -24,6 +28,7 @@ struct ArtHookParam {
 };
 
 std::list<ArtHookParam*> hookParams = std::list<ArtHookParam*>();
+std::set<void*> hookMethods = std::set<void*>();
 
 template<typename U, typename T>
 U ForceCast(T *x) {

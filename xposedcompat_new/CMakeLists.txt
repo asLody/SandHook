@@ -49,7 +49,16 @@ include_directories(
         src/main/cpp
         src/main/cpp/libffi
         src/main/cpp/libffi/platform_include
+        ../nativehook/src/main/cpp
 )
+
+add_library(sandhook-native
+        SHARED
+        IMPORTED)
+
+set_target_properties(sandhook-native
+        PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/src/main/jniLibs/${ANDROID_ABI}/libsandhook-native.so)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -71,6 +80,7 @@ find_library( # Sets the name of the path variable.
 target_link_libraries( # Specifies the target library.
         sandhook-xp
 
+        sandhook-native
         # Links the target library to the log library
         # included in the NDK.
         ${log-lib})

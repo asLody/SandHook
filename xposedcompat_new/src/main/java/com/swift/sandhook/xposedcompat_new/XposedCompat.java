@@ -61,6 +61,7 @@ public class XposedCompat {
 
     private native static long getJNITrampoline(int slot, boolean isStatic, char retShorty, char[] paramsShorty);
 
+    private native static void addHookMethod(Member hookMethod);
 
     public static long getJNITrampoline(Member origin, int slot) {
         if (origin instanceof Constructor) {
@@ -98,6 +99,7 @@ public class XposedCompat {
         hookInfos[slot] = hookInfo;
         try {
             SandHook.hook(new HookWrapper.HookEntity(origin, hook, backup));
+            addHookMethod(hook);
             return true;
         } catch (HookErrorException e) {
             HookLog.e("hook error!", e);

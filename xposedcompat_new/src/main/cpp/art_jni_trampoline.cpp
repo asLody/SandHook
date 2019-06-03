@@ -3,8 +3,20 @@
 //
 
 #include <cstring>
+#include <utils/log.h>
 #include "art_jni_trampoline.h"
+#include "sandhook_native.h"
 
+//bug fix hooks
+void* NewGetOatQuickMethodHeader(void* artMethod, uintptr_t pc) {
+    std::set<void*>::iterator it = hookMethods.find(artMethod);
+    if (it != hookMethods.end()) {
+        LOGE("skip GetOatQuickMethodHeader");
+        return nullptr;
+    }
+    return GetOatQuickMethodHeaderBackup(artMethod, pc);
+}
+//bug fix hooks
 
 #define EXPORT_LANG_ClASS(c) jclass Types::java_lang_##c;  jmethodID Types::java_lang_##c##_init; jmethodID Types::java_value_##c;
 
@@ -274,6 +286,13 @@ Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_init(JNIEnv *env, jclass 
     bridgeMethod = env->FromReflectedMethod(jbridgeMethod);
     env->GetJavaVM(&javaVM);
     Types::Load(env);
+    if (sizeof(size_t) == 8) {
+        GetOatQuickMethodHeaderBackup = reinterpret_cast<void *(*)(void *,
+                                                              uintptr_t)>(SandInlineHookSym("/system/lib64/libart.so", "_ZN3art9ArtMethod23GetOatQuickMethodHeaderEm", (void*)NewGetOatQuickMethodHeader));
+    } else {
+        GetOatQuickMethodHeaderBackup = reinterpret_cast<void *(*)(void *,
+                                                                   uintptr_t)>(SandInlineHookSym("/system/lib/libart.so", "_ZN3art9ArtMethod23GetOatQuickMethodHeaderEj", (void*)NewGetOatQuickMethodHeader));
+    }
 }
 
 extern "C"
@@ -298,4 +317,10 @@ Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_getJNITrampoline(JNIEnv *
     } else {
         return 0;
     }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_addHookMethod(JNIEnv *env, jclass type, jobject hookMethod) {
+    hookMethods.insert(env->FromReflectedMethod(hookMethod));
 }
