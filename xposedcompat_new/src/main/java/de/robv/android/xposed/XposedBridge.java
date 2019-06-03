@@ -24,8 +24,6 @@ import java.util.Set;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
-import static de.robv.android.xposed.XposedHelpers.getIntField;
-
 /**
  * This class contains most of Xposed's central logic, such as initialization and callbacks used by
  * the native side. It also includes methods to add new hooks.

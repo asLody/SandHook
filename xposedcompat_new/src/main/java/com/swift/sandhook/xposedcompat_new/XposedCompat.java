@@ -1,5 +1,6 @@
 package com.swift.sandhook.xposedcompat_new;
 
+import android.app.Application;
 import android.content.Context;
 
 import com.swift.sandhook.HookLog;
@@ -7,6 +8,10 @@ import com.swift.sandhook.SandHook;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.wrapper.StubMethodsFactory;
+import com.swift.sandhook.xposedcompat_new.utils.ApplicationUtils;
+import com.swift.sandhook.xposedcompat_new.utils.ClassUtils;
+import com.swift.sandhook.xposedcompat_new.utils.ComposeClassLoader;
+import com.swift.sandhook.xposedcompat_new.utils.ProcessUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -14,8 +19,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedInit;
+import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * @author Swift Gan
@@ -30,8 +38,9 @@ public class XposedCompat {
     public static String processName;
     public static boolean isFirstApplication;
 
-    private static volatile int curSlot = 0;
+    private static ClassLoader sandHookXposedClassLoader;
 
+    private static volatile int curSlot = 0;
     public static volatile HookInfo[] hookInfos = new HookInfo[100];
 
     static {
@@ -163,6 +172,49 @@ public class XposedCompat {
             return param.getResult();
         } else {
             throw param.getThrowable();
+        }
+    }
+
+
+    public static void loadModule(String modulePath, String moduleOdexDir, String moduleSoPath,ClassLoader classLoader) {
+        XposedInit.loadModule(modulePath, moduleOdexDir, moduleSoPath, classLoader);
+    }
+
+
+    public static void addXposedModuleCallback(IXposedHookLoadPackage module) {
+        XposedBridge.hookLoadPackage(new IXposedHookLoadPackage.Wrapper(module));
+    }
+
+    public static void callXposedModuleInit() throws Throwable {
+        //prepare LoadPackageParam
+        XC_LoadPackage.LoadPackageParam packageParam = new XC_LoadPackage.LoadPackageParam(XposedBridge.sLoadedPackageCallbacks);
+        Application application = ApplicationUtils.currentApplication();
+
+
+        if (application != null) {
+            if (packageParam.packageName == null) {
+                packageParam.packageName = application.getPackageName();
+            }
+
+            if (packageParam.processName == null) {
+                packageParam.processName = ProcessUtils.getProcessName(application);
+            }
+            if (packageParam.classLoader == null) {
+                packageParam.classLoader = application.getClassLoader();
+            }
+            if (packageParam.appInfo == null) {
+                packageParam.appInfo = application.getApplicationInfo();
+            }
+        }
+        XC_LoadPackage.callAll(packageParam);
+    }
+
+    public static ClassLoader getSandHookXposedClassLoader(ClassLoader appOriginClassLoader, ClassLoader sandBoxHostClassLoader) {
+        if (sandHookXposedClassLoader != null) {
+            return sandHookXposedClassLoader;
+        } else {
+            sandHookXposedClassLoader = new ComposeClassLoader(sandBoxHostClassLoader, appOriginClassLoader);
+            return sandHookXposedClassLoader;
         }
     }
 
