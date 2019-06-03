@@ -42,3 +42,15 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     compileOnly project(':hooklib')
 }
+
+apply plugin: 'com.novoda.bintray-release'
+
+publish {
+    userOrg = rootProject.userOrg
+    groupId = rootProject.groupId
+    artifactId = 'xposedcompat_new'
+    publishVersion = rootProject.publishVersion
+    desc = rootProject.desc
+    website = rootProject.website
+    licences = rootProject.licences
+}
