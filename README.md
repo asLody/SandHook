@@ -38,7 +38,7 @@ cant hook if lined
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:3.1.0'
+implementation 'com.swift.sandhook:hooklib:4.0.0'
 ```
 
 ## Annotation API
@@ -115,7 +115,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:3.1.0'
+provided 'com.swift.sandhook:hookannotation:4.0.0'
 ```
   
 in your plugin
@@ -127,18 +127,30 @@ backup method can call itself to avoid be inlining
 
 --------------------------------------------------------------------
 
-Now you can use Xposed api:  
+Now you can use Xposed api:
 
+We have two different implements:
 ```groovy
-implementation 'com.swift.sandhook:xposedcompat:3.1.0'
+//stable
+implementation 'com.swift.sandhook:xposedcompat:4.0.0'
+
+//or
+
+//hook fast first time
+implementation 'com.swift.sandhook:xposedcompat_new:4.0.0'
 ```
 
 ```java
+
 //setup for xposed
+//for xposed compat only(no need xposed comapt new)
 XposedCompat.cacheDir = getCacheDir();
+
+//for load xp module(sandvxp)
 XposedCompat.context = this;
 XposedCompat.classLoader = getClassLoader();
-XposedCompat.isFirstApplication= true;  
+XposedCompat.isFirstApplication= true;
+
 //do hook
 XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
       @Override

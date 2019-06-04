@@ -5,7 +5,7 @@ import android.util.Log;
 
 import com.swift.sandhook.HookLog;
 import com.swift.sandhook.SandHook;
-import com.swift.sandhook.xposedcompat_new.XposedCompat;
+import com.swift.sandhook.xposedcompat.XposedCompat;
 
 import java.io.File;
 import java.io.IOException;

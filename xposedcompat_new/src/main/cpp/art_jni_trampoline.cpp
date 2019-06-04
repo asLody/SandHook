@@ -280,7 +280,7 @@ FFIClosure* BuildJniClosure(ArtHookParam *param) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_init(JNIEnv *env, jclass type, jclass jbridgeClass, jobject jbridgeMethod, jclass jobjClass) {
+Java_com_swift_sandhook_xposedcompat_XposedCompat_init(JNIEnv *env, jclass type, jclass jbridgeClass, jobject jbridgeMethod, jclass jobjClass) {
     java_lang_Object = static_cast<jclass>(env->NewGlobalRef(jobjClass));
     bridgeClass = static_cast<jclass>(env->NewGlobalRef(jbridgeClass));
     bridgeMethod = env->FromReflectedMethod(jbridgeMethod);
@@ -297,7 +297,7 @@ Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_init(JNIEnv *env, jclass 
 
 extern "C"
 JNIEXPORT jlong JNICALL
-Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_getJNITrampoline(JNIEnv *env, jclass type, jint slot, jboolean isStatic, jchar retShorty, jcharArray paramShorty) {
+Java_com_swift_sandhook_xposedcompat_XposedCompat_getJNITrampoline(JNIEnv *env, jclass type, jint slot, jboolean isStatic, jchar retShorty, jcharArray paramShorty) {
     ArtHookParam* artHookParam = new ArtHookParam();
     hookParams.push_back(artHookParam);
     artHookParam->is_static_ = isStatic;
@@ -321,6 +321,71 @@ Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_getJNITrampoline(JNIEnv *
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_swift_sandhook_xposedcompat_1new_XposedCompat_addHookMethod(JNIEnv *env, jclass type, jobject hookMethod) {
+Java_com_swift_sandhook_xposedcompat_XposedCompat_addHookMethod(JNIEnv *env, jclass type, jobject hookMethod) {
     hookMethods.insert(env->FromReflectedMethod(hookMethod));
 }
+
+
+static JNINativeMethod jniXpCompat[] = {
+        {
+                "init",
+                "(Ljava/lang/Class;Ljava/lang/reflect/Method;Ljava/lang/Class;)V",
+                (void *) Java_com_swift_sandhook_xposedcompat_XposedCompat_init
+        },
+        {
+                "getJNITrampoline",
+                "(IZC[C)J",
+                (void *) Java_com_swift_sandhook_xposedcompat_XposedCompat_getJNITrampoline
+        },
+        {
+                "addHookMethod",
+                "(Ljava/lang/reflect/Member;)V",
+                (void *) Java_com_swift_sandhook_xposedcompat_XposedCompat_addHookMethod
+        }
+};
+
+
+static bool registerNativeMethods(JNIEnv *env, const char *className, JNINativeMethod *jniMethods, int methods) {
+    jclass clazz = env->FindClass(className);
+    if (clazz == NULL) {
+        return false;
+    }
+    return env->RegisterNatives(clazz, jniMethods, methods) >= 0;
+}
+
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+
+    const char* CLASS_XP_COMPAT = "com/swift/sandhook/xposedcompat/XposedCompat";
+
+    int jniMethodSize = sizeof(JNINativeMethod);
+
+    JNIEnv *env = NULL;
+
+    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
+        return -1;
+    }
+
+    if (!registerNativeMethods(env, CLASS_XP_COMPAT, jniXpCompat, sizeof(jniXpCompat) / jniMethodSize)) {
+        return -1;
+    }
+
+    LOGW("JNI Loaded");
+
+    return JNI_VERSION_1_6;
+}
+
+extern "C"
+JNIEXPORT bool JNI_Load_Ex(JNIEnv* env, jclass classXpComapt) {
+    int jniMethodSize = sizeof(JNINativeMethod);
+
+    if (env == nullptr || classXpComapt == nullptr)
+        return false;
+
+    if (env->RegisterNatives(classXpComapt, jniXpCompat, sizeof(jniXpCompat) / jniMethodSize) < 0) {
+        return false;
+    }
+
+    LOGW("JNI Loaded");
+    return true;
+}
+

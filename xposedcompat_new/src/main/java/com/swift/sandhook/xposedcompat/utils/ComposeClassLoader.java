@@ -1,4 +1,4 @@
-package com.swift.sandhook.xposedcompat_new.utils;
+package com.swift.sandhook.xposedcompat.utils;
 
 
 public class ComposeClassLoader extends ClassLoader {

@@ -1,17 +1,18 @@
-package com.swift.sandhook.xposedcompat_new;
+package com.swift.sandhook.xposedcompat;
 
 import android.app.Application;
 import android.content.Context;
 
 import com.swift.sandhook.HookLog;
 import com.swift.sandhook.SandHook;
+import com.swift.sandhook.SandHookConfig;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.wrapper.StubMethodsFactory;
-import com.swift.sandhook.xposedcompat_new.utils.ApplicationUtils;
-import com.swift.sandhook.xposedcompat_new.utils.ClassUtils;
-import com.swift.sandhook.xposedcompat_new.utils.ComposeClassLoader;
-import com.swift.sandhook.xposedcompat_new.utils.ProcessUtils;
+import com.swift.sandhook.xposedcompat.utils.ApplicationUtils;
+import com.swift.sandhook.xposedcompat.utils.ClassUtils;
+import com.swift.sandhook.xposedcompat.utils.ComposeClassLoader;
+import com.swift.sandhook.xposedcompat.utils.ProcessUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
@@ -32,6 +33,14 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  */
 public class XposedCompat {
 
+    public volatile static boolean inited = false;
+    public volatile static SandHookConfig.LibLoader libLoader = new SandHookConfig.LibLoader() {
+        @Override
+        public void loadLib() {
+            System.loadLibrary("sandhook-xp");
+        }
+    };
+
     public static Context context;
     public static volatile ClassLoader classLoader;
     public static String packageName;
@@ -44,17 +53,20 @@ public class XposedCompat {
     public static volatile HookInfo[] hookInfos = new HookInfo[100];
 
     static {
-        System.loadLibrary("sandhook-xp");
         try {
             init();
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException("init XposedCompat error!", e);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
         }
     }
 
-    public static void init() throws NoSuchMethodException {
+    public static boolean init() throws Throwable {
+        if (inited) return true;
+        libLoader.loadLib();
         Method bridgeMethod = XposedCompat.class.getDeclaredMethod("hookBridge", int.class, Object.class, Object[].class);
         init(XposedCompat.class, bridgeMethod, Object.class);
+        inited = true;
+        return true;
     }
 
     private native static void init(Class bridgeClass, Method bridgeMethod, Class ObjClass);

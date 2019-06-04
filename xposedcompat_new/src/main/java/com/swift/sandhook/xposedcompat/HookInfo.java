@@ -1,4 +1,4 @@
-package com.swift.sandhook.xposedcompat_new;
+package com.swift.sandhook.xposedcompat;
 
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;

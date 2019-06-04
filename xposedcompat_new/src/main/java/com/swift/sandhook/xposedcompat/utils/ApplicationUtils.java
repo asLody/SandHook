@@ -1,4 +1,4 @@
-package com.swift.sandhook.xposedcompat_new.utils;
+package com.swift.sandhook.xposedcompat.utils;
 
 import android.app.Application;
 

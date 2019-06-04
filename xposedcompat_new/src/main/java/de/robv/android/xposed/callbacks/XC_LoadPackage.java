@@ -2,7 +2,7 @@ package de.robv.android.xposed.callbacks;
 
 import android.content.pm.ApplicationInfo;
 
-import com.swift.sandhook.xposedcompat_new.XposedCompat;
+import com.swift.sandhook.xposedcompat.XposedCompat;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XposedBridge.CopyOnWriteSortedSet;
