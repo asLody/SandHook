@@ -23,17 +23,20 @@ QQ Group：756071167
 
 4.4(ART Runtime) - 10.0
 
-# Scope
+# Project Struct
 
-- Object Methods
-- Static Methods
-- Constructors
-- System Methods
-- JNI Methods
-
-hook abstract method is not recommended, you can invoke its impl method.
-
-cant hook if lined
+- annotation<br/>
+annotation api
+- hooklib<br/>
+core lib of art hook
+- nativehook<br/>
+lib of native hook
+- xposedcompat<br/>
+stable implement of xposed api compat for sandhook
+- xposedcompat_new<br/>
+annother implement of xposed api compat for sandhook(hook more fast first time)
+- hookers<br/>
+hook plugin demo for annotation api
 
 # how to use
 
