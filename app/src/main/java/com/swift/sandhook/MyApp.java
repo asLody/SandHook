@@ -5,7 +5,6 @@ import android.app.Application;
 import android.os.Build;
 import android.util.Log;
 
-import com.swift.sandhook.nativehook.NativeHook;
 import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
@@ -30,7 +29,6 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        NativeHook.test();
 
         SandHookConfig.DEBUG = BuildConfig.DEBUG;
 
@@ -58,8 +56,11 @@ public class MyApp extends Application {
             e.printStackTrace();
         }
 
-        //setup for xposed
+        //for xposed compat(no need xposed comapt new)
         XposedCompat.cacheDir = getCacheDir();
+
+
+        //for load xp module(sandvxp)
         XposedCompat.context = this;
         XposedCompat.classLoader = getClassLoader();
         XposedCompat.isFirstApplication= true;
