@@ -28,6 +28,8 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
         return nullptr;
     }
 
+    bool changeMode = isThumbCode((Addr) origin) != isThumbCode((Addr) replace);
+
     void* backup = nullptr;
     AssemblerA32 assemblerBackup(backupBuffer);
 
@@ -37,7 +39,7 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
 
     //build inline trampoline
 #define __ assemblerInline.
-    if (isThumbCode((Addr) replace)) {
+    if (!changeMode) {
         Label *target_addr_label = new Label();
         __ Ldr(PC, target_addr_label);
         __ Emit(target_addr_label);
@@ -78,7 +80,7 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
         return false;
     }
 
-    bool callbackThumb = isThumbCode((Addr) callback);
+    bool changeMode = isThumbCode((Addr) origin) != isThumbCode((Addr) callback);
 
     void* backup = nullptr;
     AssemblerA32 assemblerBackup(backupBuffer);
@@ -88,7 +90,7 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
-    backup = relocate.relocate(origin, callbackThumb ? (4 * 2) : (4 * 2 + 2), nullptr);
+    backup = relocate.relocate(origin, changeMode ? (4 * 2 + 2) : (4 * 2), nullptr);
 #define __ assemblerBackup.
     __ Mov(IP ,(Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
     __ Bx(IP);
@@ -102,7 +104,7 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
 
     //build inline trampoline
 #define __ assemblerInline.
-    if (callbackThumb) {
+    if (!changeMode) {
         Label *target_addr_label = new Label();
         __ Ldr(PC, target_addr_label);
         __ Emit(target_addr_label);
