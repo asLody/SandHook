@@ -17,12 +17,13 @@ void *AndroidCodeBuffer::getBuffer(U32 size) {
     Addr exeSpace = 0;
     if (executeSpaceList.size() == 0) {
         goto label_alloc_new_space;
-    } else if (executePageOffset + size > currentExecutePageSize) {
+    } else if (executePageOffset + size + 4> currentExecutePageSize) {
         goto label_alloc_new_space;
     } else {
         exeSpace = reinterpret_cast<Addr>(executeSpaceList.back());
-        Addr retSpace = exeSpace + executePageOffset;
-        executePageOffset += size;
+        //4 字节对齐
+        Addr retSpace = RoundUp(exeSpace + executePageOffset, 4);
+        executePageOffset = retSpace + size - exeSpace;
         return reinterpret_cast<void *>(retSpace);
     }
 label_alloc_new_space:

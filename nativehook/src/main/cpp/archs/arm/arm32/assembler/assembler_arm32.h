@@ -10,6 +10,11 @@
 #include "inst_t16.h"
 #include "inst_t32.h"
 
+#define ALIGN_FOR_LDR \
+if ((Addr) __ getPC() % 4 != 0) { \
+__ Nop16(); \
+}
+
 using namespace SandHook::AsmA32;
 
 namespace SandHook {
@@ -34,6 +39,8 @@ namespace SandHook {
 
             void Mov(RegisterA32 &rd, U32 imm32);
             void Mov(RegisterA32 &rd, RegisterA32 &rm);
+
+            void Ldr(RegisterA32 &rt, Off offset);
 
             void Ldr(RegisterA32 &rt, Label* label);
             void Ldrb(RegisterA32 &rt, Label* label);

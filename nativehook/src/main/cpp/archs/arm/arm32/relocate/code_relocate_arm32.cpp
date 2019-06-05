@@ -103,6 +103,7 @@ IMPL_RELOCATE(T16, B_COND) {
 
     if (inst->condition == al) {
         Label* target_label = new Label;
+        ALIGN_FOR_LDR
         __ Ldr(PC, target_label);
         __ Emit(target_label);
         __ Emit(targetAddr);
@@ -113,6 +114,7 @@ IMPL_RELOCATE(T16, B_COND) {
         __ B(inst->condition, true_label);
         __ B(false_label);
         __ Emit(true_label);
+        ALIGN_FOR_LDR
         __ Ldr(PC, target_label);
         __ Emit(target_label);
         __ Emit(targetAddr);
@@ -131,6 +133,7 @@ IMPL_RELOCATE(T16, B) {
     Addr targetAddr = inst->getImmPCOffsetTarget();
 
     Label* target_label = new Label();
+    ALIGN_FOR_LDR
     __ Ldr(PC, target_label);
     __ Emit(target_label);
     __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(targetAddr)));
@@ -162,6 +165,7 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
     __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
     __ B(false_label);
     __ Emit(true_label);
+    ALIGN_FOR_LDR
     __ Ldr(PC, target_label);
     __ Emit(target_label);
     __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(targetAddr)));

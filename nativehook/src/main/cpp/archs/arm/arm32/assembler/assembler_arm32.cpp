@@ -57,6 +57,10 @@ void AssemblerA32::Mov(RegisterA32 &rd, U32 imm32) {
     Movt(rd, immH);
 }
 
+void AssemblerA32::Ldr(RegisterA32 &rt, Off offset) {
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDR, INST_T32(LDR_LIT)::UnSign, rt, offset)));
+}
+
 void AssemblerA32::Ldr(RegisterA32 &rt, Label *label) {
     Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDR, INST_T32(LDR_LIT)::UnSign, rt, *label)));
 }

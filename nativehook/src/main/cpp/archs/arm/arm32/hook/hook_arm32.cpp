@@ -41,6 +41,7 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
 #define __ assemblerInline.
     if (!changeMode) {
         Label *target_addr_label = new Label();
+        ALIGN_FOR_LDR
         __ Ldr(PC, target_addr_label);
         __ Emit(target_addr_label);
         __ Emit((Addr) replace);
@@ -55,8 +56,11 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
     CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
     backup = relocate.relocate(origin, codeContainerInline->size(), nullptr);
 #define __ assemblerBackup.
-    __ Mov(IP ,(Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
-    __ Bx(IP);
+    Label* origin_addr_label = new Label();
+    ALIGN_FOR_LDR
+    __ Ldr(PC, origin_addr_label);
+    __ Emit(origin_addr_label);
+    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
     __ finish();
 #undef __
 
@@ -92,8 +96,11 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
     CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
     backup = relocate.relocate(origin, changeMode ? (4 * 2 + 2) : (4 * 2), nullptr);
 #define __ assemblerBackup.
-    __ Mov(IP ,(Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
-    __ Bx(IP);
+    Label* origin_addr_label = new Label();
+    ALIGN_FOR_LDR
+    __ Ldr(PC, origin_addr_label);
+    __ Emit(origin_addr_label);
+    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
     __ finish();
 #undef __
 
@@ -106,6 +113,7 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
 #define __ assemblerInline.
     if (!changeMode) {
         Label *target_addr_label = new Label();
+        ALIGN_FOR_LDR
         __ Ldr(PC, target_addr_label);
         __ Emit(target_addr_label);
         __ Emit((Addr) trampoline);
