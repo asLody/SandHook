@@ -5,7 +5,7 @@
 #ifndef SANDHOOK_SANDHOOK_NATIVE_H
 #define SANDHOOK_SANDHOOK_NATIVE_H
 
-#include "hook.h"
+typedef size_t REG;
 
 #define EXPORT  __attribute__ ((visibility ("default")))
 

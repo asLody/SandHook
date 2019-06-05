@@ -23,22 +23,25 @@ QQ Group：756071167
 
 4.4(ART Runtime) - 10.0
 
-# Scope
+# Project Struct
 
-- Object Methods
-- Static Methods
-- Constructors
-- System Methods
-- JNI Methods
-
-hook abstract method is not recommended, you can invoke its impl method.
-
-cant hook if lined
+- annotation<br/>
+annotation api
+- hooklib<br/>
+core lib of art hook
+- nativehook<br/>
+lib of native hook
+- xposedcompat<br/>
+stable implement of xposed api compat for sandhook
+- xposedcompat_new<br/>
+annother implement of xposed api compat for sandhook(hook more fast first time)
+- hookers<br/>
+hook plugin demo for annotation api
 
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:3.1.0'
+implementation 'com.swift.sandhook:hooklib:4.0.0'
 ```
 
 ## Annotation API
@@ -115,7 +118,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:3.1.0'
+provided 'com.swift.sandhook:hookannotation:4.0.0'
 ```
   
 in your plugin
@@ -127,18 +130,30 @@ backup method can call itself to avoid be inlining
 
 --------------------------------------------------------------------
 
-Now you can use Xposed api:  
+Now you can use Xposed api:
 
+We have two different implements:
 ```groovy
-implementation 'com.swift.sandhook:xposedcompat:3.1.0'
+//stable
+implementation 'com.swift.sandhook:xposedcompat:4.0.0'
+
+//or
+
+//hook fast first time
+implementation 'com.swift.sandhook:xposedcompat_new:4.0.0'
 ```
 
 ```java
+
 //setup for xposed
+//for xposed compat only(no need xposed comapt new)
 XposedCompat.cacheDir = getCacheDir();
+
+//for load xp module(sandvxp)
 XposedCompat.context = this;
 XposedCompat.classLoader = getClassLoader();
-XposedCompat.isFirstApplication= true;  
+XposedCompat.isFirstApplication= true;
+
 //do hook
 XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() {
       @Override
@@ -207,7 +222,7 @@ To bypass hidden api on P & Q
 
 bool nativeHookNoBackup(void* origin, void* hook);
 
-## need backup origin method(unstabitily)
+## need backup origin method
 #include "sanhook_native.h"  
 
 void* SandInlineHook(void* origin, void* replace);  
@@ -216,6 +231,13 @@ void* SandInlineHookSym(const char* so, const char* symb, void* replace);
 
 
 return is backup method
+
+## break point
+
+you can insert a break point in body of method(not only start of method), so you can read/write registers in break point.  
+
+
+bool SandBreakpoint(void* origin, void (*callback)(REG[]));
 
 ## more
 

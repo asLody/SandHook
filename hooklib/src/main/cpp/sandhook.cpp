@@ -6,7 +6,7 @@
 #include "includes/log.h"
 #include "includes/native_hook.h"
 #include "includes/elf_util.h"
-
+#include "includes/never_call.h"
 #include <jni.h>
 
 SandHook::TrampolineManager trampolineManager;
@@ -346,6 +346,22 @@ Java_com_swift_sandhook_SandHook_disableDex2oatInline(JNIEnv *env, jclass type, 
 }
 
 extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_swift_sandhook_SandHook_setNativeEntry(JNIEnv *env, jclass type, jobject origin, jobject hook, jlong jniTrampoline) {
+    if (origin == nullptr || hook == NULL)
+        return JNI_FALSE;
+    art::mirror::ArtMethod* hookMethod = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(hook));
+    art::mirror::ArtMethod* originMethod = reinterpret_cast<art::mirror::ArtMethod *>(env->FromReflectedMethod(origin));
+    originMethod->backup(hookMethod);
+    hookMethod->setNative();
+    hookMethod->setQuickCodeEntry(SandHook::CastArtMethod::genericJniStub);
+    hookMethod->setJniCodeEntry(reinterpret_cast<void *>(jniTrampoline));
+    hookMethod->disableCompilable();
+    hookMethod->flushCache();
+    return JNI_TRUE;
+}
+
+extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_ClassNeverCall_neverCallNative(JNIEnv *env, jobject instance) {
     int a = 1 + 1;
@@ -456,6 +472,11 @@ static JNINativeMethod jniSandHook[] = {
                 "disableDex2oatInline",
                 "(Z)Z",
                 (void *) Java_com_swift_sandhook_SandHook_disableDex2oatInline
+        },
+        {
+                "setNativeEntry",
+                "(Ljava/lang/reflect/Member;Ljava/lang/reflect/Member;J)Z",
+                (void *) Java_com_swift_sandhook_SandHook_setNativeEntry
         }
 };
 

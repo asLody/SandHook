@@ -106,7 +106,7 @@ void* ArtMethod::getQuickCodeEntry() {
 }
 
 void* ArtMethod::getInterpreterCodeEntry() {
-    return CastArtMethod::entryPointFormInterpreter->get(this);
+    return CastArtMethod::entryPointFromInterpreter->get(this);
 }
 
 GCRoot ArtMethod::getDeclaringClass() {
@@ -122,10 +122,11 @@ void ArtMethod::setQuickCodeEntry(void *entry) {
 }
 
 void ArtMethod::setJniCodeEntry(void *entry) {
+    CastArtMethod::entryPointFromJNI->set(this, entry);
 }
 
 void ArtMethod::setInterpreterCodeEntry(void *entry) {
-    CastArtMethod::entryPointFormInterpreter->set(this, entry);
+    CastArtMethod::entryPointFromInterpreter->set(this, entry);
 }
 
 void ArtMethod::setDexCacheResolveList(void *list) {
