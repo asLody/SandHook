@@ -11,6 +11,14 @@
 
 using namespace SandHook::Decoder;
 
+bool DefaultVisitor::visit(Unit<Base> *unit, void *pc) {
+    bool res = visitor(unit, pc);
+    delete unit;
+    return res;
+}
+
+DefaultVisitor::DefaultVisitor(bool (*visitor)(Unit<Base> *, void *)) : visitor(visitor) {}
+
 //do not support now
 InstDecoder* Disassembler::get(Arch arch) {
     switch (arch) {

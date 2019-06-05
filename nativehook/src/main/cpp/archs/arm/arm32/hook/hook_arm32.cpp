@@ -2,6 +2,7 @@
 // Created by swift on 2019/5/23.
 //
 
+#include <log.h>
 #include "code_relocate_arm32.h"
 #include "hook_arm32.h"
 #include "code_buffer.h"
@@ -19,13 +20,12 @@ using namespace SandHook::RegistersA32;
 void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
     AutoLock lock(hookLock);
 
-    void* originCode = origin;
+    void* originCode;
     if (isThumbCode((Addr)origin)) {
         originCode = getThumbCodeAddress(origin);
-    }
-
-    if (isThumbCode((Addr)origin)) {
-        replace = getThumbPC(replace);
+    } else {
+        LOGE("hook %d error!, only support thumb2 now!", origin);
+        return nullptr;
     }
 
     void* backup = nullptr;
@@ -37,10 +37,16 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
 
     //build inline trampoline
 #define __ assemblerInline.
-    Label* target_addr_label = new Label();
-    __ Ldr(PC, target_addr_label);
-    __ Emit(target_addr_label);
-    __ Emit((Addr)replace);
+    if (isThumbCode((Addr) replace)) {
+        Label *target_addr_label = new Label();
+        __ Ldr(PC, target_addr_label);
+        __ Emit(target_addr_label);
+        __ Emit((Addr) replace);
+    } else {
+        //to arm mode
+        __ Mov(IP, (Addr) replace);
+        __ Bx(IP);
+    }
 #undef __
 
     //build backup method
@@ -64,14 +70,15 @@ IMPORT_LABEL(origin_addr_s, Addr)
 bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
     AutoLock lock(hookLock);
 
-    void* originCode = origin;
+    void* originCode;
     if (isThumbCode((Addr)origin)) {
         originCode = getThumbCodeAddress(origin);
+    } else {
+        LOGE("hook %d error!, only support thumb2 now!", origin);
+        return false;
     }
 
-    if (isThumbCode((Addr)origin)) {
-        callback = reinterpret_cast<void (*)(REG *)>(getThumbPC((void*)callback));
-    }
+    bool callbackThumb = isThumbCode((Addr) callback);
 
     void* backup = nullptr;
     AssemblerA32 assemblerBackup(backupBuffer);
@@ -81,7 +88,7 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
-    backup = relocate.relocate(origin, 4 * 2, nullptr);
+    backup = relocate.relocate(origin, callbackThumb ? (4 * 2) : (4 * 2 + 2), nullptr);
 #define __ assemblerBackup.
     __ Mov(IP ,(Addr) getThumbPC(reinterpret_cast<void *>((Addr)originCode + relocate.curOffset)));
     __ Bx(IP);
@@ -95,10 +102,15 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
 
     //build inline trampoline
 #define __ assemblerInline.
-    Label* target_addr_label = new Label();
-    __ Ldr(PC, target_addr_label);
-    __ Emit(target_addr_label);
-    __ Emit((Addr) trampoline);
+    if (callbackThumb) {
+        Label *target_addr_label = new Label();
+        __ Ldr(PC, target_addr_label);
+        __ Emit(target_addr_label);
+        __ Emit((Addr) trampoline);
+    } else {
+        __ Mov(IP, (Addr) trampoline);
+        __ Bx(IP);
+    }
     __ finish();
 #undef __
 

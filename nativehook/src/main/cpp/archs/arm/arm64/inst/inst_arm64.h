@@ -38,6 +38,8 @@ return ENUM_VALUE(InstCodeA64, InstCodeA64::X); \
 
 #define DEFINE_INST(X) class INST_A64(X) : public InstructionA64<STRUCT_A64(X)>
 
+#define CAST_A64(X,V) reinterpret_cast<SandHook::AsmA64::INST_A64(X) *>(V)
+
 using namespace SandHook::RegistersA64;
 using namespace SandHook::Asm;
 

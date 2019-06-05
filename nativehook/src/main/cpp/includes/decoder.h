@@ -16,12 +16,28 @@ namespace SandHook {
         class InstVisitor {
         public:
             //need free unit
-            virtual bool visit(Unit<Base>* unit, void* pc) = 0;
+            virtual bool visit(Unit<Base>* unit, void* pc) {
+                delete unit;
+                return false;
+            };
+        };
+
+        class DefaultVisitor : public InstVisitor {
+        public:
+            DefaultVisitor(bool (*visitor)(Unit<Base> *, void *));
+
+            bool visit(Unit<Base> *unit, void *pc) override;
+        private:
+            bool (*visitor)(Unit<Base>*, void*);
         };
 
         class InstDecoder {
         public:
             virtual void decode(void* codeStart, Addr codeLen, InstVisitor& visitor, bool onlyPcRelInst = false) = 0;
+            inline void decode(void* codeStart, Addr codeLen, bool (*visitor)(Unit<Base>*, void*), bool onlyPcRelInst = false) {
+                InstVisitor vis = DefaultVisitor(visitor);
+                decode(codeStart, codeLen, vis, onlyPcRelInst);
+            };
         };
 
 
