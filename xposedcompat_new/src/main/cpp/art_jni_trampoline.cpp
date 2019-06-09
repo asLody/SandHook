@@ -11,7 +11,7 @@
 void* NewGetOatQuickMethodHeader(void* artMethod, uintptr_t pc) {
     std::set<void*>::iterator it = hookMethods.find(artMethod);
     if (it != hookMethods.end()) {
-        LOGE("skip GetOatQuickMethodHeader");
+        LOGW("skip GetOatQuickMethodHeader");
         return nullptr;
     }
     return GetOatQuickMethodHeaderBackup(artMethod, pc);
