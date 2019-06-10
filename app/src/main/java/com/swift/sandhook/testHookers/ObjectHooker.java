@@ -6,20 +6,19 @@ import com.swift.sandhook.annotation.HookClass;
 import com.swift.sandhook.annotation.HookMethod;
 import com.swift.sandhook.annotation.HookMethodBackup;
 import com.swift.sandhook.annotation.HookMode;
+import com.swift.sandhook.wrapper.HookWrapper;
 
 @HookClass(Object.class)
 public class ObjectHooker {
 
+    @HookMethodBackup("toString")
+    static HookWrapper.HookEntity toStrHook;
+
     @HookMethod("toString")
     @HookMode(HookMode.INLINE)
-    public static String toStr(Object thiz) {
+    public static String toStr(Object thiz) throws Throwable {
         Log.e("ObjectHooker", "hooked success ");
-        return toStrBackup(thiz);
-    }
-
-    @HookMethodBackup("toString")
-    public static String toStrBackup(Object thiz) {
-        return toStrBackup(thiz);
+        return (String) toStrHook.callOrigin(thiz);
     }
 
 }

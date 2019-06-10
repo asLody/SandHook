@@ -48,6 +48,7 @@ extern "C" {
 
         //init compile
         if (SDK_INT >= ANDROID_N) {
+            globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
             if (SDK_INT >= ANDROID_Q) {
                 jitCompileMethodQ = reinterpret_cast<bool (*)(void *, void *, void *, bool,
                                                          bool)>(getSymCompat(jit_lib_path, "jit_compile_method"));
@@ -58,7 +59,12 @@ extern "C" {
             }
             jitLoad = reinterpret_cast<void* (*)(bool*)>(getSymCompat(jit_lib_path, "jit_load"));
             bool generate_debug_info = false;
-            jitCompilerHandle = (jitLoad)(&generate_debug_info);
+
+            if (jitLoad != nullptr) {
+                jitCompilerHandle = (jitLoad)(&generate_debug_info);
+            } else {
+                jitCompilerHandle = getGlobalJitCompiler();
+            }
 
             if (jitCompilerHandle != nullptr) {
                 art::CompilerOptions* compilerOptions = getCompilerOptions(
@@ -91,10 +97,6 @@ extern "C" {
         addWeakGlobalRef = reinterpret_cast<jobject (*)(JavaVM *, void *,
                                                    void *)>(getSymCompat(art_lib_path, add_weak_ref_sym));
 
-        if (SDK_INT >= ANDROID_N) {
-            globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
-        }
-
         if (SDK_INT >= ANDROID_Q) {
             origin_jit_update_options = reinterpret_cast<void (**)(void *)>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_update_options_E"));
         }
@@ -117,6 +119,8 @@ extern "C" {
     }
 
     bool compileMethod(void* artMethod, void* thread) {
+        if (jitCompilerHandle == nullptr)
+            return false;
         if (!canCompile()) return false;
         if (SDK_INT >= ANDROID_Q) {
             if (jitCompileMethodQ == nullptr) {
