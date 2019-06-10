@@ -6,6 +6,7 @@
 #include "../includes/elf_util.h"
 #include "../includes/log.h"
 #include "../includes/utils.h"
+#include <fcntl.h>
 
 extern int SDK_INT;
 
@@ -34,16 +35,35 @@ extern "C" {
 
     JavaVM* jvm;
 
+    bool fileExits(const char* path) {
+         int fd = open(path, O_RDONLY);
+         if (fd < 0) {
+              return false;
+         }
+         close(fd);
+         return true;
+    }
+
     void initHideApi(JNIEnv* env) {
 
         env->GetJavaVM(&jvm);
 
         if (BYTE_POINT == 8) {
-            art_lib_path = "/system/lib64/libart.so";
-            jit_lib_path = "/system/lib64/libart-compiler.so";
+            if (SDK_INT >= ANDROID_Q && fileExits("/apex/com.android.runtime/lib64/libart.so")) {
+                art_lib_path = "/apex/com.android.runtime/lib64/libart.so";
+                jit_lib_path = "/apex/com.android.runtime/lib64/libart-compiler.so";
+            } else {
+                art_lib_path = "/system/lib64/libart.so";
+                jit_lib_path = "/system/lib64/libart-compiler.so";
+            }
         } else {
-            art_lib_path = "/system/lib/libart.so";
-            jit_lib_path = "/system/lib/libart-compiler.so";
+            if (SDK_INT >= ANDROID_Q && fileExits("/apex/com.android.runtime/lib/libart.so")) {
+                art_lib_path = "/apex/com.android.runtime/lib/libart.so";
+                jit_lib_path = "/apex/com.android.runtime/lib/libart-compiler.so";
+             } else {
+                art_lib_path = "/system/lib/libart.so";
+                jit_lib_path = "/system/lib/libart-compiler.so";
+            }
         }
 
         //init compile

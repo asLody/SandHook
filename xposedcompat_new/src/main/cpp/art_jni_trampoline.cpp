@@ -3,6 +3,8 @@
 //
 
 #include <cstring>
+#include <fcntl.h>
+#include <unistd.h>
 #include <utils/log.h>
 #include "art_jni_trampoline.h"
 #include "sandhook_native.h"
@@ -277,6 +279,14 @@ FFIClosure* BuildJniClosure(ArtHookParam *param) {
     return cif->CreateClosure(param, FFIJniDispatcher);
 }
 
+bool fileExits(const char* path) {
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
+         return false;
+    }
+    close(fd);
+    return true;
+}
 
 extern "C"
 JNIEXPORT void JNICALL
@@ -286,12 +296,24 @@ Java_com_swift_sandhook_xposedcompat_XposedCompat_init(JNIEnv *env, jclass type,
     bridgeMethod = env->FromReflectedMethod(jbridgeMethod);
     env->GetJavaVM(&javaVM);
     Types::Load(env);
+    const char* art_lib_path;
     if (sizeof(size_t) == 8) {
+        //Android Q Apex
+        if (fileExits("/apex/com.android.runtime/lib64/libart.so")) {
+            art_lib_path = "/apex/com.android.runtime/lib64/libart.so";
+        } else {
+            art_lib_path = "/system/lib64/libart.so";
+        }
         GetOatQuickMethodHeaderBackup = reinterpret_cast<void *(*)(void *,
-                                                              uintptr_t)>(SandInlineHookSym("/system/lib64/libart.so", "_ZN3art9ArtMethod23GetOatQuickMethodHeaderEm", (void*)NewGetOatQuickMethodHeader));
+                                                              uintptr_t)>(SandInlineHookSym(art_lib_path, "_ZN3art9ArtMethod23GetOatQuickMethodHeaderEm", (void*)NewGetOatQuickMethodHeader));
     } else {
+        if (fileExits("/apex/com.android.runtime/lib/libart.so")) {
+            art_lib_path = "/apex/com.android.runtime/lib/libart.so";
+        } else {
+            art_lib_path = "/system/lib/libart.so";
+        }
         GetOatQuickMethodHeaderBackup = reinterpret_cast<void *(*)(void *,
-                                                                   uintptr_t)>(SandInlineHookSym("/system/lib/libart.so", "_ZN3art9ArtMethod23GetOatQuickMethodHeaderEj", (void*)NewGetOatQuickMethodHeader));
+                                                                   uintptr_t)>(SandInlineHookSym(art_lib_path, "_ZN3art9ArtMethod23GetOatQuickMethodHeaderEj", (void*)NewGetOatQuickMethodHeader));
     }
 }
 
