@@ -89,6 +89,10 @@ namespace SandHook {
 
             void Mov(RegisterA64& rd, RegisterA64& rt);
 
+            void Svc(U16 imm);
+
+            void Hvc(U16 imm);
+
 
         public:
             CodeContainer codeContainer = CodeContainer(nullptr);

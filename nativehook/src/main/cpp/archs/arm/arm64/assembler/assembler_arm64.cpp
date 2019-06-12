@@ -251,6 +251,14 @@ void AssemblerA64::Mov(RegisterA64 &rd, RegisterA64& rt) {
     }
 }
 
+void AssemblerA64::Svc(U16 imm) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(SVC)(imm)));
+}
+
+void AssemblerA64::Hvc(U16 imm) {
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(EXCEPTION_GEN)(INST_A64(EXCEPTION_GEN)::XXC, EL1, imm)));
+}
+
 
 
 
