@@ -256,7 +256,7 @@ void AssemblerA64::Svc(U16 imm) {
 }
 
 void AssemblerA64::Hvc(U16 imm) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(EXCEPTION_GEN)(INST_A64(EXCEPTION_GEN)::XXC, EL1, imm)));
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(EXCEPTION_GEN)(INST_A64(EXCEPTION_GEN)::XXC, EL2, imm)));
 }
 
 
