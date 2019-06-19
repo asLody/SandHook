@@ -29,6 +29,7 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
+
         SandHookConfig.DEBUG = BuildConfig.DEBUG;
 
         if (testAndroidQ) {
@@ -55,8 +56,11 @@ public class MyApp extends Application {
             e.printStackTrace();
         }
 
-        //setup for xposed
+        //for xposed compat(no need xposed comapt new)
         XposedCompat.cacheDir = getCacheDir();
+
+
+        //for load xp module(sandvxp)
         XposedCompat.context = this;
         XposedCompat.classLoader = getClassLoader();
         XposedCompat.isFirstApplication= true;

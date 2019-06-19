@@ -4,6 +4,7 @@
 
 #include "../includes/cast_art_method.h"
 #include "../includes/utils.h"
+#include "../includes/never_call.h"
 
 extern int SDK_INT;
 
@@ -90,6 +91,11 @@ namespace SandHook {
     class CastEntryPointFromJni : public IMember<art::mirror::ArtMethod, void *> {
     protected:
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod *p) override {
+            Size jniAddr = reinterpret_cast<Size>(Java_com_swift_sandhook_ClassNeverCall_neverCallNative);
+            int offset = findOffset(p, getParentSize(), 2, jniAddr);
+            if (offset >= 0) {
+                return static_cast<Size>(offset);
+            }
             if (SDK_INT >= ANDROID_L2 && SDK_INT <= ANDROID_N) {
                 return getParentSize() - 2 * BYTE_POINT;
             } else {
@@ -189,8 +195,8 @@ namespace SandHook {
         accessFlag = new CastAccessFlag();
         accessFlag->init(env, m1, size);
 
-        entryPointFormInterpreter = new CastEntryPointFormInterpreter();
-        entryPointFormInterpreter->init(env, m1, size);
+        entryPointFromInterpreter = new CastEntryPointFormInterpreter();
+        entryPointFromInterpreter->init(env, m1, size);
 
         dexCacheResolvedMethods = new CastDexCacheResolvedMethods();
         dexCacheResolvedMethods->init(env, m1, size);
@@ -215,7 +221,7 @@ namespace SandHook {
         bool beAot = entryPointQuickCompiled->get(neverCall) != entryPointQuickCompiled->get(neverCall2);
         if (beAot) {
             quickToInterpreterBridge = getInterpreterBridge(false);
-            if (quickToInterpreterBridge == nullptr || quickToInterpreterBridge <= 0) {
+            if (quickToInterpreterBridge == nullptr) {
                 quickToInterpreterBridge = entryPointQuickCompiled->get(neverCall);
                 canGetInterpreterBridge = false;
             }
@@ -232,13 +238,16 @@ namespace SandHook {
         beAot = entryPointQuickCompiled->get(neverCallNative) != entryPointQuickCompiled->get(neverCallNative2);
         if (beAot) {
             genericJniStub = getInterpreterBridge(true);
-            if (genericJniStub == nullptr || genericJniStub <= 0) {
+            if (genericJniStub == nullptr) {
                 genericJniStub = entryPointQuickCompiled->get(neverCallNative);
                 canGetJniBridge = false;
             }
         } else {
             genericJniStub = entryPointQuickCompiled->get(neverCallNative);
         }
+
+        entryPointFromJNI = new CastEntryPointFromJni();
+        entryPointFromJNI->init(env, neverCallNative, size);
 
         art::mirror::ArtMethod *neverCallStatic = reinterpret_cast<art::mirror::ArtMethod *>(env->GetStaticMethodID(
                 neverCallTestClass, "neverCallStatic", "()V"));
@@ -252,7 +261,8 @@ namespace SandHook {
 
     Size CastArtMethod::size = 0;
     IMember<art::mirror::ArtMethod, void *> *CastArtMethod::entryPointQuickCompiled = nullptr;
-    IMember<art::mirror::ArtMethod, void *> *CastArtMethod::entryPointFormInterpreter = nullptr;
+    IMember<art::mirror::ArtMethod, void *> *CastArtMethod::entryPointFromInterpreter = nullptr;
+    IMember<art::mirror::ArtMethod, void *> *CastArtMethod::entryPointFromJNI = nullptr;
     ArrayMember<art::mirror::ArtMethod, void *> *CastArtMethod::dexCacheResolvedMethods = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t> *CastArtMethod::dexMethodIndex = nullptr;
     IMember<art::mirror::ArtMethod, uint32_t> *CastArtMethod::accessFlag = nullptr;

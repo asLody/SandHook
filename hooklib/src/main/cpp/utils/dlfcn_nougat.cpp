@@ -252,7 +252,9 @@ void *getSymCompat(const char *filename, const char *name) {
     if (SDK_INT >= ANDROID_N) {
         void* handle = fake_dlopen(filename, RTLD_NOW);
         if (handle) {
-            return fake_dlsym(handle, name);
+            void* ret = fake_dlsym(handle, name);
+            fake_dlclose(handle);
+            return ret;
         }
     } else {
         void* handle = dlopen(filename, RTLD_LAZY | RTLD_GLOBAL);
@@ -260,6 +262,7 @@ void *getSymCompat(const char *filename, const char *name) {
             return dlsym(handle, name);
         }
     }
+    return nullptr;
 }
 
 }

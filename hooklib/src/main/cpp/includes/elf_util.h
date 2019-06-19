@@ -54,11 +54,17 @@ namespace SandHook {
         Elf_Shdr* symtab = nullptr;
         Elf_Shdr* strtab = nullptr;
         Elf_Shdr* dynsym = nullptr;
-        Elf_Sym* sym_start = nullptr;
+        Elf_Off dynsym_count = 0;
+        Elf_Sym* symtab_start = nullptr;
+        Elf_Sym* dynsym_start = nullptr;
+        Elf_Sym* strtab_start = nullptr;
         Elf_Off symtab_count = 0;
         Elf_Off symstr_offset = 0;
+        Elf_Off symstr_offset_for_symtab = 0;
         Elf_Off symtab_offset = 0;
+        Elf_Off dynsym_offset = 0;
         Elf_Off symtab_size = 0;
+        Elf_Off dynsym_size = 0;
     };
 
 }
