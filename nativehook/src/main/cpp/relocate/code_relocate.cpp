@@ -6,7 +6,7 @@
 
 using namespace SandHook::Asm;
 
-//in range of copy
+//in range of Copy
 bool CodeRelocate::inRelocateRange(Off targetOffset, Addr targetLen) {
     Off startP = curOffset + targetOffset;
     Off endP = startP + targetLen;

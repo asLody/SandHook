@@ -20,12 +20,13 @@ namespace SandHook {
         class InlineHook {
         public:
             //return == backup method
-            virtual void* inlineHook(void* origin, void* replace) = 0;
-            virtual bool breakPoint(void* point, void (*callback)(REG[])) {
+            virtual void *Hook(void *origin, void *replace) = 0;
+            virtual bool BreakPoint(void *point, void (*callback)(REG[])) {
                 return false;
             };
         protected:
             static CodeBuffer* backupBuffer;
+            std::mutex hookLock;
         public:
             static InlineHook* instance;
         };

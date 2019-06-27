@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/23.
 //
 
-#ifndef SANDHOOK_MEMORY_H
-#define SANDHOOK_MEMORY_H
+#pragma once
 
 namespace SandHook {
     namespace VM {
@@ -12,5 +11,3 @@ namespace SandHook {
         };
     }
 }
-
-#endif //SANDHOOK_MEMORY_H

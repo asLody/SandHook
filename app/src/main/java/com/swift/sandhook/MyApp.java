@@ -5,6 +5,7 @@ import android.app.Application;
 import android.os.Build;
 import android.util.Log;
 
+import com.swift.sandhook.nativehook.NativeHook;
 import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
@@ -22,7 +23,7 @@ import de.robv.android.xposed.XposedHelpers;
 
 public class MyApp extends Application {
 
-    //if you want test Android Q, please set true, because SDK_INT of Android Q is still 28
+    //if you want test Android Q, please Set true, because SDK_INT of Android Q is still 28
     public final static boolean testAndroidQ = false;
 
     @Override
@@ -35,6 +36,8 @@ public class MyApp extends Application {
         if (testAndroidQ) {
             SandHookConfig.SDK_INT = 29;
         }
+
+        NativeHook.test();
 
         SandHook.disableVMInline();
         SandHook.tryDisableProfile(getPackageName());

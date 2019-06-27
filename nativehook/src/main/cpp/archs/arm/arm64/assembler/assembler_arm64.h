@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/11.
 //
 
-#ifndef SANDHOOK_NH_ASSEMBLER_A64_H
-#define SANDHOOK_NH_ASSEMBLER_A64_H
+#pragma once
 
 #include "assembler.h"
 #include "register_arm64.h"
@@ -19,10 +18,10 @@ namespace SandHook {
         public:
             AssemblerA64(CodeBuffer* codeBuffer);
 
-            void allocBufferFirst(U32 size);
-            void* getStartPC();
-            void* getPC();
-            void* finish();
+            void AllocBufferFirst(U32 size);
+            void* GetStartPC();
+            void* GetPC();
+            void* Finish();
 
             void Emit(U32 data32);
             void Emit(U64 data64);
@@ -100,5 +99,3 @@ namespace SandHook {
 
     }
 }
-
-#endif //SANDHOOK_NH_ASSEMBLER_A64_H

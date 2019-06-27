@@ -2,8 +2,8 @@
 // Created by swift on 2019/5/16.
 //
 
-#ifndef SANDHOOK_INST_T32_H
-#define SANDHOOK_INST_T32_H
+#pragma once
+
 
 #include "arm_base.h"
 #include "arm32_base.h"
@@ -54,7 +54,7 @@ namespace SandHook {
             InstructionT32(Inst *inst) : Instruction<Inst>(inst) {}
 
             Inst mask(Inst raw) {
-                return raw & *(this->get());
+                return raw & *(this->Get());
             }
 
             U32 size() override {
@@ -62,14 +62,14 @@ namespace SandHook {
             }
 
             void *getPC() override {
-                return reinterpret_cast<void *>((Addr) Instruction<Inst>::getPC() + 2 * 2);
+                return reinterpret_cast<void *>((Addr) Instruction<Inst>::GetPC() + 2 * 2);
             }
 
             Addr getVPC() override {
-                return Instruction<Inst>::getVPC() + 2 * 2;
+                return Instruction<Inst>::GetVPC() + 2 * 2;
             }
 
-            static inline S32 signExtend32(unsigned int bits, U32 value) {
+            static inline S32 SignExtend32(unsigned int bits, U32 value) {
                 return ExtractSignedBitfield32(bits - 1, 0, value);
             }
 
@@ -92,12 +92,12 @@ namespace SandHook {
 
             T32_INST_PC_REL(Inst *inst) : InstructionT32<Inst>(inst) {};
 
-            virtual Off getImmPCOffset() {
+            virtual Off GetImmPCOffset() {
                 return 0;
             };
 
-            virtual Addr getImmPCOffsetTarget() {
-                return (Addr) this->getPC() + getImmPCOffset();
+            virtual Addr GetImmPCOffsetTarget() {
+                return (Addr) this->GetPC() + GetImmPCOffset();
             };
 
             inline bool pcRelate() override {
@@ -118,9 +118,9 @@ namespace SandHook {
                 return true;
             }
 
-            void decode(T32_STRUCT_UNKNOW *inst) override;
+            void Disassembler(T32_STRUCT_UNKNOW *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         private:
             STRUCT_T32(UNKNOW) inst_backup;
@@ -150,13 +150,13 @@ namespace SandHook {
 
             DEFINE_IS_EXT(B32, TEST_INST_FIELD(opcode, OPCODE_T32(B32)) && (TEST_INST_FIELD(op, B) || TEST_INST_FIELD(op, BL)))
 
-            Addr getImmPCOffsetTarget() override;
+            Addr GetImmPCOffsetTarget() override;
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            void decode(T32_STRUCT_B32 *inst) override;
+            void Disassembler(T32_STRUCT_B32 *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -174,9 +174,9 @@ namespace SandHook {
 
             DEFINE_IS(LDR_UIMM)
 
-            void decode(T32_STRUCT_LDR_UIMM *inst) override;
+            void Disassembler(T32_STRUCT_LDR_UIMM *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterA32* rt;
@@ -216,13 +216,13 @@ namespace SandHook {
 
             DEFINE_INST_CODE(LDR_LIT)
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            void onOffsetApply(Off offset) override;
+            void OnOffsetApply(Off offset) override;
 
-            void decode(T32_STRUCT_LDR_LIT *inst) override;
+            void Disassembler(T32_STRUCT_LDR_LIT *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -250,9 +250,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(MOV_MOVT_IMM)
 
-            void decode(T32_STRUCT_MOV_MOVT_IMM *inst) override;
+            void Disassembler(T32_STRUCT_MOV_MOVT_IMM *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -280,9 +280,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(LDR_IMM)
 
-            void decode(T32_STRUCT_LDR_IMM *inst) override;
+            void Disassembler(T32_STRUCT_LDR_IMM *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -315,5 +315,3 @@ namespace SandHook {
 #undef TEST_INST_FIELD
 #undef TEST_INST_OPCODE
 #undef DEFINE_INST_CODE
-
-#endif //SANDHOOK_INST_T32_H

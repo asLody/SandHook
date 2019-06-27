@@ -2,16 +2,15 @@
 // Created by swift on 2019/5/16.
 //
 
-#ifndef SANDHOOK_ARM32_BASE_H
-#define SANDHOOK_ARM32_BASE_H
+#pragma once
 
 #include <ostream>
 #include "arm_base.h"
 #include "register_list_arm32.h"
 #include "instruction.h"
 
-#define DECODE_OFFSET(bits, ext) signExtend32(bits + ext, COMBINE(get()->imm##bits, 0, ext))
-#define ENCODE_OFFSET(bits, ext) get()->imm##bits = TruncateToUint##bits(offset >> ext)
+#define DECODE_OFFSET(bits, ext) SignExtend32(bits + ext, COMBINE(Get()->imm##bits, 0, ext))
+#define ENCODE_OFFSET(bits, ext) Get()->imm##bits = TruncateToUint##bits(offset >> ext)
 
 #define CODE_OFFSET(I) I->offset + (I->instType() == A32 ? 2 * 4 : 2 * 2)
 
@@ -47,8 +46,8 @@ namespace SandHook {
             bool IsPostIndex() const { return addr_mode == PostIndex; }
 
         public:
-            RegisterA32* rn;    // base
-            RegisterA32* rm;    // register offset
+            RegisterA32* rn;    // base_
+            RegisterA32* rm;    // register offset_
             S32 offset; // valid if rm_ == no_reg
             Shift shift;
             Sign sign;
@@ -126,10 +125,10 @@ namespace SandHook {
 
         private:
             static U16 RegisterToList(RegisterA32& reg) {
-                if (reg.getCode() == UnknowRegiser.getCode()) {
+                if (reg.Code() == UnknowRegiser.Code()) {
                     return 0;
                 } else {
-                    return static_cast<U16>(UINT16_C(1) << reg.getCode());
+                    return static_cast<U16>(UINT16_C(1) << reg.Code());
                 }
             }
 
@@ -166,5 +165,3 @@ namespace SandHook {
 
     }
 }
-
-#endif //SANDHOOK_ARM32_BASE_H

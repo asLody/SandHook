@@ -2,14 +2,13 @@
 // Created by swift on 2019/5/16.
 //
 
-#ifndef SANDHOOK_INST_CODE_ARM32_H
-#define SANDHOOK_INST_CODE_ARM32_H
+#pragma once
 
-enum class InstCodeA32 {
+enum class InstCodeA32 : InstCode {
 
 };
 
-enum class InstCodeT16 {
+enum class InstCodeT16 : InstCode {
     UNKNOW,
     BASE_SASMC,
     DATA_PROC,
@@ -33,7 +32,7 @@ enum class InstCodeT16 {
     ADD_REG_RDN
 };
 
-enum class InstCodeT32 {
+enum class InstCodeT32 : InstCode {
     UNKNOW,
     B32,
     LDR_LIT,
@@ -42,5 +41,3 @@ enum class InstCodeT32 {
     MOV_MOVT_IMM,
     SUB_IMM,
 };
-
-#endif //SANDHOOK_INST_CODE_ARM32_H

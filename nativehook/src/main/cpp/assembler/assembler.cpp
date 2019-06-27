@@ -16,13 +16,13 @@ void CodeContainer::setCodeBuffer(CodeBuffer *codeBuffer) {
 
 void CodeContainer::append(Unit<Base> *unit) {
     units.push_back(unit);
-    unit->setVPos(curPc);
-    switch (unit->unitType()) {
+    unit->SetVPC(curPc);
+    switch (unit->UnitType()) {
         case UnitLabel:
             labels.push_back((Label*)unit);
             break;
         default:
-            curPc += unit->size();
+            curPc += unit->Size();
     }
 }
 
@@ -37,30 +37,30 @@ void CodeContainer::commit() {
     }
     Addr pcNow = reinterpret_cast<Addr>(bufferStart);
 
-    //commit to code buffer & assembler inst
-    std::list<Unit<Base>*>::iterator unit;
+    //commit to code buffer & Assembler inst
+    std::list<BaseUnit*>::iterator unit;
     for(unit = units.begin();unit != units.end(); ++unit) {
-        if ((*unit)->unitType() == UnitData) {
-            (*unit)->move(reinterpret_cast<Base *>(pcNow));
-        } else if ((*unit)->unitType() != UnitLabel) {
-            (*unit)->set(reinterpret_cast<Base *>(pcNow));
+        if ((*unit)->UnitType() == UnitData) {
+            (*unit)->Move(reinterpret_cast<Base*>(pcNow));
+        } else if ((*unit)->UnitType() != UnitLabel) {
+            (*unit)->Set(reinterpret_cast<Base*>(pcNow));
         }
-        if ((*unit)->unitType() == UnitInst) {
-            reinterpret_cast<Instruction<Base>*>(*unit)->assembler();
+        if ((*unit)->UnitType() == UnitInst) {
+            reinterpret_cast<BaseInst*>(*unit)->Assembler();
         }
-        pcNow += (*unit)->size();
+        pcNow += (*unit)->Size();
     }
 
-    //bind labels
+    //AddBind labels
     std::list<Label*>::iterator label;
     for(label = labels.begin();label != labels.end(); ++label) {
-        (*label)->bindLabel();
+        (*label)->BindLabel();
     }
 
     //flush I cache
     flushCache(reinterpret_cast<Addr>(bufferStart), pcNow - reinterpret_cast<Addr>(bufferStart));
 
-    //set pc
+    //Set pc
     startPc = reinterpret_cast<Addr>(bufferStart);
     curPc = pcNow;
 

@@ -23,7 +23,8 @@ goto label_matched; \
 
 Arm32Decoder* Arm32Decoder::instant = new Arm32Decoder();
 
-void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, bool onlyPcRelInst) {
+void Arm32Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visitor,
+                                bool onlyPcRelInst) {
     bool thumb = isThumbCode(reinterpret_cast<Addr>(codeStart));
     if (thumb) {
         codeStart = getThumbCodeAddress(codeStart);
@@ -74,7 +75,7 @@ void Arm32Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, b
         if (!visitor.visit(unit, pc)) {
             break;
         }
-        pc = reinterpret_cast<InstA64 *>((Addr)pc + unit->size());
+        pc = reinterpret_cast<InstA64 *>((Addr)pc + unit->Size());
         unit = nullptr;
     }
 }

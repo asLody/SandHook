@@ -15,7 +15,7 @@ using namespace SandHook::Utils;
 #include "assembler_arm64.h"
 #include "code_relocate_arm64.h"
 using namespace SandHook::RegistersA64;
-void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
+void *InlineHookArm64Android::Hook(void *origin, void *replace) {
     AutoLock lock(hookLock);
 
     void* backup = nullptr;
@@ -43,15 +43,15 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
     __ Br(IP1);
     __ Emit(origin_addr_label);
     __ Emit((Addr) origin + codeContainerInline->size());
-    __ finish();
+    __ Finish();
 #undef __
 
     //commit inline trampoline
-    assemblerInline.finish();
+    assemblerInline.Finish();
     return backup;
 }
 
-bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[])) {
+bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[])) {
     AutoLock lock(hookLock);
 
     void* backup = nullptr;
@@ -71,7 +71,7 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     __ Br(IP1);
     __ Emit(origin_addr_label);
     __ Emit((Addr) point + 4 * 4);
-    __ finish();
+    __ Finish();
 #undef __
 
 
@@ -114,11 +114,11 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     __ Mov(IP1, (Addr) backup);
     __ Br(IP1);
 
-    __ finish();
+    __ Finish();
 #undef __
 
 
-    void* secondTrampoline = assemblerTrampoline.getStartPC();
+    void* secondTrampoline = assemblerTrampoline.GetStartPC();
     //build inline trampoline
 #define __ assemblerInline.
     Label* target_addr_label = new Label();
@@ -126,7 +126,7 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     __ Br(IP1);
     __ Emit(target_addr_label);
     __ Emit((Addr) secondTrampoline);
-    __ finish();
+    __ Finish();
 #undef __
 
     return true;

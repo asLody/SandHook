@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/12.
 //
 
-#ifndef SANDHOOK_NH_CODE_RELOCATE_A64_H
-#define SANDHOOK_NH_CODE_RELOCATE_A64_H
+#pragma once
 
 #include <mutex>
 #include <map>
@@ -23,11 +22,11 @@ namespace SandHook {
         public:
             CodeRelocateA64(AssemblerA64 &assembler);
 
-            void* relocate(Instruction<Base> *instruction, void *toPc) throw(ErrorCodeException) override;
+            void* relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) override;
 
             void* relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) override;
 
-            bool visit(Unit<Base> *unit, void *pc) override;
+            bool Visit(Unit<Base> *unit, void *pc) override;
 
             DEFINE_RELOCATE(B_BL)
 
@@ -50,5 +49,3 @@ namespace SandHook {
 }
 
 #undef DEFINE_RELOCATE
-
-#endif //SANDHOOK_NH_CODE_RELOCATE_A64_H

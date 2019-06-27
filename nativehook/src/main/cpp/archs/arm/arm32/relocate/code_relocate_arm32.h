@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/23.
 //
 
-#ifndef SANDHOOK_CODE_RELOCATE_ARM32_H
-#define SANDHOOK_CODE_RELOCATE_ARM32_H
+#pragma once
 
 #include <mutex>
 #include <map>
@@ -56,5 +55,3 @@ namespace SandHook {
 }
 
 #undef DEFINE_RELOCATE
-
-#endif //SANDHOOK_CODE_RELOCATE_ARM32_H

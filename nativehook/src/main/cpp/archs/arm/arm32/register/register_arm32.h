@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/12.
 //
 
-#ifndef SANDHOOK_NH_REGISTER_A32_H
-#define SANDHOOK_NH_REGISTER_A32_H
+#pragma once
 
 #include "base.h"
 #include "register.h"
@@ -36,7 +35,7 @@ namespace SandHook {
             U8 getWide() override;
 
             virtual bool isUnkonw () {
-                return getCode() == 38;
+                return Code() == 38;
             }
 
             static RegisterA32* get(U8 code) {
@@ -48,5 +47,3 @@ namespace SandHook {
         };
     }
 }
-
-#endif //SANDHOOK_NH_REGISTER_A32_H

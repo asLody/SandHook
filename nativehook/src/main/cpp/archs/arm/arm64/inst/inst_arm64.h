@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/6.
 //
 
-#ifndef SANDHOOK_NH_INST_ARM64_H
-#define SANDHOOK_NH_INST_ARM64_H
+#pragma once
 
 #include "inst_struct_aarch64.h"
 #include "instruction.h"
@@ -13,10 +12,10 @@
 
 #define INST_A64(X) A64_##X
 
-#define IS_OPCODE_A64(RAW,OP) INST_A64(OP)::is(RAW)
+#define IS_OPCODE_A64(RAW,OP) INST_A64(OP)::Is(RAW)
 
 #define DEFINE_IS_EXT(X, COND) \
-inline static bool is(InstA64& inst) { \
+inline static bool Is(InstA64& inst) { \
 union { \
     InstA64 raw; \
     STRUCT_A64(X) inst; \
@@ -31,12 +30,13 @@ return COND; \
 
 #define TEST_INST_OPCODE(X, INDEX) inst_test.inst.opcode##INDEX == OPCODE_A64(X##_##INDEX)
 
-#define DEFINE_INST_CODE(X) \
-inline U32 instCode() override { \
-return ENUM_VALUE(InstCodeA64, InstCodeA64::X); \
-}
+#define DEFINE_INST(X) class INST_A64(X) : public InstructionA64<STRUCT_A64(X), ENUM_VALUE(InstCodeA64, InstCodeA64::X)>
 
-#define DEFINE_INST(X) class INST_A64(X) : public InstructionA64<STRUCT_A64(X)>
+#define DEFINE_INST_EXT(X,P) class INST_A64(X) : public INST_A64(P)
+
+#define DEFINE_INST_EXT_(X,P) class INST_A64(X) : public P<STRUCT_A64(X), ENUM_VALUE(InstCodeA64, InstCodeA64::X)>
+
+#define DEFINE_INST_PCREL(X) class INST_A64(X) : public A64_INST_PC_REL<STRUCT_A64(X), ENUM_VALUE(InstCodeA64, InstCodeA64::X)>
 
 #define CAST_A64(X,V) reinterpret_cast<SandHook::AsmA64::INST_A64(X) *>(V)
 
@@ -47,33 +47,23 @@ namespace SandHook {
 
     namespace AsmA64 {
 
-        template<typename Inst>
-        class InstructionA64 : public Instruction<Inst> {
+        template<typename S, U32 C>
+        class InstructionA64 : public Instruction<S, C> {
         public:
 
             InstructionA64() {}
 
-            InstructionA64(Inst *inst) : Instruction<Inst>(inst) {}
+            InstructionA64(void *inst) : Instruction<S, C>(inst) {}
 
-            Inst mask(Inst raw) {
-                return raw & *(this->get());
-            }
+            U32 Size() override {
+                return 4;
+            };
 
-            U32 size() override;
-
-            static inline S64 signExtend64(unsigned int bits, U64 value) {
-                return ExtractSignedBitfield64(bits - 1, 0, value);
-            }
-
-            static inline S32 signExtend32(unsigned int bits, U32 value) {
-                return ExtractSignedBitfield32(bits - 1, 0, value);
-            }
-
-            InstType instType() override {
+            InstType InstType() override {
                 return A64;
             }
 
-            Arch arch() override {
+            Arch Arch() override {
                 return arm64;
             }
 
@@ -102,117 +92,108 @@ namespace SandHook {
         public:
             inline explicit Operand(){};
             inline explicit Operand(S64 imm)
-                    : immediate(imm), reg(&UnknowRegiser), shift(NO_SHIFT), extend(NO_EXTEND), shift_extend_imm(0) {}
+                    : immediate_(imm), reg_(&UnknowRegiser), shift_(NO_SHIFT), extend_(NO_EXTEND), shift_extend_imm_(0) {}
             inline explicit Operand(RegisterA64* reg, int32_t imm = 0, Shift shift = LSL)
-                    : immediate(0), reg(reg), shift(shift), extend(NO_EXTEND), shift_extend_imm(imm) {}
+                    : immediate_(0), reg_(reg), shift_(shift), extend_(NO_EXTEND), shift_extend_imm_(imm) {}
             inline explicit Operand(RegisterA64* reg, Extend extend, int32_t imm = 0)
-                    : immediate(0), reg(reg), shift(NO_SHIFT), extend(extend), shift_extend_imm(imm) {}
+                    : immediate_(0), reg_(reg), shift_(NO_SHIFT), extend_(extend), shift_extend_imm_(imm) {}
 
             // =====
 
-            bool IsImmediate() const { return reg->is(UnknowRegiser); }
-            bool IsShiftedRegister() const { return  (shift != NO_SHIFT); }
-            bool IsExtendedRegister() const { return (extend != NO_EXTEND); }
+            bool IsImmediate() const { return *reg_ == UnknowRegiser; }
+            bool IsShiftedRegister() const { return  (shift_ != NO_SHIFT); }
+            bool IsExtendedRegister() const { return (extend_ != NO_EXTEND); }
 
         public:
-            S64 immediate;
-            RegisterA64* reg;
-            Shift shift;
-            Extend extend;
-            int32_t shift_extend_imm;
+            S64 immediate_;
+            RegisterA64* reg_;
+            Shift shift_;
+            Extend extend_;
+            int32_t shift_extend_imm_;
         };
 
         class MemOperand {
         public:
             inline explicit MemOperand() {}
             inline explicit MemOperand(RegisterA64* base, Off offset = 0, AddrMode addr_mode = Offset)
-                    : base(base), reg_offset(&UnknowRegiser), offset(offset), addr_mode(addr_mode), shift(NO_SHIFT),
-                      extend(NO_EXTEND), shift_extend_imm(0) {}
+                    : base_(base), reg_offset_(&UnknowRegiser), offset_(offset), addr_mode_(addr_mode), shift_(NO_SHIFT),
+                      extend_(NO_EXTEND), shift_extend_imm_(0) {}
 
             inline explicit MemOperand(RegisterA64* base, RegisterA64* reg_offset, Extend extend, unsigned extend_imm)
-                    : base(base), reg_offset(reg_offset), offset(0), addr_mode(Offset), shift(NO_SHIFT), extend(extend),
-                      shift_extend_imm(extend_imm) {}
+                    : base_(base), reg_offset_(reg_offset), offset_(0), addr_mode_(Offset), shift_(NO_SHIFT), extend_(extend),
+                      shift_extend_imm_(extend_imm) {}
 
             inline explicit MemOperand(RegisterA64* base, RegisterA64* reg_offset, Shift shift = LSL, unsigned shift_imm = 0)
-                    : base(base), reg_offset(reg_offset), offset(0), addr_mode(Offset), shift(shift), extend(NO_EXTEND),
-                      shift_extend_imm(shift_imm) {}
+                    : base_(base), reg_offset_(reg_offset), offset_(0), addr_mode_(Offset), shift_(shift), extend_(NO_EXTEND),
+                      shift_extend_imm_(shift_imm) {}
 
             inline explicit MemOperand(RegisterA64* base, const Operand &offset, AddrMode addr_mode = Offset)
-                    : base(base), reg_offset(&UnknowRegiser), addr_mode(addr_mode) {
+                    : base_(base), reg_offset_(&UnknowRegiser), addr_mode_(addr_mode) {
                 if (offset.IsShiftedRegister()) {
-                    reg_offset        = offset.reg;
-                    shift            = offset.shift;
-                    shift_extend_imm = offset.shift_extend_imm;
+                    reg_offset_        = offset.reg_;
+                    shift_            = offset.shift_;
+                    shift_extend_imm_ = offset.shift_extend_imm_;
 
-                    extend = NO_EXTEND;
-                    this->offset = 0;
+                    extend_ = NO_EXTEND;
+                    this->offset_ = 0;
                 } else if (offset.IsExtendedRegister()) {
-                    reg_offset        = offset.reg;
-                    extend           = offset.extend;
-                    shift_extend_imm = offset.shift_extend_imm;
+                    reg_offset_        = offset.reg_;
+                    extend_           = offset.extend_;
+                    shift_extend_imm_ = offset.shift_extend_imm_;
 
-                    shift  = NO_SHIFT;
-                    this->offset = 0;
+                    shift_  = NO_SHIFT;
+                    this->offset_ = 0;
                 }
             }
 
             // =====
 
-            bool IsImmediateOffset() const { return (addr_mode == Offset); }
-            bool IsRegisterOffset() const { return (addr_mode == Offset); }
-            bool IsPreIndex() const { return addr_mode == PreIndex; }
-            bool IsPostIndex() const { return addr_mode == PostIndex; }
+            bool IsImmediateOffset() const { return (addr_mode_ == Offset); }
+            bool IsRegisterOffset() const { return (addr_mode_ == Offset); }
+            bool IsPreIndex() const { return addr_mode_ == PreIndex; }
+            bool IsPostIndex() const { return addr_mode_ == PostIndex; }
 
         public:
-            RegisterA64* base;
-            RegisterA64* reg_offset;
-            Off offset;
-            AddrMode addr_mode;
-            Shift shift;
-            Extend extend;
-            S32 shift_extend_imm;
+            RegisterA64* base_;
+            RegisterA64* reg_offset_;
+            Off offset_;
+            AddrMode addr_mode_;
+            Shift shift_;
+            Extend extend_;
+            S32 shift_extend_imm_;
         };
 
 
-        class INST_A64(UNKNOW) : public InstructionA64<STRUCT_A64(UNKNOW)> {
+        DEFINE_INST(UNKNOW) {
         public:
 
-            A64_UNKNOW(STRUCT_A64(UNKNOW) &inst);
+            A64_UNKNOW(void *inst) : InstructionA64(inst) {}
 
-            DEFINE_INST_CODE(UNKNOW)
-
-            inline bool unknow() override {
+            INLINE bool Unknow() override {
                 return true;
             }
-
-            void decode(A64_STRUCT_UNKNOW *inst) override;
-
-            void assembler() override;
-
-        private:
-            STRUCT_A64(UNKNOW) inst_backup;
         };
 
 
-        template <typename Inst>
-        class A64_INST_PC_REL : public InstructionA64<Inst> {
+        template <typename S,U32 C>
+        class A64_INST_PC_REL : public InstructionA64<S, C> {
         public:
 
             A64_INST_PC_REL();
 
-            A64_INST_PC_REL(Inst *inst);
+            A64_INST_PC_REL(void *inst);
 
-            virtual Off getImmPCOffset() = 0;
+            virtual Off GetImmPCOffset() = 0;
 
-            virtual Addr getImmPCOffsetTarget();
+            virtual Addr GetImmPCOffsetTarget();
 
-            bool pcRelate() override;
+            bool PcRelate() override;
 
         };
 
 
 
-        class INST_A64(ADR_ADRP) : public A64_INST_PC_REL<STRUCT_A64(ADR_ADRP)> {
+        DEFINE_INST_PCREL(ADR_ADRP) {
         public:
 
             enum OP {
@@ -220,29 +201,25 @@ namespace SandHook {
                 ADRP = 0b1,
             };
 
-            A64_ADR_ADRP();
-
-            A64_ADR_ADRP(STRUCT_A64(ADR_ADRP) &inst);
+            A64_ADR_ADRP(void *inst);
 
             A64_ADR_ADRP(OP op, XRegister &rd, S64 offset);
 
-            A64_ADR_ADRP(OP op, XRegister &rd, Label &label);
+            A64_ADR_ADRP(OP op, XRegister &rd, Label *label);
 
             DEFINE_IS(ADR_ADRP)
 
-            DEFINE_INST_CODE(ADR_ADRP)
-
-            bool isADRP() {
-                return get()->op == OP::ADRP;
+            bool IsADRP() {
+                return Get()->op == OP::ADRP;
             }
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            Addr getImmPCOffsetTarget() override;
+            Addr GetImmPCOffsetTarget() override;
 
-            void decode(A64_STRUCT_ADR_ADRP *inst) override;
+            void Disassembler() override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -252,7 +229,7 @@ namespace SandHook {
 
 
 
-        class INST_A64(MOV_WIDE) : public InstructionA64<STRUCT_A64(MOV_WIDE)> {
+        DEFINE_INST(MOV_WIDE) {
         public:
 
             enum OP {
@@ -271,23 +248,19 @@ namespace SandHook {
                 Shift3 = 48
             };
 
-            A64_MOV_WIDE();
-
-            A64_MOV_WIDE(STRUCT_A64(MOV_WIDE) &inst);
+            A64_MOV_WIDE(void* inst);
 
             A64_MOV_WIDE(A64_MOV_WIDE::OP op, RegisterA64* rd, U16 imme, U8 shift);
 
             DEFINE_IS(MOV_WIDE)
 
-            DEFINE_INST_CODE(MOV_WIDE)
+            void Assembler() override;
 
-            void assembler() override;
-
-            void decode(STRUCT_A64(MOV_WIDE) *decode) override;
+            void Disassembler() override;
 
         public:
             //can be 16/32/64/128
-            //hw = shift / 16
+            //hw = shift_ / 16
             U8 shift;
             OP op;
             U16 imme;
@@ -296,7 +269,7 @@ namespace SandHook {
 
 
 
-        class INST_A64(B_BL) : public A64_INST_PC_REL<STRUCT_A64(B_BL)> {
+        DEFINE_INST_PCREL(B_BL) {
         public:
 
             enum OP {
@@ -304,13 +277,11 @@ namespace SandHook {
                 BL = 0b1
             };
 
-            A64_B_BL();
-
-            A64_B_BL(STRUCT_A64(B_BL) &inst);
+            A64_B_BL(void *inst) ;
 
             A64_B_BL(OP op, Off offset);
 
-            A64_B_BL(OP op, Label &l);
+            A64_B_BL(OP op, Label *l);
 
             DEFINE_IS(B_BL)
 
@@ -322,15 +293,13 @@ namespace SandHook {
                 return op;
             }
 
-            DEFINE_INST_CODE(B_BL)
+            Off GetImmPCOffset() override;
 
-            Off getImmPCOffset() override;
+            void OnOffsetApply(Off offset) override;
 
-            void onOffsetApply(Off offset) override;
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(B_BL) *decode) override;
-
-            void assembler() override;
+            void Assembler() override;
 
 
         public:
@@ -339,7 +308,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(CBZ_CBNZ) : public A64_INST_PC_REL<STRUCT_A64(CBZ_CBNZ)> {
+        DEFINE_INST_PCREL(CBZ_CBNZ) {
         public:
 
             enum OP {
@@ -347,25 +316,21 @@ namespace SandHook {
                 CBNZ = 1
             };
 
-            A64_CBZ_CBNZ();
-
-            A64_CBZ_CBNZ(STRUCT_A64(CBZ_CBNZ) &inst);
+            A64_CBZ_CBNZ(void *inst);
 
             A64_CBZ_CBNZ(OP op, Off offset, RegisterA64 &rt);
 
-            A64_CBZ_CBNZ(OP op, Label& label, RegisterA64 &rt);
+            A64_CBZ_CBNZ(OP op, Label *label, RegisterA64 &rt);
 
             DEFINE_IS(CBZ_CBNZ)
 
-            DEFINE_INST_CODE(CBZ_CBNZ)
+            void OnOffsetApply(Off offset) override;
 
-            void onOffsetApply(Off offset) override;
+            Off GetImmPCOffset() override;
 
-            Off getImmPCOffset() override;
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(CBZ_CBNZ) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -374,27 +339,24 @@ namespace SandHook {
         };
 
 
-        class INST_A64(B_COND) : public A64_INST_PC_REL<STRUCT_A64(B_COND)> {
+        DEFINE_INST_PCREL(B_COND) {
         public:
-            A64_B_COND();
 
-            A64_B_COND(STRUCT_A64(B_COND) &inst);
+            A64_B_COND(void *inst);
 
             A64_B_COND(Condition condition, Off offset);
 
-            A64_B_COND(Condition condition, Label& label);
+            A64_B_COND(Condition condition, Label *label);
 
             DEFINE_IS(B_COND)
 
-            DEFINE_INST_CODE(B_COND)
+            Off GetImmPCOffset() override;
 
-            Off getImmPCOffset() override;
+            void OnOffsetApply(Off offset) override;
 
-            void onOffsetApply(Off offset) override;
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(B_COND) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             Condition condition;
@@ -402,7 +364,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(TBZ_TBNZ) : public A64_INST_PC_REL<STRUCT_A64(TBZ_TBNZ)> {
+        DEFINE_INST_PCREL(TBZ_TBNZ) {
         public:
 
             enum OP {
@@ -410,25 +372,22 @@ namespace SandHook {
                 TBNZ = 1
             };
 
-            A64_TBZ_TBNZ();
 
-            A64_TBZ_TBNZ(STRUCT_A64(TBZ_TBNZ) &inst);
+            A64_TBZ_TBNZ(void *inst);
 
             A64_TBZ_TBNZ(OP op, RegisterA64 &rt, U32 bit, Off offset);
 
-            A64_TBZ_TBNZ(OP op, RegisterA64 &rt, U32 bit, Label& label);
+            A64_TBZ_TBNZ(OP op, RegisterA64 &rt, U32 bit, Label* label);
 
             DEFINE_IS(TBZ_TBNZ)
 
-            DEFINE_INST_CODE(TBZ_TBNZ)
+            void OnOffsetApply(Off offset) override;
 
-            void onOffsetApply(Off offset) override;
+            Off GetImmPCOffset() override;
 
-            Off getImmPCOffset() override;
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(TBZ_TBNZ) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -438,7 +397,7 @@ namespace SandHook {
         };
 
 
-        class INST_A64(LDR_LIT) : public A64_INST_PC_REL<STRUCT_A64(LDR_LIT)> {
+        DEFINE_INST_PCREL(LDR_LIT) {
         public:
 
             enum OP {
@@ -448,25 +407,21 @@ namespace SandHook {
                 LDR_PRFM = 0b11
             };
 
-            A64_LDR_LIT();
-
-            A64_LDR_LIT(STRUCT_A64(LDR_LIT) &inst);
+            A64_LDR_LIT(void *inst);
 
             A64_LDR_LIT(OP op, RegisterA64 &rt, Off offset);
 
-            A64_LDR_LIT(OP op, RegisterA64 &rt, Label& label);
+            A64_LDR_LIT(OP op, RegisterA64 &rt, Label* label);
 
             DEFINE_IS(LDR_LIT)
 
-            DEFINE_INST_CODE(LDR_LIT)
+            Off GetImmPCOffset() override;
 
-            Off getImmPCOffset() override;
+            void OnOffsetApply(Off offset) override;
 
-            void onOffsetApply(Off offset) override;
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(LDR_LIT) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -484,19 +439,15 @@ namespace SandHook {
                 RET = 0b11
             };
 
-            A64_BR_BLR_RET();
-
-            A64_BR_BLR_RET(STRUCT_A64(BR_BLR_RET) &inst);
+            A64_BR_BLR_RET(void *inst);
 
             A64_BR_BLR_RET(OP op, XRegister &rn);
 
             DEFINE_IS_EXT(BR_BLR_RET, TEST_INST_OPCODE(BR_BLR_RET, 1) && TEST_INST_OPCODE(BR_BLR_RET, 2) && TEST_INST_OPCODE(BR_BLR_RET,3))
 
-            DEFINE_INST_CODE(BR_BLR_RET)
+            void Disassembler() override;
 
-            void decode(A64_STRUCT_BR_BLR_RET *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -504,8 +455,8 @@ namespace SandHook {
         };
 
 
-        template <typename Inst>
-        class A64LoadAndStoreImm : public InstructionA64<Inst> {
+        template <typename S, U32 C>
+        class A64LoadAndStoreImm : public InstructionA64<S,C> {
         public:
 
             enum AdMod {
@@ -514,14 +465,12 @@ namespace SandHook {
                 PreIndex = 0b11
             };
 
-            enum Size {
+            enum RegSize {
                 Size32 = 0b10,
                 Size64 = 0b11
             };
 
-            A64LoadAndStoreImm() {}
-
-            A64LoadAndStoreImm(Inst *inst) : InstructionA64<Inst>(inst) {}
+            A64LoadAndStoreImm(void *inst) : InstructionA64<S,C>(inst) {}
 
             A64LoadAndStoreImm(RegisterA64 *rt, const MemOperand &operand) : rt(rt),
                                                                              operand(operand) {}
@@ -529,70 +478,58 @@ namespace SandHook {
             RegisterA64* rt;
             MemOperand operand = MemOperand();
         protected:
+            Off offset;
             AdMod addrMode;
-            Size regSize;
+            RegSize regSize;
             U8 scale;
             bool wback;
             bool postindex;
-            Off offset;
         };
 
 
-        class INST_A64(STR_IMM) : public A64LoadAndStoreImm<STRUCT_A64(STR_IMM)> {
+        DEFINE_INST_EXT_(STR_IMM, A64LoadAndStoreImm) {
         public:
 
-            A64_STR_IMM();
-
-            A64_STR_IMM(STRUCT_A64(STR_IMM)& inst);
+            A64_STR_IMM(void *inst);
 
             A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand);
 
             DEFINE_IS(STR_IMM)
 
-            DEFINE_INST_CODE(STR_IMM)
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(STR_IMM) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         };
 
 
-        class INST_A64(STR_UIMM) : public A64LoadAndStoreImm<STRUCT_A64(STR_UIMM)> {
+        DEFINE_INST_EXT_(STR_UIMM, A64LoadAndStoreImm) {
         public:
 
-            A64_STR_UIMM();
-
-            A64_STR_UIMM(STRUCT_A64(STR_UIMM)& inst);
+            A64_STR_UIMM(void *inst);
 
             A64_STR_UIMM(RegisterA64 &rt, const MemOperand &operand);
 
             DEFINE_IS(STR_UIMM)
 
-            DEFINE_INST_CODE(STR_UIMM)
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(STR_UIMM) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
         };
 
 
         DEFINE_INST(MOV_REG) {
         public:
 
-            A64_MOV_REG();
-
-            A64_MOV_REG(STRUCT_A64(MOV_REG) &inst);
+            A64_MOV_REG(void *inst);
 
             A64_MOV_REG(RegisterA64 &rd, RegisterA64 &rm);
 
             DEFINE_IS_EXT(MOV_REG, TEST_INST_OPCODE(MOV_REG, 1) && TEST_INST_OPCODE(MOV_REG, 2))
 
-            DEFINE_INST_CODE(MOV_REG)
+            void Disassembler() override;
 
-            void decode(A64_STRUCT_MOV_REG *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterA64* rd;
@@ -603,20 +540,16 @@ namespace SandHook {
         DEFINE_INST(SUB_EXT_REG) {
         public:
 
-            A64_SUB_EXT_REG();
-
-            A64_SUB_EXT_REG(STRUCT_A64(SUB_EXT_REG) &inst);
+            A64_SUB_EXT_REG(void *inst);
 
             A64_SUB_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
                              FlagsUpdate flagsUpdate);
 
             DEFINE_IS_EXT(SUB_EXT_REG, TEST_INST_OPCODE(SUB_EXT_REG, 1) && TEST_INST_OPCODE(SUB_EXT_REG, 2))
 
-            DEFINE_INST_CODE(SUB_EXT_REG)
+            void Disassembler() override;
 
-            void decode(A64_STRUCT_SUB_EXT_REG *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
 
         public:
@@ -637,19 +570,15 @@ namespace SandHook {
                 DCP = 0b101
             };
 
-            A64_EXCEPTION_GEN();
-
-            A64_EXCEPTION_GEN(STRUCT_A64(EXCEPTION_GEN) &inst);
+            A64_EXCEPTION_GEN(void *inst);
 
             A64_EXCEPTION_GEN(OP op, ExceptionLevel el, U16 imme);
 
             DEFINE_IS_EXT(EXCEPTION_GEN, TEST_INST_OPCODE(EXCEPTION_GEN, 1) && TEST_INST_OPCODE(EXCEPTION_GEN, 2))
 
-            DEFINE_INST_CODE(EXCEPTION_GEN)
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(EXCEPTION_GEN) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -658,89 +587,77 @@ namespace SandHook {
         };
 
 
-        class INST_A64(SVC) : public INST_A64(EXCEPTION_GEN) {
+        DEFINE_INST_EXT(SVC, EXCEPTION_GEN) {
         public:
+
             A64_SVC(U16 imme);
 
-            A64_SVC();
-
-            A64_SVC(STRUCT_A64(SVC) &inst);
+            A64_SVC(void *inst);
 
             DEFINE_IS_EXT(EXCEPTION_GEN,  TEST_INST_OPCODE(EXCEPTION_GEN, 1) && TEST_INST_OPCODE(EXCEPTION_GEN, 2) && TEST_INST_FIELD(op, XXC) && TEST_INST_FIELD(ll, EL1))
 
-            DEFINE_INST_CODE(SVC)
         };
 
 
-        class INST_A64(LDR_IMM) : public A64LoadAndStoreImm<STRUCT_A64(LDR_IMM)> {
+        DEFINE_INST_EXT_(LDR_IMM, A64LoadAndStoreImm) {
         public:
-            A64_LDR_IMM();
 
-            A64_LDR_IMM(STRUCT_A64(LDR_IMM) &inst);
+            A64_LDR_IMM(void *inst);
 
             A64_LDR_IMM(RegisterA64 &rt, const MemOperand &operand);
 
             DEFINE_IS(LDR_IMM)
 
-            DEFINE_INST_CODE(LDR_IMM)
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(LDR_IMM) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
         };
 
 
-        class INST_A64(LDR_UIMM) : public A64LoadAndStoreImm<STRUCT_A64(LDR_UIMM)> {
+        DEFINE_INST_EXT_(LDR_UIMM, A64LoadAndStoreImm) {
         public:
-            A64_LDR_UIMM();
 
-            A64_LDR_UIMM(STRUCT_A64(LDR_UIMM) &inst);
+            A64_LDR_UIMM(void *inst);
 
             A64_LDR_UIMM(RegisterA64 &rt, const MemOperand &operand);
 
             DEFINE_IS(LDR_UIMM)
 
-            DEFINE_INST_CODE(LDR_UIMM)
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(LDR_UIMM) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
         };
 
-
-        class INST_A64(LDRSW_IMM) : public INST_A64(LDR_IMM) {
+        DEFINE_INST_EXT(LDRSW_IMM, LDR_IMM) {
         public:
-            A64_LDRSW_IMM();
 
-            A64_LDRSW_IMM(STRUCT_A64(LDRSW_IMM) &inst);
+            A64_LDRSW_IMM(void *inst);
 
             A64_LDRSW_IMM(RegisterA64 &rt, const MemOperand &operand);
 
-            DEFINE_IS_EXT(LDRSW_IMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_IMM)) && TEST_INST_FIELD(size, Size32))
+            DEFINE_IS_EXT(LDRSW_IMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_IMM)) &&
+                    TEST_INST_FIELD(size , Size32))
 
-            DEFINE_INST_CODE(LDRSW_IMM)
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(LDR_IMM) *inst) override;
-
-            void assembler() override;
-    };
+            void Assembler() override;
+        };
 
 
-        class INST_A64(LDRSW_UIMM) : public INST_A64(LDR_UIMM) {
+        DEFINE_INST_EXT(LDRSW_UIMM, LDR_UIMM) {
         public:
             A64_LDRSW_UIMM();
 
-            A64_LDRSW_UIMM(STRUCT_A64(LDR_UIMM) &inst);
+            A64_LDRSW_UIMM(void *inst);
 
             A64_LDRSW_UIMM(XRegister &rt, const MemOperand &operand);
 
-            DEFINE_IS_EXT(LDRSW_UIMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_UIMM)) && TEST_INST_FIELD(size, Size32))
+            DEFINE_IS_EXT(LDRSW_UIMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_UIMM)) &&
+            TEST_INST_FIELD(size, Size32))
 
-            DEFINE_INST_CODE(LDRSW_UIMM)
+            void Disassembler() override;
 
-            void decode(STRUCT_A64(LDR_UIMM) *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
         };
 
 
@@ -757,22 +674,20 @@ namespace SandHook {
                 PreIndex = 0b11
             };
 
-            enum Size {
+            enum RegSize {
                 Size32 = 0b00,
                 Size64 = 0b10
             };
 
-            A64_STP_LDP(A64_STRUCT_STP_LDP &inst);
+            A64_STP_LDP(void *inst);
 
             A64_STP_LDP(OP op, RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand &operand);
 
             DEFINE_IS(STP_LDP)
 
-            DEFINE_INST_CODE(STP_LDP)
+            void Disassembler() override;
 
-            void decode(A64_STRUCT_STP_LDP *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -795,24 +710,20 @@ namespace SandHook {
                 UnSign = 0b0
             };
 
-            enum Size {
+            enum RegSize {
                 Size32 = 0b0,
                 Size64 = 0b1
             };
 
-            A64_ADD_SUB_IMM();
-
-            A64_ADD_SUB_IMM(A64_STRUCT_ADD_SUB_IMM &inst);
+            A64_ADD_SUB_IMM(void *inst);
 
             A64_ADD_SUB_IMM(OP op, S sign, RegisterA64 &rd, const Operand &operand);
 
             DEFINE_IS(ADD_SUB_IMM)
 
-            DEFINE_INST_CODE(ADD_SUB_IMM)
+            void Disassembler() override;
 
-            void decode(A64_STRUCT_ADD_SUB_IMM *inst) override;
-
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -830,21 +741,19 @@ namespace SandHook {
                 MRS = 1
             };
 
-            A64_MSR_MRS(A64_STRUCT_MSR_MRS &inst);
+            A64_MSR_MRS(void *inst);
 
             A64_MSR_MRS(OP op, SystemRegister &systemRegister, RegisterA64 &rt);
 
-            DEFINE_INST_CODE(MSR_MRS)
-
             DEFINE_IS(MSR_MRS)
 
-            void decode(A64_STRUCT_MSR_MRS *inst) override;
+            void Disassembler() override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
-            SystemRegister* systemRegister;
+            SystemRegister* system_reg;
             RegisterA64* rt;
         };
 
@@ -858,5 +767,6 @@ namespace SandHook {
 #undef TEST_INST_FIELD
 #undef TEST_INST_OPCODE
 #undef DEFINE_INST_CODE
-
-#endif //SANDHOOK_NH_INST_ARM64_H
+#undef DEFINE_INST_EXT
+#undef DEFINE_INST_EXT_
+#undef DEFINE_INST_PCREL

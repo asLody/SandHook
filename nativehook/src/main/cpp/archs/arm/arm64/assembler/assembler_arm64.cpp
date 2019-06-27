@@ -12,19 +12,19 @@ AssemblerA64::AssemblerA64(CodeBuffer* codeBuffer) {
     codeContainer.setCodeBuffer(codeBuffer);
 }
 
-void *AssemblerA64::getPC() {
+void *AssemblerA64::GetPC() {
     return reinterpret_cast<void *>(codeContainer.curPc);
 }
 
-void *AssemblerA64::getStartPC() {
+void *AssemblerA64::GetStartPC() {
     return reinterpret_cast<void *>(codeContainer.startPc);
 }
 
-void AssemblerA64::allocBufferFirst(U32 size) {
+void AssemblerA64::AllocBufferFirst(U32 size) {
     codeContainer.allocBufferFirst(size);
 }
 
-void *AssemblerA64::finish() {
+void *AssemblerA64::Finish() {
     codeContainer.commit();
     return reinterpret_cast<void *>(codeContainer.startPc);
 }
@@ -95,7 +95,7 @@ void AssemblerA64::B(Off offset) {
 }
 
 void AssemblerA64::B(Label *label) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::B, *label)));
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::B, label)));
 }
 
 void AssemblerA64::Bl(Off offset) {
@@ -103,7 +103,7 @@ void AssemblerA64::Bl(Off offset) {
 }
 
 void AssemblerA64::Bl(Label *label) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::BL, *label)));
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_BL)(INST_A64(B_BL)::BL, label)));
 }
 
 void AssemblerA64::B(Condition condition, Off offset) {
@@ -111,11 +111,11 @@ void AssemblerA64::B(Condition condition, Off offset) {
 }
 
 void AssemblerA64::B(Condition condition, Label *label) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_COND)(condition, *label)));
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(B_COND)(condition, label)));
 }
 
 void AssemblerA64::Tbz(RegisterA64 &rt, U32 bit, Label *label) {
-    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBZ, rt, bit, *label))));
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBZ, rt, bit, label))));
 }
 
 void AssemblerA64::Tbz(RegisterA64 &rt, U32 bit, Off offset) {
@@ -127,7 +127,7 @@ void AssemblerA64::Tbnz(RegisterA64 &rt, U32 bit, Off offset) {
 }
 
 void AssemblerA64::Tbnz(RegisterA64 &rt, U32 bit, Label *label) {
-    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBNZ, rt, bit, *label))));
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(TBZ_TBNZ)(INST_A64(TBZ_TBNZ)::TBNZ, rt, bit, label))));
 
 }
 
@@ -136,7 +136,7 @@ void AssemblerA64::Cbz(RegisterA64 &rt, Off offset) {
 }
 
 void AssemblerA64::Cbz(RegisterA64 &rt, Label *label) {
-    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBZ, *label, rt))));
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBZ, label, rt))));
 
 }
 
@@ -146,11 +146,11 @@ void AssemblerA64::Cbnz(RegisterA64 &rt, Off offset) {
 }
 
 void AssemblerA64::Cbnz(RegisterA64 &rt, Label *label) {
-    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBNZ, *label, rt))));
+    Emit((reinterpret_cast<Unit<Base> *>(new INST_A64(CBZ_CBNZ)(INST_A64(CBZ_CBNZ)::CBNZ, label, rt))));
 }
 
 void AssemblerA64::Str(RegisterA64 &rt, const MemOperand& memOperand) {
-    if (memOperand.addr_mode == Offset) {
+    if (memOperand.addr_mode_ == Offset) {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(STR_UIMM)(rt, memOperand)));
     } else {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(STR_IMM)(rt, memOperand)));
@@ -158,7 +158,7 @@ void AssemblerA64::Str(RegisterA64 &rt, const MemOperand& memOperand) {
 }
 
 void AssemblerA64::Ldr(RegisterA64 &rt, const MemOperand &memOperand) {
-    if (memOperand.addr_mode == Offset && memOperand.offset >= 0) {
+    if (memOperand.addr_mode_ == Offset && memOperand.offset_ >= 0) {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_UIMM)(rt, memOperand)));
     } else {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_IMM)(rt, memOperand)));
@@ -166,15 +166,15 @@ void AssemblerA64::Ldr(RegisterA64 &rt, const MemOperand &memOperand) {
 }
 
 void AssemblerA64::Ldr(RegisterA64 &rt, Label* label) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(rt.isX() ? INST_A64(LDR_LIT)::LDR_X : INST_A64(LDR_LIT)::LDR_W, rt, *label)));
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(rt.isX() ? INST_A64(LDR_LIT)::LDR_X : INST_A64(LDR_LIT)::LDR_W, rt, label)));
 }
 
 void AssemblerA64::Ldrsw(RegisterA64 &rt, Label* label) {
-    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(INST_A64(LDR_LIT)::LDR_SW, rt, *label)));
+    Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDR_LIT)(INST_A64(LDR_LIT)::LDR_SW, rt, label)));
 }
 
 void AssemblerA64::Ldrsw(XRegister &rt, const MemOperand& memOperand) {
-    if (memOperand.addr_mode == Offset) {
+    if (memOperand.addr_mode_ == Offset) {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDRSW_UIMM)(rt, memOperand)));
     } else {
         Emit(reinterpret_cast<Unit<Base> *>(new INST_A64(LDRSW_IMM)(rt, memOperand)));
@@ -182,7 +182,7 @@ void AssemblerA64::Ldrsw(XRegister &rt, const MemOperand& memOperand) {
 }
 
 // If the current stack pointer is sp, then it must be aligned to 16 bytes
-// on entry and the total size of the specified registers must also be a
+// on entry and the total Size of the specified registers must also be a
 // multiple of 16 bytes.
 void AssemblerA64::Pop(RegisterA64 &rd) {
     if (rd.isX()) {
@@ -193,7 +193,7 @@ void AssemblerA64::Pop(RegisterA64 &rd) {
 }
 
 // If the current stack pointer is sp, then it must be aligned to 16 bytes
-// on entry and the total size of the specified registers must also be a
+// on entry and the total Size of the specified registers must also be a
 // multiple of 16 bytes.
 void AssemblerA64::Push(RegisterA64 &rt) {
     if (rt.isX()) {

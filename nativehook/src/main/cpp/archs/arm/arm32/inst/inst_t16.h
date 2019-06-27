@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/16.
 //
 
-#ifndef SANDHOOK_INST_T16_H
-#define SANDHOOK_INST_T16_H
+#pragma once
 
 #include "arm_base.h"
 #include "register_list_arm32.h"
@@ -13,10 +12,10 @@
 
 #define INST_T16(X) T16_##X
 
-#define IS_OPCODE_T16(RAW, OP) INST_T16(OP)::is(RAW)
+#define IS_OPCODE_T16(RAW, OP) INST_T16(OP)::Is(RAW)
 
 #define DEFINE_IS_EXT(X, COND) \
-inline static bool is(InstT16& inst) { \
+inline static bool Is(InstT16& inst) { \
 union { \
     InstT16 raw; \
     STRUCT_T16(X) inst; \
@@ -44,62 +43,52 @@ namespace SandHook {
 
     namespace AsmA32 {
 
-        template<typename Inst>
-        class InstructionT16 : public Instruction<Inst> {
+        template<typename S, U32 C>
+        class InstructionT16 : public Instruction<S,C> {
         public:
 
             InstructionT16() {}
 
-            InstructionT16(Inst *inst) : Instruction<Inst>(inst) {}
+            InstructionT16(void *inst) : Instruction<S,C>(inst) {}
 
-            Inst mask(Inst raw) {
-                return raw & *(this->get());
-            }
-
-            U32 size() override {
+            INLINE U32 Size() override {
                 return 2;
             }
 
-            void *getPC() override {
-                return reinterpret_cast<void *>((Addr) Instruction<Inst>::getPC() + 2 * 2);
+            INLINE void *GetPC() override {
+                return reinterpret_cast<void *>((Addr) Instruction<S,C>::GetPC() + 2 * 2);
             }
 
-            Addr getVPC() override {
-                return Instruction<Inst>::getVPC() + 2 * 2;
+            INLINE Addr GetVPC() override {
+                return Instruction<S,C>::GetVPC() + 2 * 2;
             }
 
-            static inline S32 signExtend32(unsigned int bits, U32 value) {
-                return ExtractSignedBitfield32(bits - 1, 0, value);
-            }
-
-            InstType instType() override {
+            INLINE InstType InstType() override {
                 return thumb16;
             }
 
-            Arch arch() override {
+            INLINE Arch Arch() override {
                 return arm32;
             }
 
         };
 
 
-        template<typename Inst>
-        class T16_INST_PC_REL : public InstructionT16<Inst> {
+        template<typename S,U32 C>
+        class T16_INST_PC_REL : public InstructionT16<S,C> {
         public:
 
-            T16_INST_PC_REL() {};
+            T16_INST_PC_REL(void *inst) : InstructionT16<S,C>(inst) {};
 
-            T16_INST_PC_REL(Inst *inst) : InstructionT16<Inst>(inst) {};
-
-            virtual Off getImmPCOffset() {
+            INLINE virtual Off GetImmPCOffset() {
                 return 0;
             };
 
-            virtual Addr getImmPCOffsetTarget() {
-                return (Addr) this->getPC() + getImmPCOffset();
+            INLINE virtual Addr GetImmPCOffsetTarget() {
+                return (Addr) this->GetPC() + GetImmPCOffset();
             };
 
-            inline bool pcRelate() override {
+            INLINE bool PcRelate() override {
                 return true;
             };
 
@@ -111,15 +100,13 @@ namespace SandHook {
 
             T16_UNKNOW(STRUCT_T16(UNKNOW) &inst);
 
-            DEFINE_INST_CODE(UNKNOW)
-
             inline bool unknow() override {
                 return true;
             }
 
-            void decode(T16_STRUCT_UNKNOW *inst) override;
+            void Disassembler(T16_STRUCT_UNKNOW *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         private:
             STRUCT_T16(UNKNOW) inst_backup;
@@ -140,13 +127,13 @@ namespace SandHook {
 
             DEFINE_INST_CODE(B)
 
-            void onOffsetApply(Off offset) override;
+            void OnOffsetApply(Off offset) override;
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            void decode(STRUCT_T16(B) *inst) override;
+            void Disassembler(STRUCT_T16(B) *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             Off offset;
@@ -167,13 +154,13 @@ namespace SandHook {
 
             DEFINE_INST_CODE(B_COND)
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            void onOffsetApply(Off offset) override;
+            void OnOffsetApply(Off offset) override;
 
-            void decode(STRUCT_T16(B_COND) *inst) override;
+            void Disassembler(STRUCT_T16(B_COND) *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             Condition condition;
@@ -197,9 +184,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(BX_BLX)
 
-            void decode(T16_STRUCT_BX_BLX *inst) override;
+            void Disassembler(T16_STRUCT_BX_BLX *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -226,13 +213,13 @@ namespace SandHook {
 
             DEFINE_INST_CODE(CBZ_CBNZ)
 
-            void onOffsetApply(Off offset) override;
+            void OnOffsetApply(Off offset) override;
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            void decode(T16_STRUCT_CBZ_CBNZ *inst) override;
+            void Disassembler(T16_STRUCT_CBZ_CBNZ *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             OP op;
@@ -251,15 +238,15 @@ namespace SandHook {
 
             DEFINE_INST_CODE(LDR_LIT)
 
-            Addr getImmPCOffsetTarget() override;
+            Addr GetImmPCOffsetTarget() override;
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            void onOffsetApply(Off offset) override;
+            void OnOffsetApply(Off offset) override;
 
-            void decode(T16_STRUCT_LDR_LIT *inst) override;
+            void Disassembler(T16_STRUCT_LDR_LIT *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             Off offset;
@@ -277,9 +264,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(ADD_IMM_RDN)
 
-            void decode(T16_STRUCT_ADD_IMM_RDN *inst) override;
+            void Disassembler(T16_STRUCT_ADD_IMM_RDN *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterA32 *rdn;
@@ -299,15 +286,15 @@ namespace SandHook {
 
             DEFINE_INST_CODE(ADR)
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            Addr getImmPCOffsetTarget() override;
+            Addr GetImmPCOffsetTarget() override;
 
-            void onOffsetApply(Off offset) override;
+            void OnOffsetApply(Off offset) override;
 
-            void decode(T16_STRUCT_ADR *inst) override;
+            void Disassembler(T16_STRUCT_ADR *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterA32 *rd;
@@ -328,9 +315,9 @@ namespace SandHook {
             DEFINE_IS_EXT(CMP_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) &&
                                    TEST_INST_FIELD(opcode, OPCODE_T16(CMP_REG)))
 
-            void decode(T16_STRUCT_CMP_REG *inst) override;
+            void Disassembler(T16_STRUCT_CMP_REG *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterA32 *rm;
@@ -350,9 +337,9 @@ namespace SandHook {
             DEFINE_IS_EXT(MOV_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) &&
                                    TEST_INST_FIELD(opcode, OPCODE_T16(MOV_REG)))
 
-            void decode(T16_STRUCT_MOV_REG *inst) override;
+            void Disassembler(T16_STRUCT_MOV_REG *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
             bool pcRelate() override;
 
@@ -374,9 +361,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(ADD_REG)
 
-            void decode(T16_STRUCT_ADD_REG *inst) override;
+            void Disassembler(T16_STRUCT_ADD_REG *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterA32 *rd;
@@ -396,9 +383,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(CMP_REG_EXT)
 
-            void decode(T16_STRUCT_CMP_REG_EXT *inst) override;
+            void Disassembler(T16_STRUCT_CMP_REG_EXT *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
 
         public:
@@ -417,9 +404,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(POP)
 
-            void decode(T16_STRUCT_POP *inst) override;
+            void Disassembler(T16_STRUCT_POP *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterList registerList;
@@ -436,9 +423,9 @@ namespace SandHook {
 
             DEFINE_INST_CODE(PUSH)
 
-            void decode(T16_STRUCT_PUSH *inst) override;
+            void Disassembler(T16_STRUCT_PUSH *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterList registerList;
@@ -459,9 +446,9 @@ namespace SandHook {
 
             bool pcRelate() override;
 
-            void decode(T16_STRUCT_ADD_REG_RDN *inst) override;
+            void Disassembler(T16_STRUCT_ADD_REG_RDN *inst) override;
 
-            void assembler() override;
+            void Assembler() override;
 
         public:
             RegisterA32* rdn;
@@ -476,5 +463,3 @@ namespace SandHook {
 #undef TEST_INST_FIELD
 #undef TEST_INST_OPCODE
 #undef DEFINE_INST_CODE
-
-#endif //SANDHOOK_INST_T16_H

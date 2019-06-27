@@ -17,7 +17,7 @@ using namespace SandHook::Utils;
 
 #include "assembler_arm32.h"
 using namespace SandHook::RegistersA32;
-void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
+void *InlineHookArm32Android::InlineHook(void *origin, void *replace) {
     AutoLock lock(hookLock);
 
     void* originCode;
@@ -73,7 +73,7 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
 IMPORT_SHELLCODE(BP_SHELLCODE)
 IMPORT_LABEL(callback_addr_s, Addr)
 IMPORT_LABEL(origin_addr_s, Addr)
-bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
+bool InlineHookArm32Android::BreakPoint(void *origin, void (*callback)(REG *)) {
     AutoLock lock(hookLock);
 
     void* originCode;

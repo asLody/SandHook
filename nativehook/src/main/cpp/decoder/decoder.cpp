@@ -11,7 +11,7 @@
 
 using namespace SandHook::Decoder;
 
-bool DefaultVisitor::visit(Unit<Base> *unit, void *pc) {
+bool DefaultVisitor::Visit(Unit<Base> *unit, void *pc) {
     bool res = visitor(unit, pc);
     delete unit;
     return res;

@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/6.
 //
 
-#ifndef SANDHOOK_NH_COMPILER_H
-#define SANDHOOK_NH_COMPILER_H
+#pragma once
 
 // Helper to check whether the version of GCC used is greater than the specified
 // requirement.
@@ -58,5 +57,3 @@
 // clang-format on
 
 #endif
-
-#endif //SANDHOOK_NH_COMPILER_H

@@ -18,9 +18,9 @@ namespace SandHook {
             inline ~InlineHookArm32Android() {
                 delete hookLock;
             }
-            void *inlineHook(void *origin, void *replace) override;
+            void *InlineHook(void *origin, void *replace) override;
 
-            bool breakPoint(void *point, void (*callback)(REG *)) override;
+            bool BreakPoint(void *point, void (*callback)(REG *)) override;
 
         protected:
             std::mutex* hookLock;

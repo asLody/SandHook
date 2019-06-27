@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/11.
 //
 
-#ifndef SANDHOOK_NH_CODE_BUFFER_H
-#define SANDHOOK_NH_CODE_BUFFER_H
+#pragma once
 
 #include <mutex>
 #include "assembler.h"
@@ -48,5 +47,3 @@ namespace SandHook {
         };
     }
 }
-
-#endif //SANDHOOK_NH_CODE_BUFFER_H

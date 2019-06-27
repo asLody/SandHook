@@ -2,9 +2,9 @@
 // Created by SwiftGan on 2019/4/15.
 //
 
-#ifndef SANDHOOK_INSTRUCTION_H
-#define SANDHOOK_INSTRUCTION_H
+#pragma once
 
+#include <memory>
 #include "unit.h"
 #include "label.h"
 
@@ -23,84 +23,87 @@ typedef U32 InstRaw;
 
 
 #define INST_CHECK(X,V) \
-CHECK(X,V, valid = false;)
+CHECK(X,V, valid_ = false;)
 
 #define INST_DCHECK(X,V) \
-DCHECK(X,V, valid = false;)
+DCHECK(X,V, valid_ = false;)
 
 #define INST_ASSERT(COND) \
 if (COND) { \
-    valid = false; \
+    valid_ = false; \
 }
 
 namespace SandHook {
     namespace Asm {
 
-        template <typename Inst>
-        class Instruction : public Unit<Inst>, public LabelBinder {
+        template <typename S, U32 C>
+        class Instruction : public Unit<S>, public LabelBinder {
         public:
+
             Instruction() {}
 
-            Instruction(Inst *inst) : Unit<Inst>(inst) {}
+            Instruction(void *inst) : Unit<S>(inst) {}
 
-            UnitType unitType() override {
-                return UnitType::UnitInst;
+            Instruction(S *inst) : Unit<S>(inst) {}
+
+            UnitTypeDef UnitType() override {
+                return UnitTypeDef::UnitInst;
             };
 
-            virtual InstType instType() {
+            virtual InstType InstType() {
                 return unknowInst;
             }
 
-            virtual Arch arch() {
+            virtual Arch Arch() {
                 return unknowArch;
             }
 
-            virtual U32 instCode() {
-                return 0;
+            virtual U32 InstCode() {
+                return C;
             };
 
-            virtual bool pcRelate() {
+            virtual bool PcRelate() {
                 return false;
             }
 
-            virtual bool unknow() {
+            virtual bool Unknow() {
                 return false;
             }
 
-            inline bool isValid() const {
-                return valid;
+            inline bool Valid() const {
+                return valid_;
             }
 
-            virtual void onOffsetApply(Off offset) {}
+            virtual void OnOffsetApply(Off offset) {}
 
-            void onLabelApply(Addr pc) override {
-                onOffsetApply(pc - this->getVPC());
+            void OnLabelApply(Addr pc) override {
+                OnOffsetApply(pc - this->GetVPC());
             }
 
-            inline void bindLabel(Label &l) {
-                label = &l;
-                l.addBinder(this);
+            INLINE void BindLabel(Label *label) {
+                label_ = label;
+                label->AddBind(this);
             }
 
-            virtual void decode(Inst* inst) {
-                inst_backup = *inst;
+            virtual void Disassembler() {
+                backup_ = *this->pc_;
             }
 
-            virtual void assembler() {
-                this->set(inst_backup);
+            virtual void Assembler() {
+                *this->pc_ = backup_;
             }
 
         protected:
-            bool valid = true;
-            Label* label = nullptr;
-            Inst inst_backup;
+            bool valid_ = true;
+            Label* label_ = nullptr;
+            S backup_;
         };
 
         class Void : public Unit<Base> {
         public:
             Void(U32 size) : size_(size) {}
 
-            U32 size() override {
+            U32 Size() override {
                 return size_;
             }
 
@@ -108,7 +111,8 @@ namespace SandHook {
             U32 size_;
         };
 
+        using BaseInst = Instruction<Base,0>;
+        using BaseInstRef = std::shared_ptr<BaseInst>;
+
     }
 }
-
-#endif //SANDHOOK_INSTRUCTION_H

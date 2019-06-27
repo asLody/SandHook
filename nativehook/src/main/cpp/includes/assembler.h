@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/7.
 //
 
-#ifndef SANDHOOK_NH_ASSEMBLER_H
-#define SANDHOOK_NH_ASSEMBLER_H
+#pragma once
 
 #include "label.h"
 #include "instruction.h"
@@ -41,7 +40,7 @@ namespace SandHook {
 
             void setCodeBuffer(CodeBuffer *codeBuffer);
 
-            //allow code relocate to get new pc first
+            //allow code relocate to Get new pc first
             void allocBufferFirst(U32 size);
             void append(Unit<Base>* unit);
             void commit();
@@ -65,5 +64,3 @@ namespace SandHook {
     }
 
 }
-
-#endif //SANDHOOK_NH_ASSEMBLER_H

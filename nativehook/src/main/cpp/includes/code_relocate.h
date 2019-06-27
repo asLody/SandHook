@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/10.
 //
 
-#ifndef SANDHOOK_NH_CODE_RELOCATE_H
-#define SANDHOOK_NH_CODE_RELOCATE_H
+#pragma once
 
 #include <mutex>
 #include <map>
@@ -23,7 +22,7 @@ namespace SandHook {
 
             CodeRelocate(CodeContainer &codeContainer) : codeContainer(&codeContainer) {}
 
-            virtual void* relocate(Instruction<Base> *instruction, void* toPc) throw(ErrorCodeException) = 0;
+            virtual void* relocate(BaseInst *instruction, void* toPc) throw(ErrorCodeException) = 0;
             virtual void* relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) = 0;
 
             bool inRelocateRange(Off targetOffset, Addr targetLen);
@@ -46,5 +45,3 @@ namespace SandHook {
 
     }
 }
-
-#endif //SANDHOOK_NH_CODE_RELOCATE_H
