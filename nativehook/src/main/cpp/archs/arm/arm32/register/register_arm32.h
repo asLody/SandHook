@@ -32,7 +32,7 @@ namespace SandHook {
 
             RegisterA32(U8 code);
 
-            U8 getWide() override;
+            U8 Wide() override;
 
             virtual bool isUnkonw () {
                 return Code() == 38;

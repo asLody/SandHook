@@ -12,7 +12,7 @@
 #define DECODE_OFFSET(bits, ext) SignExtend32(bits + ext, COMBINE(Get()->imm##bits, 0, ext))
 #define ENCODE_OFFSET(bits, ext) Get()->imm##bits = TruncateToUint##bits(offset >> ext)
 
-#define CODE_OFFSET(I) I->offset + (I->instType() == A32 ? 2 * 4 : 2 * 2)
+#define CODE_OFFSET(I) I->offset + (I->InstType() == A32 ? 2 * 4 : 2 * 2)
 
 using namespace SandHook::RegistersA32;
 
@@ -143,20 +143,20 @@ namespace SandHook {
             return (registers.GetList() >> first) & ((1 << count) - 1);
         }
 
-        inline bool isThumbCode(Addr codeAddr) {
+        inline bool IsThumbCode(Addr codeAddr) {
             return (codeAddr & 0x1) == 0x1;
         }
 
-        inline bool isThumb32(InstT16 code) {
+        inline bool IsThumb32(InstT16 code) {
             return ((code & 0xF000) == 0xF000) || ((code & 0xF800) == 0xE800);
         }
 
-        inline void* getThumbCodeAddress(void* code) {
+        inline void* GetThumbCodeAddress(void *code) {
             Addr addr = reinterpret_cast<Addr>(code) & (~0x1);
             return reinterpret_cast<void*>(addr);
         }
 
-        inline void* getThumbPC(void* code) {
+        inline void* GetThumbPC(void *code) {
             Addr addr = reinterpret_cast<Addr>(code) & (~0x1);
             return reinterpret_cast<void*>(addr + 1);
         }

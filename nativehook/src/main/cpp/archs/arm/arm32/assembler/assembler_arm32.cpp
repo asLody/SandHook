@@ -62,23 +62,23 @@ void AssemblerA32::Ldr(RegisterA32 &rt, Off offset) {
 }
 
 void AssemblerA32::Ldr(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDR, INST_T32(LDR_LIT)::UnSign, rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDR, INST_T32(LDR_LIT)::UnSign, rt, label)));
 }
 
 void AssemblerA32::Ldrb(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRB, INST_T32(LDR_LIT)::UnSign,rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRB, INST_T32(LDR_LIT)::UnSign,rt, label)));
 }
 
 void AssemblerA32::Ldrh(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRH, INST_T32(LDR_LIT)::UnSign,rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRH, INST_T32(LDR_LIT)::UnSign,rt, label)));
 }
 
 void AssemblerA32::Ldrsb(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRB, INST_T32(LDR_LIT)::Sign,rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRB, INST_T32(LDR_LIT)::Sign,rt, label)));
 }
 
 void AssemblerA32::Ldrsh(RegisterA32 &rt, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRH, INST_T32(LDR_LIT)::Sign,rt, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(LDR_LIT)(INST_T32(LDR_LIT)::LDRH, INST_T32(LDR_LIT)::Sign,rt, label)));
 }
 
 void AssemblerA32::Ldr(RegisterA32 &rt, const MemOperand &operand) {
@@ -106,19 +106,19 @@ void AssemblerA32::Ldrsh(RegisterA32 &rt, const MemOperand &operand) {
 }
 
 void AssemblerA32::B(Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(B)(*label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(B)(label)));
 }
 
 void AssemblerA32::Bl(Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(B32)(INST_T32(B32)::BL, INST_T32(B32)::arm, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(B32)(INST_T32(B32)::BL, INST_T32(B32)::arm, label)));
 }
 
 void AssemblerA32::Blx(Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(B32)(INST_T32(B32)::BL, INST_T32(B32)::thumb, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(B32)(INST_T32(B32)::BL, INST_T32(B32)::thumb, label)));
 }
 
 void AssemblerA32::Bx(Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(B32)(INST_T32(B32)::B, INST_T32(B32)::thumb, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T32(B32)(INST_T32(B32)::B, INST_T32(B32)::thumb, label)));
 }
 
 void AssemblerA32::Mov(RegisterA32 &rd, RegisterA32 &rm) {
@@ -134,7 +134,7 @@ void AssemblerA32::Blx(RegisterA32 &rm) {
 }
 
 void AssemblerA32::B(Condition condition, Label* label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(B_COND)(condition, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(B_COND)(condition, label)));
 }
 
 void AssemblerA32::Add(RegisterA32 &rdn, U8 imm8) {
@@ -170,7 +170,7 @@ void AssemblerA32::Push(RegisterA32 &rt) {
 }
 
 void AssemblerA32::Adr(RegisterA32 &rd, Label *label) {
-    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(ADR)(rd, *label)));
+    Emit(reinterpret_cast<Unit<Base>*>(new INST_T16(ADR)(rd, label)));
 }
 
 void AssemblerA32::Nop16() {

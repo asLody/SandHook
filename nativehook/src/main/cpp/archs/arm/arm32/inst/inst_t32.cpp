@@ -18,26 +18,17 @@ using namespace SandHook::AsmA32;
 
 //Unknow
 
-T32_UNKNOW::T32_UNKNOW(STRUCT_T32(UNKNOW) &inst) : InstructionT32(&inst) {
-    Disassembler(&inst);
-}
-
-void T32_UNKNOW::Disassembler(T32_STRUCT_UNKNOW *inst) {
-    inst_backup = *inst;
-}
-
-void T32_UNKNOW::Assembler() {
-    Set(inst_backup);
+T32_UNKNOW::T32_UNKNOW(void *inst) : InstructionT32(inst) {
 }
 
 
-T32_B32::T32_B32(T32_STRUCT_B32 *inst) : T32_INST_PC_REL(inst) {
-    Disassembler(inst);
+
+T32_B32::T32_B32(void *inst) : T32_INST_PC_REL(inst) {
 }
 
 T32_B32::T32_B32(T32_B32::OP op, T32_B32::X x, Off offset) : op(op), x(x), offset(offset) {}
 
-T32_B32::T32_B32(T32_B32::OP op, T32_B32::X x, Label &label) : op(op), x(x) {
+T32_B32::T32_B32(T32_B32::OP op, T32_B32::X x, Label *label) : op(op), x(x) {
     BindLabel(label);
 }
 
@@ -54,9 +45,9 @@ Off T32_B32::GetImmPCOffset() {
     return SignExtend32(25, COMBINE(Si1i2, imm21, 21) << 1);
 }
 
-void T32_B32::Disassembler(T32_STRUCT_B32 *inst) {
+void T32_B32::Disassembler() {
     DECODE_OP;
-    x = X(inst->X);
+    x = X(Get()->X);
     offset = GetImmPCOffset();
 }
 
@@ -87,7 +78,7 @@ void T32_B32::Assembler() {
 
 Addr T32_B32::GetImmPCOffsetTarget() {
     if (x == arm && op == BL) {
-        void* base = reinterpret_cast<void *>(ALIGN((Addr) getPC(), 4));
+        void* base = reinterpret_cast<void *>(ALIGN((Addr) GetPC(), 4));
         return offset + reinterpret_cast<Addr>(base);
     } else {
         return T32_INST_PC_REL::GetImmPCOffsetTarget();
@@ -95,16 +86,16 @@ Addr T32_B32::GetImmPCOffsetTarget() {
 }
 
 
-T32_LDR_UIMM::T32_LDR_UIMM(T32_STRUCT_LDR_UIMM *inst) : InstructionT32(inst) {}
+T32_LDR_UIMM::T32_LDR_UIMM(void *inst) : InstructionT32(inst) {}
 
 T32_LDR_UIMM::T32_LDR_UIMM(RegisterA32 &rt, RegisterA32 &rn, U32 offset) : rt(&rt), rn(&rn),
                                                                            offset(offset) {}
 
-void T32_LDR_UIMM::Disassembler(T32_STRUCT_LDR_UIMM *inst) {
+void T32_LDR_UIMM::Disassembler() {
     DECODE_RN(Reg);
     DECODE_RT(Reg);
     INST_ASSERT(rn == &PC);
-    offset = inst->imm12;
+    offset = Get()->imm12;
 }
 
 void T32_LDR_UIMM::Assembler() {
@@ -115,16 +106,13 @@ void T32_LDR_UIMM::Assembler() {
     Get()->imm12 = offset;
 }
 
-T32_LDR_LIT::T32_LDR_LIT() {}
-
-T32_LDR_LIT::T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst) : T32_INST_PC_REL(inst) {
-    Disassembler(inst);
+T32_LDR_LIT::T32_LDR_LIT(void *inst) : T32_INST_PC_REL(inst) {
 }
 
 T32_LDR_LIT::T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Off offset) : op(op), s(s), rt(&rt), offset(offset) {}
 
 
-T32_LDR_LIT::T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Label& label) : op(op), s(s), rt(&rt) {
+T32_LDR_LIT::T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Label* label) : op(op), s(s), rt(&rt) {
     BindLabel(label);
 }
 
@@ -143,10 +131,10 @@ void T32_LDR_LIT::OnOffsetApply(Off offset) {
     }
 }
 
-void T32_LDR_LIT::Disassembler(T32_STRUCT_LDR_LIT *inst) {
+void T32_LDR_LIT::Disassembler() {
     DECODE_OP;
     DECODE_RT(Reg);
-    s = S(inst->S);
+    s = S(Get()->S);
     offset = GetImmPCOffset();
 }
 
@@ -165,21 +153,19 @@ void T32_LDR_LIT::Assembler() {
 }
 
 
-T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM() {}
 
-T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst) : InstructionT32(inst) {
-    Disassembler(inst);
+T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(void *inst) : InstructionT32(inst) {
 }
 
 T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_MOV_MOVT_IMM::OP op, RegisterA32 &rd, U16 imm16) : op(op),
                                                                                           rd(&rd),
                                                                                           imm16(imm16) {}
 
-void T32_MOV_MOVT_IMM::Disassembler(T32_STRUCT_MOV_MOVT_IMM *inst) {
+void T32_MOV_MOVT_IMM::Disassembler() {
     DECODE_OP;
     DECODE_RD(Reg);
-    U16 imm4i = COMBINE(inst->imm4, inst->i, 1);
-    U16 imm38 = COMBINE(inst->imm3, inst->imm8, 8);
+    U16 imm4i = COMBINE(Get()->imm4, Get()->i, 1);
+    U16 imm38 = COMBINE(Get()->imm3, Get()->imm8, 8);
     imm16 = COMBINE(imm4i, imm38, 11);
 }
 
@@ -195,28 +181,27 @@ void T32_MOV_MOVT_IMM::Assembler() {
 }
 
 
-T32_LDR_IMM::T32_LDR_IMM(T32_STRUCT_LDR_IMM *inst) : InstructionT32(inst) {
-    Disassembler(inst);
+T32_LDR_IMM::T32_LDR_IMM(void *inst) : InstructionT32(inst) {
 }
 
 T32_LDR_IMM::T32_LDR_IMM(T32_LDR_IMM::OP op, RegisterA32 &rt, const MemOperand &operand) : op(op),
                                                                                            rt(&rt),
                                                                                            operand(operand) {}
 
-void T32_LDR_IMM::Disassembler(T32_STRUCT_LDR_IMM *inst) {
+void T32_LDR_IMM::Disassembler() {
     DECODE_OP;
     DECODE_RT(Reg);
-    operand.rn = Reg(static_cast<U8>(inst->rn));
-    if (inst->P == 1 && inst->U == 0 && inst->W == 0) {
+    operand.rn = Reg(static_cast<U8>(Get()->rn));
+    if (Get()->P == 1 && Get()->U == 0 && Get()->W == 0) {
         operand.addr_mode = Offset;
-    } else if (inst->P == 0 && inst->W == 1) {
+    } else if (Get()->P == 0 && Get()->W == 1) {
         operand.addr_mode = PostIndex;
-    } else if (inst->P == 1 && inst->W == 1) {
+    } else if (Get()->P == 1 && Get()->W == 1) {
         operand.addr_mode = PreIndex;
     } else {
-        valid = false;
+        valid_ = false;
     }
-    operand.offset = inst->U == 0 ? -inst->imm8 : inst->imm8;
+    operand.offset = Get()->U == 0 ? -Get()->imm8 : Get()->imm8;
 }
 
 void T32_LDR_IMM::Assembler() {
@@ -246,12 +231,11 @@ void T32_LDR_IMM::Assembler() {
             Get()->W = 1;
             break;
         default:
-            valid = false;
+            valid_ = false;
     }
 }
 
 
 
-T32_SUB_IMM::T32_SUB_IMM(T32_STRUCT_SUB_IMM *inst) : InstructionT32(inst) {
-    DisAssembler(inst);
+T32_SUB_IMM::T32_SUB_IMM(void *inst) : InstructionT32(inst) {
 }

@@ -17,18 +17,18 @@ using namespace SandHook::Utils;
 
 #include "assembler_arm32.h"
 using namespace SandHook::RegistersA32;
-void *InlineHookArm32Android::InlineHook(void *origin, void *replace) {
+void *InlineHookArm32Android::Hook(void *origin, void *replace) {
     AutoLock lock(hookLock);
 
     void* originCode;
-    if (isThumbCode((Addr)origin)) {
-        originCode = getThumbCodeAddress(origin);
+    if (IsThumbCode((Addr) origin)) {
+        originCode = GetThumbCodeAddress(origin);
     } else {
         LOGE("hook %d error!, only support thumb2 now!", origin);
         return nullptr;
     }
 
-    bool changeMode = isThumbCode((Addr) origin) != isThumbCode((Addr) replace);
+    bool changeMode = IsThumbCode((Addr) origin) != IsThumbCode((Addr) replace);
 
     void* backup = nullptr;
     AssemblerA32 assemblerBackup(backupBuffer);
@@ -60,13 +60,14 @@ void *InlineHookArm32Android::InlineHook(void *origin, void *replace) {
     ALIGN_FOR_LDR
     __ Ldr(PC, origin_addr_label);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
+    __ Emit((Addr) GetThumbPC(
+            reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
     __ finish();
 #undef __
 
     //commit inline trampoline
     assemblerInline.finish();
-    return getThumbPC(backup);
+    return GetThumbPC(backup);
 }
 
 
@@ -77,14 +78,14 @@ bool InlineHookArm32Android::BreakPoint(void *origin, void (*callback)(REG *)) {
     AutoLock lock(hookLock);
 
     void* originCode;
-    if (isThumbCode((Addr)origin)) {
-        originCode = getThumbCodeAddress(origin);
+    if (IsThumbCode((Addr) origin)) {
+        originCode = GetThumbCodeAddress(origin);
     } else {
         LOGE("hook %d error!, only support thumb2 now!", origin);
         return false;
     }
 
-    bool changeMode = isThumbCode((Addr) origin) != isThumbCode((Addr) callback);
+    bool changeMode = IsThumbCode((Addr) origin) != IsThumbCode((Addr) callback);
 
     void* backup = nullptr;
     AssemblerA32 assemblerBackup(backupBuffer);
@@ -100,12 +101,13 @@ bool InlineHookArm32Android::BreakPoint(void *origin, void (*callback)(REG *)) {
     ALIGN_FOR_LDR
     __ Ldr(PC, origin_addr_label);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
+    __ Emit((Addr) GetThumbPC(
+            reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
     __ finish();
 #undef __
 
     //build trampoline
-    origin_addr_s = (Addr) getThumbPC(backup);
+    origin_addr_s = (Addr) GetThumbPC(backup);
     callback_addr_s = (Addr) callback;
     void* trampoline = backupBuffer->copy((void*)BP_SHELLCODE, SHELLCODE_LEN(BP_SHELLCODE));
 

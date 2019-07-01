@@ -24,8 +24,8 @@ CodeRelocateA32::CodeRelocateA32(AssemblerA32 &assembler) : CodeRelocate(assembl
     this->assemblerA32 = &assembler;
 }
 
-bool CodeRelocateA32::visit(Unit<Base> *unit, void *pc) {
-    relocate(reinterpret_cast<Instruction<Base> *>(unit), __ getPC());
+bool CodeRelocateA32::Visit(BaseUnit *unit, void *pc) {
+    relocate(reinterpret_cast<BaseInst *>(unit), __ getPC());
     curOffset += unit->Size();
     if (unit->RefCount() == 0) {
         delete unit;
@@ -36,28 +36,28 @@ bool CodeRelocateA32::visit(Unit<Base> *unit, void *pc) {
 void* CodeRelocateA32::relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
     AutoLock autoLock(relocateLock);
     startAddr = reinterpret_cast<Addr>(startPc);
-    if (isThumbCode(startAddr)) {
-        startAddr = reinterpret_cast<Addr>(getThumbCodeAddress(startPc));
+    if (IsThumbCode(startAddr)) {
+        startAddr = reinterpret_cast<Addr>(GetThumbCodeAddress(startPc));
     }
     length = len;
     curOffset = 0;
     __ allocBufferFirst(static_cast<U32>(len * 8));
     void* curPc = __ getPC();
     if (toPc == nullptr) {
-        Disassembler::Get()->Disassembler(startPc, len, *this, true);
+        Disassembler::get()->Disassembler(startPc, len, *this, true);
     } else {
         //TODO
     }
     return curPc;
 }
 
-void* CodeRelocateA32::relocate(Instruction<Base> *instruction, void *toPc) throw(ErrorCodeException) {
+void* CodeRelocateA32::relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) {
     void* curPc = __ getPC();
 
     //insert later AddBind labels
     __ Emit(getLaterBindLabel(curOffset));
 
-    if (!instruction->pcRelate()) {
+    if (!instruction->PcRelate()) {
         __ Emit(instruction);
         instruction->Ref();
         return curPc;
@@ -136,12 +136,12 @@ IMPL_RELOCATE(T16, B) {
     ALIGN_FOR_LDR
     __ Ldr(PC, target_label);
     __ Emit(target_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(targetAddr)));
+    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(targetAddr)));
 
 }
 
 IMPL_RELOCATE(T16, BX_BLX) {
-    __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+    __ Emit(reinterpret_cast<BaseInst*>(inst));
     inst->Ref();
 }
 
@@ -150,8 +150,8 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
     inst->Ref();
 
     if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
-        inst->BindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
-        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
 
@@ -161,24 +161,24 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
     Label* false_label = new Label;
     Label* target_label = new Label();
 
-    inst->BindLabel(*true_label);
-    __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+    inst->BindLabel(true_label);
+    __ Emit(reinterpret_cast<BaseInst*>(inst));
     __ B(false_label);
     __ Emit(true_label);
     ALIGN_FOR_LDR
     __ Ldr(PC, target_label);
     __ Emit(target_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(targetAddr)));
+    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(targetAddr)));
     __ Emit(false_label);
 
 }
 
 IMPL_RELOCATE(T16, LDR_LIT) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), inst->rt->getWide())) {
+    if (inRelocateRange(CODE_OFFSET(inst), inst->rt->Wide())) {
         inst->Ref();
-        inst->BindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
-        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
 
@@ -190,10 +190,10 @@ IMPL_RELOCATE(T16, LDR_LIT) {
 
 IMPL_RELOCATE(T16, ADR) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), inst->rd->getWide())) {
+    if (inRelocateRange(CODE_OFFSET(inst), inst->rd->Wide())) {
         inst->Ref();
-        inst->BindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
-        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
 
@@ -207,14 +207,14 @@ IMPL_RELOCATE(T16, ADD_REG_RDN) {
 
     if (*inst->rm != PC) {
         inst->Ref();
-        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
 
     RegisterA32& tmpReg = *inst->rdn != R0 ? R0 : R1;
 
     __ Push(tmpReg);
-    __ Mov(tmpReg,(Addr)inst->getPC());
+    __ Mov(tmpReg,(Addr)inst->GetPC());
     __ Add(*inst->rdn, *inst->rdn, tmpReg);
     __ Pop(tmpReg);
 
@@ -224,8 +224,8 @@ IMPL_RELOCATE(T32, B32) {
 
     if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
         inst->Ref();
-        inst->BindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
-        __ Emit(reinterpret_cast<Instruction<Base> *>(inst));
+        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<BaseInst *>(inst));
         return;
     }
 
@@ -234,7 +234,7 @@ IMPL_RELOCATE(T32, B32) {
 
     if (inst->x == T32_B32::thumb) {
         //Thumb mode
-        targetAddr = reinterpret_cast<Addr>(getThumbPC(reinterpret_cast<void *>(targetAddr)));
+        targetAddr = reinterpret_cast<Addr>(GetThumbPC(reinterpret_cast<void *>(targetAddr)));
     }
     __ Mov(IP, targetAddr);
     if (inst->op == T32_B32::BL) {
@@ -249,8 +249,8 @@ IMPL_RELOCATE(T32, LDR_LIT) {
 
     if (inRelocateRange(CODE_OFFSET(inst), sizeof(Addr))) {
         inst->Ref();
-        inst->BindLabel(*getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
-        __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
 
@@ -277,7 +277,7 @@ IMPL_RELOCATE(T32, LDR_LIT) {
             break;
         default:
             inst->Ref();
-            __ Emit(reinterpret_cast<Instruction<Base>*>(inst));
+            __ Emit(reinterpret_cast<BaseInst*>(inst));
     }
 
 }

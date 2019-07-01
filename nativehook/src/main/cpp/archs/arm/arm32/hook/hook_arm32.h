@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/23.
 //
 
-#ifndef SANDHOOK_HOOK_ARM32_H
-#define SANDHOOK_HOOK_ARM32_H
+#pragma once
 
 #include "hook.h"
 
@@ -18,7 +17,7 @@ namespace SandHook {
             inline ~InlineHookArm32Android() {
                 delete hookLock;
             }
-            void *InlineHook(void *origin, void *replace) override;
+            void *Hook(void *origin, void *replace) override;
 
             bool BreakPoint(void *point, void (*callback)(REG *)) override;
 
@@ -28,5 +27,3 @@ namespace SandHook {
 
     }
 }
-
-#endif //SANDHOOK_HOOK_ARM32_H

@@ -766,7 +766,7 @@ namespace SandHook {
 #undef DEFINE_IS
 #undef TEST_INST_FIELD
 #undef TEST_INST_OPCODE
-#undef DEFINE_INST_CODE
+#undef DEFINE_INST
 #undef DEFINE_INST_EXT
 #undef DEFINE_INST_EXT_
 #undef DEFINE_INST_PCREL
