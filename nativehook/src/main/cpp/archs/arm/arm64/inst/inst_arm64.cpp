@@ -62,11 +62,11 @@ Addr A64_ADR_ADRP::GetImmPCOffsetTarget() {
     return offset + reinterpret_cast<Addr>(base);
 }
 
-void A64_ADR_ADRP::Assembler() {
+void A64_ADR_ADRP::Assemble() {
     SET_OPCODE(ADR_ADRP);
 }
 
-void A64_ADR_ADRP::Disassembler() {
+void A64_ADR_ADRP::Disassemble() {
     offset = GetImmPCOffset();
     DECODE_RD(XReg);
     DECODE_OP;
@@ -79,7 +79,7 @@ A64_MOV_WIDE::A64_MOV_WIDE(void* inst) : InstructionA64(inst) {}
 A64_MOV_WIDE::A64_MOV_WIDE(A64_MOV_WIDE::OP op,RegisterA64* rd, U16 imme, U8 shift)
         : shift(shift), op(op), imme(imme), rd(rd) {}
 
-void A64_MOV_WIDE::Assembler() {
+void A64_MOV_WIDE::Assemble() {
     SET_OPCODE(MOV_WIDE);
     Get()->imm16 = imme;
     Get()->hw = static_cast<InstA64>(shift / 16);
@@ -88,7 +88,7 @@ void A64_MOV_WIDE::Assembler() {
     ENCODE_RD;
 }
 
-void A64_MOV_WIDE::Disassembler() {
+void A64_MOV_WIDE::Disassemble() {
     imme = static_cast<U16>(Get()->imm16);
     shift = static_cast<U8>(Get()->hw * 16);
     op = OP(Get()->op);
@@ -122,12 +122,12 @@ void A64_B_BL::OnOffsetApply(Off offset) {
     ENCODE_OFFSET(26, 2);
 }
 
-void A64_B_BL::Disassembler() {
+void A64_B_BL::Disassemble() {
     DECODE_OP;
     offset = GetImmPCOffset();
 }
 
-void A64_B_BL::Assembler() {
+void A64_B_BL::Assemble() {
     SET_OPCODE(B_BL);
     ENCODE_OP;
     ENCODE_OFFSET(26, 2);
@@ -153,7 +153,7 @@ Off A64_CBZ_CBNZ::GetImmPCOffset() {
     return DECODE_OFFSET(19, 2);
 }
 
-void A64_CBZ_CBNZ::Disassembler() {
+void A64_CBZ_CBNZ::Disassemble() {
     DECODE_OP;
     if (Get()->sf == 1) {
         DECODE_RT(XReg);
@@ -163,7 +163,7 @@ void A64_CBZ_CBNZ::Disassembler() {
     offset = GetImmPCOffset();
 }
 
-void A64_CBZ_CBNZ::Assembler() {
+void A64_CBZ_CBNZ::Assemble() {
     SET_OPCODE(CBZ_CBNZ);
     ENCODE_OP;
     ENCODE_RT;
@@ -193,12 +193,12 @@ Off A64_B_COND::GetImmPCOffset() {
     return DECODE_OFFSET(19, 2);
 }
 
-void A64_B_COND::Disassembler() {
+void A64_B_COND::Disassemble() {
     DECODE_COND;
     offset = GetImmPCOffset();
 }
 
-void A64_B_COND::Assembler() {
+void A64_B_COND::Assemble() {
     SET_OPCODE(B_COND);
     ENCODE_COND;
     ENCODE_OFFSET(19, 2);
@@ -230,7 +230,7 @@ Off A64_TBZ_TBNZ::GetImmPCOffset() {
     return DECODE_OFFSET(14, 2);
 }
 
-void A64_TBZ_TBNZ::Disassembler() {
+void A64_TBZ_TBNZ::Disassemble() {
     bit = COMBINE(Get()->b5, Get()->b40, 5);
     if (Get()->b5 == 1) {
         DECODE_RT(XReg);
@@ -241,7 +241,7 @@ void A64_TBZ_TBNZ::Disassembler() {
     offset = GetImmPCOffset();
 }
 
-void A64_TBZ_TBNZ::Assembler() {
+void A64_TBZ_TBNZ::Assemble() {
     SET_OPCODE(TBZ_TBNZ);
     ENCODE_OP;
     Get()->b5 = rt->isX() ? 1 : 0;
@@ -277,7 +277,7 @@ void A64_LDR_LIT::OnOffsetApply(Off offset) {
     ENCODE_OFFSET(19, 2);
 }
 
-void A64_LDR_LIT::Disassembler() {
+void A64_LDR_LIT::Disassemble() {
     DECODE_OP;
     offset = GetImmPCOffset();
     if (op == LDR_W) {
@@ -287,7 +287,7 @@ void A64_LDR_LIT::Disassembler() {
     }
 }
 
-void A64_LDR_LIT::Assembler() {
+void A64_LDR_LIT::Assemble() {
     SET_OPCODE(LDR_LIT);
     ENCODE_OP;
     ENCODE_RT;
@@ -301,12 +301,12 @@ A64_BR_BLR_RET::A64_BR_BLR_RET(void *inst) : InstructionA64(inst) {}
 
 A64_BR_BLR_RET::A64_BR_BLR_RET(A64_BR_BLR_RET::OP op, XRegister &rn) : op(op), rn(&rn) {}
 
-void A64_BR_BLR_RET::Disassembler() {
+void A64_BR_BLR_RET::Disassemble() {
     DECODE_RN(XReg);
     DECODE_OP;
 }
 
-void A64_BR_BLR_RET::Assembler() {
+void A64_BR_BLR_RET::Assemble() {
     SET_OPCODE_MULTI(BR_BLR_RET, 1);
     SET_OPCODE_MULTI(BR_BLR_RET, 2);
     SET_OPCODE_MULTI(BR_BLR_RET, 3);
@@ -322,7 +322,7 @@ A64_STR_IMM::A64_STR_IMM(void *inst) : A64LoadAndStoreImm(inst) {}
 A64_STR_IMM::A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand) : A64LoadAndStoreImm(&rt, operand) {
 }
 
-void A64_STR_IMM::Disassembler() {
+void A64_STR_IMM::Disassemble() {
     regSize = RegSize(Get()->size);
     switch (regSize) {
         case Size64:
@@ -358,7 +358,7 @@ void A64_STR_IMM::Disassembler() {
     operand.offset_ = offset;
 }
 
-void A64_STR_IMM::Assembler() {
+void A64_STR_IMM::Assemble() {
     SET_OPCODE(STR_IMM);
     Get()->rt = rt->Code();
     Get()->rn = operand.base_->Code();
@@ -395,7 +395,7 @@ A64_STR_UIMM::A64_STR_UIMM(void *inst) : A64LoadAndStoreImm(inst) {}
 A64_STR_UIMM::A64_STR_UIMM(RegisterA64 &rt, const MemOperand &operand) :  A64LoadAndStoreImm(&rt, operand) {
 }
 
-void A64_STR_UIMM::Disassembler() {
+void A64_STR_UIMM::Disassemble() {
     regSize = RegSize(Get()->size);
     switch (regSize) {
         case Size64:
@@ -416,7 +416,7 @@ void A64_STR_UIMM::Disassembler() {
     operand.offset_ = offset;
 }
 
-void A64_STR_UIMM::Assembler() {
+void A64_STR_UIMM::Assemble() {
     SET_OPCODE(STR_UIMM);
     ENCODE_RT;
     Get()->rn = operand.base_->Code();
@@ -438,7 +438,7 @@ A64_MOV_REG::A64_MOV_REG(void *inst) : InstructionA64(inst) {
 A64_MOV_REG::A64_MOV_REG(RegisterA64 &rd, RegisterA64 &rm) : rd(&rd), rm(&rm) {
 }
 
-void A64_MOV_REG::Disassembler() {
+void A64_MOV_REG::Disassemble() {
     if (Get()->sf == 1) {
         DECODE_RD(XReg);
         DECODE_RM(XReg);
@@ -448,7 +448,7 @@ void A64_MOV_REG::Disassembler() {
     }
 }
 
-void A64_MOV_REG::Assembler() {
+void A64_MOV_REG::Assemble() {
     SET_OPCODE_MULTI(MOV_REG, 1);
     SET_OPCODE_MULTI(MOV_REG, 2);
     Get()->sf = rd->isX() ? 1 : 0;
@@ -462,7 +462,7 @@ A64_SUB_EXT_REG::A64_SUB_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand
                                    FlagsUpdate flagsUpdate) : rd(&rd), rn(&rn), operand(operand),
                                                               flagsUpdate(flagsUpdate) {}
 
-void A64_SUB_EXT_REG::Disassembler() {
+void A64_SUB_EXT_REG::Disassemble() {
     flagsUpdate = FlagsUpdate(Get()->S);
     if (Get()->sf == 1) {
         DECODE_RD(XReg);
@@ -478,7 +478,7 @@ void A64_SUB_EXT_REG::Disassembler() {
     operand.shift_ = Shift(Get()->imm3);
 }
 
-void A64_SUB_EXT_REG::Assembler() {
+void A64_SUB_EXT_REG::Assemble() {
     SET_OPCODE_MULTI(SUB_EXT_REG, 1);
     SET_OPCODE_MULTI(SUB_EXT_REG, 2);
     Get()->S = flagsUpdate;
@@ -498,13 +498,13 @@ A64_EXCEPTION_GEN::A64_EXCEPTION_GEN(void* inst) : InstructionA64(inst) {
 A64_EXCEPTION_GEN::A64_EXCEPTION_GEN(A64_EXCEPTION_GEN::OP op, ExceptionLevel el, U16 imme) : op(
         op), el(el), imme(imme) {}
 
-void A64_EXCEPTION_GEN::Disassembler() {
+void A64_EXCEPTION_GEN::Disassemble() {
     DECODE_OP;
     el = ExceptionLevel(Get()->ll);
     imme = static_cast<U16>(Get()->imm16);
 }
 
-void A64_EXCEPTION_GEN::Assembler() {
+void A64_EXCEPTION_GEN::Assemble() {
     SET_OPCODE_MULTI(EXCEPTION_GEN, 1);
     SET_OPCODE_MULTI(EXCEPTION_GEN, 2);
     ENCODE_OP;
@@ -525,7 +525,7 @@ A64_LDR_IMM::A64_LDR_IMM(void *inst) : A64LoadAndStoreImm(inst) {
 A64_LDR_IMM::A64_LDR_IMM(RegisterA64 &rt, const MemOperand &operand) : A64LoadAndStoreImm(&rt,
                                                                                           operand) {}
 
-void A64_LDR_IMM::Disassembler() {
+void A64_LDR_IMM::Disassemble() {
     regSize = RegSize(Get()->size);
     switch (regSize) {
         case Size64:
@@ -561,7 +561,7 @@ void A64_LDR_IMM::Disassembler() {
     operand.offset_ = offset;
 }
 
-void A64_LDR_IMM::Assembler() {
+void A64_LDR_IMM::Assemble() {
     SET_OPCODE(LDR_IMM);
     Get()->rt = rt->Code();
     Get()->rn = operand.base_->Code();
@@ -600,7 +600,7 @@ A64_LDR_UIMM::A64_LDR_UIMM(void *inst) : A64LoadAndStoreImm(&inst) {
 A64_LDR_UIMM::A64_LDR_UIMM(RegisterA64 &rt, const MemOperand &operand) : A64LoadAndStoreImm(&rt,
                                                                                           operand) {}
 
-void A64_LDR_UIMM::Disassembler() {
+void A64_LDR_UIMM::Disassemble() {
     regSize = RegSize(Get()->size);
     switch (regSize) {
         case Size64:
@@ -621,7 +621,7 @@ void A64_LDR_UIMM::Disassembler() {
     operand.offset_ = offset;
 }
 
-void A64_LDR_UIMM::Assembler() {
+void A64_LDR_UIMM::Assemble() {
     SET_OPCODE(LDR_UIMM);
     Get()->rt = rt->Code();
     Get()->rn = operand.base_->Code();
@@ -643,7 +643,7 @@ A64_LDRSW_IMM::A64_LDRSW_IMM(void *inst) : A64_LDR_IMM(inst) {}
 A64_LDRSW_IMM::A64_LDRSW_IMM(RegisterA64 &rt, const MemOperand &operand) : A64_LDR_IMM(rt,
                                                                                        operand) {}
 
-void A64_LDRSW_IMM::Disassembler() {
+void A64_LDRSW_IMM::Disassemble() {
     rt = XReg(static_cast<U8>(Get()->rt));
     addrMode = AdMod(Get()->addrmode);
     switch (addrMode) {
@@ -668,7 +668,7 @@ void A64_LDRSW_IMM::Disassembler() {
     operand.base_ = XReg(static_cast<U8>(Get()->rn));
 }
 
-void A64_LDRSW_IMM::Assembler() {
+void A64_LDRSW_IMM::Assemble() {
     SET_OPCODE(LDRSW_IMM);
     Get()->size = Size32;
     Get()->rt = rt->Code();
@@ -698,7 +698,7 @@ A64_LDRSW_UIMM::A64_LDRSW_UIMM(void *inst) : A64_LDR_UIMM(inst) {}
 A64_LDRSW_UIMM::A64_LDRSW_UIMM(XRegister &rt, const MemOperand &operand) : A64_LDR_UIMM(rt,
                                                                                           operand) {}
 
-void A64_LDRSW_UIMM::Disassembler() {
+void A64_LDRSW_UIMM::Disassemble() {
     DECODE_RT(XReg);
     operand.base_ = XReg(static_cast<U8>(Get()->rn));
     operand.addr_mode_ = AddrMode::Offset;
@@ -707,7 +707,7 @@ void A64_LDRSW_UIMM::Disassembler() {
     operand.offset_ = offset;
 }
 
-void A64_LDRSW_UIMM::Assembler() {
+void A64_LDRSW_UIMM::Assemble() {
     SET_OPCODE(LDRSW_UIMM);
     Get()->size = Size32;
     ENCODE_RT;
@@ -724,7 +724,7 @@ A64_STP_LDP::A64_STP_LDP(OP op, RegisterA64 &rt1, RegisterA64 &rt2, const MemOpe
                                                                                           rt2(&rt2),
                                                                                           operand(operand) {}
 
-void A64_STP_LDP::Disassembler() {
+void A64_STP_LDP::Disassemble() {
     DECODE_OP;
     RegSize s = RegSize(Get()->size);
     if (s == Size64) {
@@ -751,7 +751,7 @@ void A64_STP_LDP::Disassembler() {
     }
 }
 
-void A64_STP_LDP::Assembler() {
+void A64_STP_LDP::Assemble() {
     SET_OPCODE(STP_LDP);
     ENCODE_OP;
     Get()->size = rt1->isX() ? Size64 : Size32;
@@ -781,7 +781,7 @@ A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(void *inst) : InstructionA64(&inst) {
 A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(A64_ADD_SUB_IMM::OP op, A64_ADD_SUB_IMM::S sign, RegisterA64 &rd,
                          const Operand &operand) : op(op), sign(sign), rd(&rd), operand(operand) {}
 
-void A64_ADD_SUB_IMM::Disassembler() {
+void A64_ADD_SUB_IMM::Disassemble() {
     DECODE_OP;
     if (Get()->sf == Size64) {
         DECODE_RD(XReg);
@@ -801,7 +801,7 @@ void A64_ADD_SUB_IMM::Disassembler() {
     }
 }
 
-void A64_ADD_SUB_IMM::Assembler() {
+void A64_ADD_SUB_IMM::Assemble() {
     SET_OPCODE(ADD_SUB_IMM);
     ENCODE_OP;
     ENCODE_RD;
@@ -824,13 +824,13 @@ A64_MSR_MRS::A64_MSR_MRS(void *inst) : InstructionA64(&inst) {
 A64_MSR_MRS::A64_MSR_MRS(OP op, SystemRegister &systemRegister, RegisterA64 &rt) : op(op), system_reg(
         &systemRegister), rt(&rt) {}
 
-void A64_MSR_MRS::Disassembler() {
+void A64_MSR_MRS::Disassemble() {
     DECODE_OP;
     DECODE_RT(XReg);
     system_reg->value = static_cast<U16>(Get()->sysreg);
 }
 
-void A64_MSR_MRS::Assembler() {
+void A64_MSR_MRS::Assemble() {
     SET_OPCODE(MSR_MRS);
     ENCODE_OP;
     ENCODE_RT;

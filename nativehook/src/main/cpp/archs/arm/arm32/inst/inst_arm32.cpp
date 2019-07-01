@@ -42,7 +42,7 @@
 //}
 //
 //
-//void A64_STR_IMM::Assembler() {
+//void A64_STR_IMM::Assemble() {
 //    INST_DCHECK(condition, Condition::nv)
 //
 //}

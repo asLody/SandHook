@@ -100,7 +100,7 @@ void breakCallback(REG regs[]) {
 class Visitor : public InstVisitor {
     bool Visit(Unit<Base> *unit, void *pc) override {
         BaseInst* instruction = reinterpret_cast<BaseInst *>(unit);
-        instruction->Assembler();
+        instruction->Assemble();
         return true;
     }
 };

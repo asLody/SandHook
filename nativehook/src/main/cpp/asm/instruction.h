@@ -85,11 +85,11 @@ namespace SandHook {
                 label->AddBind(this);
             }
 
-            virtual void Disassembler() {
+            virtual void Disassemble() {
                 backup_ = *this->pc_;
             }
 
-            virtual void Assembler() {
+            virtual void Assemble() {
                 *this->pc_ = backup_;
             }
 

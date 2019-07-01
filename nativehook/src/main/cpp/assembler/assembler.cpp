@@ -46,7 +46,7 @@ void CodeContainer::commit() {
             (*unit)->Set(reinterpret_cast<Base*>(pcNow));
         }
         if ((*unit)->UnitType() == UnitInst) {
-            reinterpret_cast<BaseInst*>(*unit)->Assembler();
+            reinterpret_cast<BaseInst*>(*unit)->Assemble();
         }
         pcNow += (*unit)->Size();
     }

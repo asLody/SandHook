@@ -35,11 +35,11 @@ Off T16_B::GetImmPCOffset() {
     return DECODE_OFFSET(11, 1);
 }
 
-void T16_B::Disassembler() {
+void T16_B::Disassemble() {
     offset = GetImmPCOffset();
 }
 
-void T16_B::Assembler() {
+void T16_B::Assemble() {
     SET_OPCODE(B);
     DECODE_OFFSET(11, 1);
 }
@@ -62,12 +62,12 @@ T16_B_COND::T16_B_COND(Condition condition, Label *label) {
     BindLabel(label);
 }
 
-void T16_B_COND::Disassembler() {
+void T16_B_COND::Disassemble() {
     DECODE_COND;
     offset = GetImmPCOffset();
 }
 
-void T16_B_COND::Assembler() {
+void T16_B_COND::Assemble() {
     SET_OPCODE(B_COND);
     ENCODE_COND;
     ENCODE_OFFSET(8, 1);
@@ -89,12 +89,12 @@ T16_BX_BLX::T16_BX_BLX(void *inst) : T16_INST_PC_REL(inst) {}
 
 T16_BX_BLX::T16_BX_BLX(T16_BX_BLX::OP op, RegisterA32 &rm) : op(op), rm(&rm) {}
 
-void T16_BX_BLX::Disassembler() {
+void T16_BX_BLX::Disassemble() {
     DECODE_OP;
     DECODE_RM(Reg);
 }
 
-void T16_BX_BLX::Assembler() {
+void T16_BX_BLX::Assemble() {
     SET_OPCODE_MULTI(BX_BLX, 1);
     SET_OPCODE_MULTI(BX_BLX, 2);
     ENCODE_OP;
@@ -116,13 +116,13 @@ Off T16_CBZ_CBNZ::GetImmPCOffset() {
     return COMBINE(Get()->i, Get()->imm5, 5) << 2;
 }
 
-void T16_CBZ_CBNZ::Disassembler() {
+void T16_CBZ_CBNZ::Disassemble() {
     offset = GetImmPCOffset();
     DECODE_RN(Reg);
     DECODE_OP;
 }
 
-void T16_CBZ_CBNZ::Assembler() {
+void T16_CBZ_CBNZ::Assemble() {
     SET_OPCODE_MULTI(CBZ_CBNZ, 1);
     SET_OPCODE_MULTI(CBZ_CBNZ, 2);
     SET_OPCODE_MULTI(CBZ_CBNZ, 3);
@@ -155,12 +155,12 @@ void T16_LDR_LIT::OnOffsetApply(Off offset) {
     ENCODE_OFFSET(8, 2);
 }
 
-void T16_LDR_LIT::Disassembler() {
+void T16_LDR_LIT::Disassemble() {
     DECODE_RT(Reg);
     offset = GetImmPCOffset();
 }
 
-void T16_LDR_LIT::Assembler() {
+void T16_LDR_LIT::Assemble() {
     SET_OPCODE(LDR_LIT);
     ENCODE_RT;
     ENCODE_OFFSET(8, 2);
@@ -174,12 +174,12 @@ T16_ADD_IMM_RDN::T16_ADD_IMM_RDN(void *inst) : InstructionT16(inst) {}
 T16_ADD_IMM_RDN::T16_ADD_IMM_RDN(RegisterA32 *rdn, U8 imm8) : rdn(rdn), imm8(imm8) {}
 
 
-void T16_ADD_IMM_RDN::Disassembler() {
+void T16_ADD_IMM_RDN::Disassemble() {
     rdn = Reg(Get()->rdn);
     imm8 = Get()->imm8;
 }
 
-void T16_ADD_IMM_RDN::Assembler() {
+void T16_ADD_IMM_RDN::Assemble() {
     SET_OPCODE(ADD_IMM_RDN);
     Get()->imm8 = imm8;
     Get()->rdn = rdn->Code();
@@ -211,13 +211,13 @@ void T16_ADR::OnOffsetApply(Off offset) {
     Get()->imm8 = (U32)offset >> 2;
 }
 
-void T16_ADR::Disassembler() {
+void T16_ADR::Disassemble() {
     offset = GetImmPCOffset();
     DECODE_RD(Reg);
 }
 
 
-void T16_ADR::Assembler() {
+void T16_ADR::Assemble() {
     SET_OPCODE(ADR);
     ENCODE_RD;
     Get()->imm8 = (U32)offset >> 2;
@@ -228,12 +228,12 @@ T16_CMP_REG::T16_CMP_REG(void *inst) : InstructionT16(inst) {}
 
 T16_CMP_REG::T16_CMP_REG(RegisterA32 &rm, RegisterA32 &rn) : rm(&rm), rn(&rn) {}
 
-void T16_CMP_REG::Disassembler() {
+void T16_CMP_REG::Disassemble() {
     DECODE_RM(Reg);
     DECODE_RN(Reg);
 }
 
-void T16_CMP_REG::Assembler() {
+void T16_CMP_REG::Assemble() {
     SET_BASE_OPCODE(DATA_PROC);
     SET_OPCODE(CMP_REG);
     ENCODE_RM;
@@ -246,12 +246,12 @@ T16_MOV_REG::T16_MOV_REG(void *inst) : InstructionT16(inst) {}
 
 T16_MOV_REG::T16_MOV_REG(RegisterA32 &rd, RegisterA32 &rm) : rm(&rm), rd(&rd) {}
 
-void T16_MOV_REG::Disassembler() {
+void T16_MOV_REG::Disassemble() {
     DECODE_RM(Reg);
     rd = Reg(static_cast<U8>(COMBINE(Get()->D, Get()->rd, 3)));
 }
 
-void T16_MOV_REG::Assembler() {
+void T16_MOV_REG::Assemble() {
     SET_BASE_OPCODE(DATA_PROC);
     SET_OPCODE(MOV_REG);
     ENCODE_RM;
@@ -271,13 +271,13 @@ T16_ADD_REG::T16_ADD_REG(void *inst) : InstructionT16(inst) {}
 T16_ADD_REG::T16_ADD_REG(RegisterA32 *rd, RegisterA32 *rn, RegisterA32 *rm) : rd(rd), rn(rn),
                                                                               rm(rm) {}
 
-void T16_ADD_REG::Disassembler() {
+void T16_ADD_REG::Disassemble() {
     DECODE_RD(Reg);
     DECODE_RN(Reg);
     DECODE_RM(Reg);
 }
 
-void T16_ADD_REG::Assembler() {
+void T16_ADD_REG::Assemble() {
     SET_OPCODE(ADD_REG);
     INST_ASSERT(rd->Code() > 7);
     INST_ASSERT(rn->Code() > 7);
@@ -293,12 +293,12 @@ T16_CMP_REG_EXT::T16_CMP_REG_EXT(void *inst) : InstructionT16(inst) {}
 
 T16_CMP_REG_EXT::T16_CMP_REG_EXT(RegisterA32 &rn, RegisterA32 &rm) : rn(&rn), rm(&rm) {}
 
-void T16_CMP_REG_EXT::Disassembler() {
+void T16_CMP_REG_EXT::Disassemble() {
     rn = Reg(COMBINE(Get()->N, Get()->rn, 3));
     DECODE_RM(Reg);
 }
 
-void T16_CMP_REG_EXT::Assembler() {
+void T16_CMP_REG_EXT::Assemble() {
     SET_OPCODE(CMP_REG_EXT);
     ENCODE_RM;
     Get()->rn = BITS(rn->Code(), 0, 2);
@@ -311,11 +311,11 @@ T16_POP::T16_POP(void *inst) : InstructionT16(inst) {}
 
 T16_POP::T16_POP(const RegisterList &registerList) : registerList(registerList) {}
 
-void T16_POP::Disassembler() {
+void T16_POP::Disassemble() {
     registerList.SetList(COMBINE(Get()->P << 7, Get()->regs, 8));
 }
 
-void T16_POP::Assembler() {
+void T16_POP::Assemble() {
     SET_OPCODE(POP);
     U16 regs = registerList.GetList();
     Get()->regs = BITS(regs, 0, 7);
@@ -328,11 +328,11 @@ T16_PUSH::T16_PUSH(void *inst) : InstructionT16(inst) {}
 
 T16_PUSH::T16_PUSH(const RegisterList &registerList) : registerList(registerList) {}
 
-void T16_PUSH::Disassembler() {
+void T16_PUSH::Disassemble() {
     registerList.SetList(COMBINE(Get()->M << 6, Get()->regs, 8));
 }
 
-void T16_PUSH::Assembler() {
+void T16_PUSH::Assemble() {
     SET_OPCODE(PUSH);
     U16 regs = registerList.GetList();
     Get()->regs = BITS(regs, 0, 7);
@@ -349,12 +349,12 @@ bool T16_ADD_REG_RDN::PcRelate() {
     return *rm == PC;
 }
 
-void T16_ADD_REG_RDN::Disassembler() {
+void T16_ADD_REG_RDN::Disassemble() {
     DECODE_RM(Reg);
     rdn = Reg(Get()->rdn);
 }
 
-void T16_ADD_REG_RDN::Assembler() {
+void T16_ADD_REG_RDN::Assemble() {
     SET_OPCODE(ADD_REG_RDN);
     ENCODE_RM;
     Get()->rdn = rdn->Code();

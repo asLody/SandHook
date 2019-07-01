@@ -25,7 +25,7 @@ namespace SandHook {
 //
 //    void DisAssembler(STRUCT_A64(STR_IMM) *inst) override;
 //
-//    void Assembler() override;
+//    void Assemble() override;
 //
 //    AddrMode getAddrMode() {
 //        return operand.addr_mode_;

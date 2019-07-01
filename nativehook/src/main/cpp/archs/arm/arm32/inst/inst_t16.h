@@ -128,9 +128,9 @@ namespace SandHook {
 
             Off GetImmPCOffset() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             Off offset;
@@ -152,9 +152,9 @@ namespace SandHook {
 
             void OnOffsetApply(Off offset) override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             Condition condition;
@@ -176,9 +176,9 @@ namespace SandHook {
 
             DEFINE_IS_EXT(BX_BLX, TEST_INST_OPCODE(BX_BLX, 1) && TEST_INST_OPCODE(BX_BLX, 2))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -207,9 +207,9 @@ namespace SandHook {
 
             Off GetImmPCOffset() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -233,9 +233,9 @@ namespace SandHook {
 
             void OnOffsetApply(Off offset) override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             Off offset;
@@ -251,9 +251,9 @@ namespace SandHook {
 
             DEFINE_IS(ADD_IMM_RDN)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA32 *rdn;
@@ -277,9 +277,9 @@ namespace SandHook {
 
             void OnOffsetApply(Off offset) override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA32 *rd;
@@ -298,9 +298,9 @@ namespace SandHook {
             DEFINE_IS_EXT(CMP_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) &&
                                    TEST_INST_FIELD(opcode, OPCODE_T16(CMP_REG)))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA32 *rm;
@@ -318,9 +318,9 @@ namespace SandHook {
             DEFINE_IS_EXT(MOV_REG, TEST_INST_FIELD(opcode_base, OPCODE_T16(DATA_PROC)) &&
                                    TEST_INST_FIELD(opcode, OPCODE_T16(MOV_REG)))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
             bool PcRelate() override;
 
@@ -339,9 +339,9 @@ namespace SandHook {
 
             DEFINE_IS(ADD_REG)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA32 *rd;
@@ -359,9 +359,9 @@ namespace SandHook {
 
             DEFINE_IS(CMP_REG_EXT)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
 
         public:
@@ -378,9 +378,9 @@ namespace SandHook {
 
             DEFINE_IS(POP)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterList registerList;
@@ -396,9 +396,9 @@ namespace SandHook {
 
             DEFINE_IS(PUSH)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterList registerList;
@@ -417,9 +417,9 @@ namespace SandHook {
 
             bool PcRelate() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA32* rdn;

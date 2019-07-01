@@ -140,9 +140,9 @@ namespace SandHook {
 
             Off GetImmPCOffset() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -159,9 +159,9 @@ namespace SandHook {
 
             DEFINE_IS(LDR_UIMM)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA32* rt;
@@ -201,9 +201,9 @@ namespace SandHook {
 
             void OnOffsetApply(Off offset) override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -227,9 +227,9 @@ namespace SandHook {
 
             DEFINE_IS_EXT(MOV_MOVT_IMM, TEST_INST_OPCODE(MOV_MOVT_IMM, 1) && TEST_INST_OPCODE(MOV_MOVT_IMM, 2) && (TEST_INST_FIELD(op, MOV) || TEST_INST_FIELD(op, MOVT)))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -255,9 +255,9 @@ namespace SandHook {
 
             DEFINE_IS_EXT(LDR_IMM, TEST_INST_OPCODE(LDR_IMM, 1) && TEST_INST_OPCODE(LDR_IMM, 2))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;

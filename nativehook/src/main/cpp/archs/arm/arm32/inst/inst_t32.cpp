@@ -45,13 +45,13 @@ Off T32_B32::GetImmPCOffset() {
     return SignExtend32(25, COMBINE(Si1i2, imm21, 21) << 1);
 }
 
-void T32_B32::Disassembler() {
+void T32_B32::Disassemble() {
     DECODE_OP;
     x = X(Get()->X);
     offset = GetImmPCOffset();
 }
 
-void T32_B32::Assembler() {
+void T32_B32::Assemble() {
     SET_OPCODE(B32);
     ENCODE_OP;
     Get()->X = x;
@@ -91,14 +91,14 @@ T32_LDR_UIMM::T32_LDR_UIMM(void *inst) : InstructionT32(inst) {}
 T32_LDR_UIMM::T32_LDR_UIMM(RegisterA32 &rt, RegisterA32 &rn, U32 offset) : rt(&rt), rn(&rn),
                                                                            offset(offset) {}
 
-void T32_LDR_UIMM::Disassembler() {
+void T32_LDR_UIMM::Disassemble() {
     DECODE_RN(Reg);
     DECODE_RT(Reg);
     INST_ASSERT(rn == &PC);
     offset = Get()->imm12;
 }
 
-void T32_LDR_UIMM::Assembler() {
+void T32_LDR_UIMM::Assemble() {
     SET_OPCODE(LDR_UIMM);
     ENCODE_RN;
     ENCODE_RT;
@@ -131,14 +131,14 @@ void T32_LDR_LIT::OnOffsetApply(Off offset) {
     }
 }
 
-void T32_LDR_LIT::Disassembler() {
+void T32_LDR_LIT::Disassemble() {
     DECODE_OP;
     DECODE_RT(Reg);
     s = S(Get()->S);
     offset = GetImmPCOffset();
 }
 
-void T32_LDR_LIT::Assembler() {
+void T32_LDR_LIT::Assemble() {
     SET_OPCODE(LDR_LIT);
     ENCODE_OP;
     ENCODE_RT;
@@ -161,7 +161,7 @@ T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(T32_MOV_MOVT_IMM::OP op, RegisterA32 &rd, U16
                                                                                           rd(&rd),
                                                                                           imm16(imm16) {}
 
-void T32_MOV_MOVT_IMM::Disassembler() {
+void T32_MOV_MOVT_IMM::Disassemble() {
     DECODE_OP;
     DECODE_RD(Reg);
     U16 imm4i = COMBINE(Get()->imm4, Get()->i, 1);
@@ -169,7 +169,7 @@ void T32_MOV_MOVT_IMM::Disassembler() {
     imm16 = COMBINE(imm4i, imm38, 11);
 }
 
-void T32_MOV_MOVT_IMM::Assembler() {
+void T32_MOV_MOVT_IMM::Assemble() {
     SET_OPCODE_MULTI(MOV_MOVT_IMM, 1);
     SET_OPCODE_MULTI(MOV_MOVT_IMM, 2);
     ENCODE_OP;
@@ -188,7 +188,7 @@ T32_LDR_IMM::T32_LDR_IMM(T32_LDR_IMM::OP op, RegisterA32 &rt, const MemOperand &
                                                                                            rt(&rt),
                                                                                            operand(operand) {}
 
-void T32_LDR_IMM::Disassembler() {
+void T32_LDR_IMM::Disassemble() {
     DECODE_OP;
     DECODE_RT(Reg);
     operand.rn = Reg(static_cast<U8>(Get()->rn));
@@ -204,7 +204,7 @@ void T32_LDR_IMM::Disassembler() {
     operand.offset = Get()->U == 0 ? -Get()->imm8 : Get()->imm8;
 }
 
-void T32_LDR_IMM::Assembler() {
+void T32_LDR_IMM::Assemble() {
     SET_OPCODE_MULTI(LDR_IMM, 1);
     SET_OPCODE_MULTI(LDR_IMM, 2);
     ENCODE_OP;

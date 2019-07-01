@@ -217,9 +217,9 @@ namespace SandHook {
 
             Addr GetImmPCOffsetTarget() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -254,9 +254,9 @@ namespace SandHook {
 
             DEFINE_IS(MOV_WIDE)
 
-            void Assembler() override;
+            void Assemble() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
         public:
             //can be 16/32/64/128
@@ -297,9 +297,9 @@ namespace SandHook {
 
             void OnOffsetApply(Off offset) override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
 
         public:
@@ -328,9 +328,9 @@ namespace SandHook {
 
             Off GetImmPCOffset() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -354,9 +354,9 @@ namespace SandHook {
 
             void OnOffsetApply(Off offset) override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             Condition condition;
@@ -385,9 +385,9 @@ namespace SandHook {
 
             Off GetImmPCOffset() override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -419,9 +419,9 @@ namespace SandHook {
 
             void OnOffsetApply(Off offset) override;
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -445,9 +445,9 @@ namespace SandHook {
 
             DEFINE_IS_EXT(BR_BLR_RET, TEST_INST_OPCODE(BR_BLR_RET, 1) && TEST_INST_OPCODE(BR_BLR_RET, 2) && TEST_INST_OPCODE(BR_BLR_RET,3))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -496,9 +496,9 @@ namespace SandHook {
 
             DEFINE_IS(STR_IMM)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         };
 
@@ -512,9 +512,9 @@ namespace SandHook {
 
             DEFINE_IS(STR_UIMM)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
         };
 
 
@@ -527,9 +527,9 @@ namespace SandHook {
 
             DEFINE_IS_EXT(MOV_REG, TEST_INST_OPCODE(MOV_REG, 1) && TEST_INST_OPCODE(MOV_REG, 2))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA64* rd;
@@ -547,9 +547,9 @@ namespace SandHook {
 
             DEFINE_IS_EXT(SUB_EXT_REG, TEST_INST_OPCODE(SUB_EXT_REG, 1) && TEST_INST_OPCODE(SUB_EXT_REG, 2))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
 
         public:
@@ -576,9 +576,9 @@ namespace SandHook {
 
             DEFINE_IS_EXT(EXCEPTION_GEN, TEST_INST_OPCODE(EXCEPTION_GEN, 1) && TEST_INST_OPCODE(EXCEPTION_GEN, 2))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -608,9 +608,9 @@ namespace SandHook {
 
             DEFINE_IS(LDR_IMM)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
         };
 
 
@@ -623,9 +623,9 @@ namespace SandHook {
 
             DEFINE_IS(LDR_UIMM)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
         };
 
         DEFINE_INST_EXT(LDRSW_IMM, LDR_IMM) {
@@ -638,9 +638,9 @@ namespace SandHook {
             DEFINE_IS_EXT(LDRSW_IMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_IMM)) &&
                     TEST_INST_FIELD(size , Size32))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
         };
 
 
@@ -655,9 +655,9 @@ namespace SandHook {
             DEFINE_IS_EXT(LDRSW_UIMM, TEST_INST_FIELD(opcode, OPCODE_A64(LDRSW_UIMM)) &&
             TEST_INST_FIELD(size, Size32))
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
         };
 
 
@@ -685,9 +685,9 @@ namespace SandHook {
 
             DEFINE_IS(STP_LDP)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -721,9 +721,9 @@ namespace SandHook {
 
             DEFINE_IS(ADD_SUB_IMM)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -747,9 +747,9 @@ namespace SandHook {
 
             DEFINE_IS(MSR_MRS)
 
-            void Disassembler() override;
+            void Disassemble() override;
 
-            void Assembler() override;
+            void Assemble() override;
 
         public:
             OP op;

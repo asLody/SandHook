@@ -50,7 +50,7 @@ void Arm64Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visi
         if (unit == nullptr) {
             unit = reinterpret_cast<BaseUnit*>(new INST_A64(UNKNOW)(pc));
         }
-        reinterpret_cast<BaseInst*>(unit)->Disassembler();
+        reinterpret_cast<BaseInst*>(unit)->Disassemble();
         if (!visitor.Visit(unit, pc)) {
             break;
         }
