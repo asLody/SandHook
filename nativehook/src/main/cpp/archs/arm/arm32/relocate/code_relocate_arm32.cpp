@@ -20,42 +20,42 @@ case ENUM_VALUE(InstCode##T, InstCode##T::X): \
 relocate_##T##_##X(reinterpret_cast<INST_##T(X)*>(instruction), toPc); \
 break;
 
-CodeRelocateA32::CodeRelocateA32(AssemblerA32 &assembler) : CodeRelocate(assembler.codeContainer) {
+CodeRelocateA32::CodeRelocateA32(AssemblerA32 &assembler) : CodeRelocate(assembler.code_container) {
     this->assemblerA32 = &assembler;
 }
 
 bool CodeRelocateA32::Visit(BaseUnit *unit, void *pc) {
-    relocate(reinterpret_cast<BaseInst *>(unit), __ getPC());
-    curOffset += unit->Size();
+    Relocate(reinterpret_cast<BaseInst *>(unit), __ GetPC());
+    cur_offset += unit->Size();
     if (unit->RefCount() == 0) {
         delete unit;
     }
     return true;
 }
 
-void* CodeRelocateA32::relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
-    AutoLock autoLock(relocateLock);
-    startAddr = reinterpret_cast<Addr>(startPc);
-    if (IsThumbCode(startAddr)) {
-        startAddr = reinterpret_cast<Addr>(GetThumbCodeAddress(startPc));
+void* CodeRelocateA32::Relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
+    AutoLock autoLock(relocate_lock);
+    start_addr = reinterpret_cast<Addr>(startPc);
+    if (IsThumbCode(start_addr)) {
+        start_addr = reinterpret_cast<Addr>(GetThumbCodeAddress(startPc));
     }
     length = len;
-    curOffset = 0;
-    __ allocBufferFirst(static_cast<U32>(len * 8));
-    void* curPc = __ getPC();
+    cur_offset = 0;
+    __ AllocBufferFirst(static_cast<U32>(len * 8));
+    void* curPc = __ GetPC();
     if (toPc == nullptr) {
-        Disassembler::get()->Disassembler(startPc, len, *this, true);
+        Disassembler::Get()->Disassembler(startPc, len, *this, true);
     } else {
         //TODO
     }
     return curPc;
 }
 
-void* CodeRelocateA32::relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) {
-    void* curPc = __ getPC();
+void* CodeRelocateA32::Relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) {
+    void* curPc = __ GetPC();
 
     //insert later AddBind labels
-    __ Emit(getLaterBindLabel(curOffset));
+    __ Emit(GetLaterBindLabel(cur_offset));
 
     if (!instruction->PcRelate()) {
         __ Emit(instruction);
@@ -94,8 +94,8 @@ void* CodeRelocateA32::relocate(BaseInst *instruction, void *toPc) throw(ErrorCo
 
 IMPL_RELOCATE(T16, B_COND) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
-        __ B(inst->condition, getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+    if (InRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        __ B(inst->condition, GetLaterBindLabel(CODE_OFFSET(inst) + cur_offset));
         return;
     }
 
@@ -125,8 +125,8 @@ IMPL_RELOCATE(T16, B_COND) {
 
 IMPL_RELOCATE(T16, B) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
-        __ B(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+    if (InRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        __ B(GetLaterBindLabel(CODE_OFFSET(inst) + cur_offset));
         return;
     }
 
@@ -149,8 +149,8 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
 
     inst->Ref();
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
-        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+    if (InRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+        inst->BindLabel(GetLaterBindLabel(CODE_OFFSET(inst) + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
@@ -175,9 +175,9 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
 
 IMPL_RELOCATE(T16, LDR_LIT) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), inst->rt->Wide())) {
+    if (InRelocateRange(CODE_OFFSET(inst), inst->rt->Wide())) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        inst->BindLabel(GetLaterBindLabel(CODE_OFFSET(inst) + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
@@ -190,9 +190,9 @@ IMPL_RELOCATE(T16, LDR_LIT) {
 
 IMPL_RELOCATE(T16, ADR) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), inst->rd->Wide())) {
+    if (InRelocateRange(CODE_OFFSET(inst), inst->rd->Wide())) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        inst->BindLabel(GetLaterBindLabel(CODE_OFFSET(inst) + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
@@ -222,9 +222,9 @@ IMPL_RELOCATE(T16, ADD_REG_RDN) {
 
 IMPL_RELOCATE(T32, B32) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
+    if (InRelocateRange(CODE_OFFSET(inst), sizeof(InstT16))) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        inst->BindLabel(GetLaterBindLabel(CODE_OFFSET(inst) + cur_offset));
         __ Emit(reinterpret_cast<BaseInst *>(inst));
         return;
     }
@@ -247,9 +247,9 @@ IMPL_RELOCATE(T32, B32) {
 
 IMPL_RELOCATE(T32, LDR_LIT) {
 
-    if (inRelocateRange(CODE_OFFSET(inst), sizeof(Addr))) {
+    if (InRelocateRange(CODE_OFFSET(inst), sizeof(Addr))) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(CODE_OFFSET(inst) + curOffset));
+        inst->BindLabel(GetLaterBindLabel(CODE_OFFSET(inst) + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }

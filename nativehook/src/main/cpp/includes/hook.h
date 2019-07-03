@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/14.
 //
 
-#ifndef SANDHOOK_NH_HOOK_H
-#define SANDHOOK_NH_HOOK_H
+#pragma once
 
 #include <mutex>
 
@@ -25,13 +24,11 @@ namespace SandHook {
                 return false;
             };
         protected:
-            static CodeBuffer* backupBuffer;
-            std::mutex hookLock;
+            static CodeBuffer* backup_buffer;
+            std::mutex hook_lock;
         public:
             static InlineHook* instance;
         };
 
     }
 }
-
-#endif //SANDHOOK_NH_HOOK_H

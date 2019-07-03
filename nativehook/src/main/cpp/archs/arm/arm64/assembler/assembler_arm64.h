@@ -84,7 +84,7 @@ namespace SandHook {
             void Subs(RegisterA64& rd, const Operand& operand);
 
             void Msr(SystemRegister &sysReg, RegisterA64& rt);
-            void Mrs(SystemRegister &sysReg, RegisterA64& rt);
+            void Mrs(SystemRegister &sys_reg, RegisterA64& rt);
 
             void Mov(RegisterA64& rd, RegisterA64& rt);
 
@@ -94,7 +94,7 @@ namespace SandHook {
 
 
         public:
-            CodeContainer codeContainer = CodeContainer(nullptr);
+            CodeContainer code_container = CodeContainer(nullptr);
         };
 
     }

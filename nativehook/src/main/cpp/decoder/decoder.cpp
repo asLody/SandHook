@@ -20,18 +20,18 @@ bool DefaultVisitor::Visit(Unit<Base> *unit, void *pc) {
 DefaultVisitor::DefaultVisitor(bool (*visitor)(Unit<Base> *, void *)) : visitor(visitor) {}
 
 //do not support now
-InstDecoder* Disassembler::get(Arch arch) {
+InstDecoder* Disassembler::Get(Arch arch) {
     switch (arch) {
         case arm32:
-            return get();
+            return Get();
         case arm64:
-            return get();
+            return Get();
         default:
             return nullptr;
     }
 }
 
-InstDecoder *Disassembler::get() {
+InstDecoder *Disassembler::Get() {
 #if defined(__arm__)
     return Arm32Decoder::instant;
 #elif defined(__aarch64__)

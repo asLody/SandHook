@@ -19,9 +19,9 @@ Arm64Decoder* Arm64Decoder::instant = new Arm64Decoder();
 void Arm64Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visitor,
                                 bool onlyPcRelInst) {
     InstA64 *pc = reinterpret_cast<InstA64 *>(codeStart);
-    Addr endAddr = (Addr) codeStart + codeLen;
+    Addr end_addr = (Addr) codeStart + codeLen;
     Unit<Base>* unit = nullptr;
-    while((Addr) pc < endAddr) {
+    while((Addr) pc < end_addr) {
         // pc relate insts
         CASE(B_BL)
         CASE(B_COND)

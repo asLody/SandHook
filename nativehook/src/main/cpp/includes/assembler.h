@@ -21,14 +21,14 @@ namespace SandHook {
 
         class CodeBuffer {
         public:
-            virtual void* getBuffer(U32 size) = 0;
-            virtual void resetLastBufferSize(U32 size){};
+            virtual void* GetBuffer(U32 size) = 0;
+            virtual void ResetLastBufferSize(U32 size){};
             virtual void* copy(void* start, U32 size) {
-                void* bufferStart = getBuffer(size);
+                void* bufferStart = GetBuffer(size);
                 if (bufferStart == nullptr)
                     return nullptr;
                 memcpy(bufferStart, start, size);
-                flushCache((Addr)bufferStart, size);
+                FlushCache((Addr) bufferStart, size);
                 return bufferStart;
             };
         };
@@ -40,7 +40,7 @@ namespace SandHook {
 
             void setCodeBuffer(CodeBuffer *codeBuffer);
 
-            //allow code relocate to Get new pc first
+            //allow code Relocate to Get new pc first
             void allocBufferFirst(U32 size);
             void append(Unit<Base>* unit);
             void commit();

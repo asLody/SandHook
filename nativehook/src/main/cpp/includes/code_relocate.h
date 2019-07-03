@@ -20,27 +20,27 @@ namespace SandHook {
         class CodeRelocate : public InstVisitor {
         public:
 
-            CodeRelocate(CodeContainer &codeContainer) : codeContainer(&codeContainer) {}
+            CodeRelocate(CodeContainer &codeContainer) : code_container(&codeContainer) {}
 
-            virtual void* relocate(BaseInst *instruction, void* toPc) throw(ErrorCodeException) = 0;
-            virtual void* relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) = 0;
+            virtual void* Relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) = 0;
+            virtual void* Relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) = 0;
 
-            bool inRelocateRange(Off targetOffset, Addr targetLen);
+            bool InRelocateRange(Off targetOffset, Addr targetLen);
 
-            Label* getLaterBindLabel(Addr offset);
+            Label* GetLaterBindLabel(Addr offset);
 
             virtual ~CodeRelocate() {
-                delete relocateLock;
-                delete laterBindlabels;
+                delete relocate_lock;
+                delete later_bind_labels;
             }
 
         public:
-            CodeContainer* codeContainer;
-            std::mutex* relocateLock = new std::mutex();
-            std::map<Addr, Label*>* laterBindlabels = new std::map<Addr, Label*>();
-            Addr startAddr = 0;
+            CodeContainer* code_container;
+            std::mutex* relocate_lock = new std::mutex();
+            std::map<Addr, Label*>* later_bind_labels = new std::map<Addr, Label*>();
+            Addr start_addr = 0;
             Addr length = 0;
-            Addr curOffset = 0;
+            Addr cur_offset = 0;
         };
 
     }

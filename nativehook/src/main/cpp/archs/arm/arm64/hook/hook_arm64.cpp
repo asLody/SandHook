@@ -16,17 +16,17 @@ using namespace SandHook::Utils;
 #include "code_relocate_arm64.h"
 using namespace SandHook::RegistersA64;
 void *InlineHookArm64Android::Hook(void *origin, void *replace) {
-    AutoLock lock(hookLock);
+    AutoLock lock(hook_lock);
 
     void* backup = nullptr;
-    AssemblerA64 assemblerBackup(backupBuffer);
+    AssemblerA64 assembler_backup(backup_buffer);
 
-    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin));
-    AssemblerA64 assemblerInline(&inlineBuffer);
-    CodeContainer* codeContainerInline = &assemblerInline.codeContainer;
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin));
+    AssemblerA64 assembler_inline(&inline_buffer);
+    CodeContainer* code_container_inline = &assembler_inline.code_container;
 
     //build inline trampoline
-#define __ assemblerInline.
+#define __ assembler_inline.
     Label* target_addr_label = new Label();
     __ Ldr(IP1, target_addr_label);
     __ Br(IP1);
@@ -35,37 +35,37 @@ void *InlineHookArm64Android::Hook(void *origin, void *replace) {
 #undef __
 
     //build backup method
-    CodeRelocateA64 relocate = CodeRelocateA64(assemblerBackup);
-    backup = relocate.relocate(origin, codeContainerInline->size(), nullptr);
-#define __ assemblerBackup.
+    CodeRelocateA64 relocate = CodeRelocateA64(assembler_backup);
+    backup = relocate.Relocate(origin, code_container_inline->size(), nullptr);
+#define __ assembler_backup.
     Label* origin_addr_label = new Label();
     __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) origin + codeContainerInline->size());
+    __ Emit((Addr) origin + code_container_inline->size());
     __ Finish();
 #undef __
 
     //commit inline trampoline
-    assemblerInline.Finish();
+    assembler_inline.Finish();
     return backup;
 }
 
 bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[])) {
-    AutoLock lock(hookLock);
+    AutoLock lock(hook_lock);
 
     void* backup = nullptr;
-    AssemblerA64 assemblerBackup(backupBuffer);
-    AssemblerA64 assemblerTrampoline(backupBuffer);
+    AssemblerA64 assembler_backup(backup_buffer);
+    AssemblerA64 assembler_trampoline(backup_buffer);
 
-    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(point));
-    AssemblerA64 assemblerInline(&inlineBuffer);
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(point));
+    AssemblerA64 assembler_inline(&inline_buffer);
 
 
     //build backup inst
-    CodeRelocateA64 relocate = CodeRelocateA64(assemblerBackup);
-    backup = relocate.relocate(point, 4 * 4, nullptr);
-#define __ assemblerBackup.
+    CodeRelocateA64 relocate = CodeRelocateA64(assembler_backup);
+    backup = relocate.Relocate(point, 4 * 4, nullptr);
+#define __ assembler_backup.
     Label* origin_addr_label = new Label();
     __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
@@ -76,7 +76,7 @@ bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[]
 
 
     //build shell code
-#define __ assemblerTrampoline.
+#define __ assembler_trampoline.
     //backup NZCV
     __ Sub(SP, Operand(&SP, 0x20));
 
@@ -118,14 +118,14 @@ bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[]
 #undef __
 
 
-    void* secondTrampoline = assemblerTrampoline.GetStartPC();
+    void* second_trampoline = assembler_trampoline.GetStartPC();
     //build inline trampoline
-#define __ assemblerInline.
+#define __ assembler_inline.
     Label* target_addr_label = new Label();
     __ Ldr(IP1, target_addr_label);
     __ Br(IP1);
     __ Emit(target_addr_label);
-    __ Emit((Addr) secondTrampoline);
+    __ Emit((Addr) second_trampoline);
     __ Finish();
 #undef __
 

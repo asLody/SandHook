@@ -20,39 +20,39 @@ case ENUM_VALUE(InstCodeA64, InstCodeA64::X): \
 relocate_##X(reinterpret_cast<INST_A64(X)*>(instruction), toPc); \
 break;
 
-CodeRelocateA64::CodeRelocateA64(AssemblerA64 &assembler) : CodeRelocate(assembler.codeContainer) {
+CodeRelocateA64::CodeRelocateA64(AssemblerA64 &assembler) : CodeRelocate(assembler.code_container) {
     assemblerA64 = &assembler;
 }
 
 bool CodeRelocateA64::Visit(Unit<Base> *unit, void *pc) {
-    relocate(reinterpret_cast<BaseInst *>(unit), __ GetPC());
-    curOffset += unit->Size();
+    Relocate(reinterpret_cast<BaseInst *>(unit), __ GetPC());
+    cur_offset += unit->Size();
     if (unit->RefCount() == 0) {
         delete unit;
     }
     return true;
 }
 
-void* CodeRelocateA64::relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
-    AutoLock autoLock(relocateLock);
-    startAddr = reinterpret_cast<Addr>(startPc);
+void* CodeRelocateA64::Relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
+    AutoLock autoLock(relocate_lock);
+    start_addr = reinterpret_cast<Addr>(startPc);
     length = len;
-    curOffset = 0;
+    cur_offset = 0;
     __ AllocBufferFirst(static_cast<U32>(len * 8));
     void* curPc = __ GetPC();
     if (toPc == nullptr) {
-        Disassembler::get()->Disassembler(startPc, len, *this, true);
+        Disassembler::Get()->Disassembler(startPc, len, *this, true);
     } else {
         //TODO
     }
     return curPc;
 }
 
-void* CodeRelocateA64::relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) {
+void* CodeRelocateA64::Relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) {
     void* curPc = __ GetPC();
 
     //insert later AddBind labels
-    __ Emit(getLaterBindLabel(curOffset));
+    __ Emit(GetLaterBindLabel(cur_offset));
 
     if (!instruction->PcRelate()) {
         __ Emit(instruction);
@@ -75,9 +75,9 @@ void* CodeRelocateA64::relocate(BaseInst *instruction, void *toPc) throw(ErrorCo
 
 IMPL_RELOCATE(B_BL) {
 
-    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+    if (InRelocateRange(inst->offset, sizeof(InstA64))) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(inst->offset + curOffset));
+        inst->BindLabel(GetLaterBindLabel(inst->offset + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
@@ -97,9 +97,9 @@ IMPL_RELOCATE(B_BL) {
 
 IMPL_RELOCATE(B_COND) {
 
-    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+    if (InRelocateRange(inst->offset, sizeof(InstA64))) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(inst->offset + curOffset));
+        inst->BindLabel(GetLaterBindLabel(inst->offset + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
@@ -121,9 +121,9 @@ IMPL_RELOCATE(B_COND) {
 
 IMPL_RELOCATE(TBZ_TBNZ) {
 
-    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+    if (InRelocateRange(inst->offset, sizeof(InstA64))) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(inst->offset + curOffset));
+        inst->BindLabel(GetLaterBindLabel(inst->offset + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
@@ -149,9 +149,9 @@ IMPL_RELOCATE(TBZ_TBNZ) {
 
 IMPL_RELOCATE(CBZ_CBNZ) {
 
-    if (inRelocateRange(inst->offset, sizeof(InstA64))) {
+    if (InRelocateRange(inst->offset, sizeof(InstA64))) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(inst->offset + curOffset));
+        inst->BindLabel(GetLaterBindLabel(inst->offset + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }
@@ -181,9 +181,9 @@ IMPL_RELOCATE(LDR_LIT) {
     XRegister* rtX = XReg(inst->rt->Code());
     WRegister* rtW = WReg(inst->rt->Code());
 
-    if (inRelocateRange(inst->offset, sizeof(Addr))) {
+    if (InRelocateRange(inst->offset, sizeof(Addr))) {
         inst->Ref();
-        inst->BindLabel(getLaterBindLabel(inst->offset + curOffset));
+        inst->BindLabel(GetLaterBindLabel(inst->offset + cur_offset));
         __ Emit(reinterpret_cast<BaseInst*>(inst));
         return;
     }

@@ -31,9 +31,9 @@ void CodeContainer::commit() {
     void* bufferStart;
     if (startPc > 0) {
         bufferStart = reinterpret_cast<void *>(startPc);
-        codeBuffer->resetLastBufferSize(bufferSize);
+        codeBuffer->ResetLastBufferSize(bufferSize);
     } else {
-        bufferStart = codeBuffer->getBuffer(bufferSize);
+        bufferStart = codeBuffer->GetBuffer(bufferSize);
     }
     Addr pcNow = reinterpret_cast<Addr>(bufferStart);
 
@@ -58,7 +58,7 @@ void CodeContainer::commit() {
     }
 
     //flush I cache
-    flushCache(reinterpret_cast<Addr>(bufferStart), pcNow - reinterpret_cast<Addr>(bufferStart));
+    FlushCache(reinterpret_cast<Addr>(bufferStart), pcNow - reinterpret_cast<Addr>(bufferStart));
 
     //Set pc
     startPc = reinterpret_cast<Addr>(bufferStart);
@@ -67,7 +67,7 @@ void CodeContainer::commit() {
 }
 
 void CodeContainer::allocBufferFirst(U32 size) {
-    startPc = reinterpret_cast<Addr>(codeBuffer->getBuffer(size));
+    startPc = reinterpret_cast<Addr>(codeBuffer->GetBuffer(size));
     curPc = startPc;
 }
 

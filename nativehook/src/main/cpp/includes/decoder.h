@@ -32,19 +32,19 @@ namespace SandHook {
 
         class InstDecoder {
         public:
-            virtual void Disassembler(void *codeStart, Addr codeLen, InstVisitor &visitor,
-                                      bool onlyPcRelInst = false) = 0;
-            inline void Disassembler(void* codeStart, Addr codeLen, bool (*visitor)(Unit<Base>*, void*), bool onlyPcRelInst = false) {
+            virtual void Disassembler(void *code_start, Addr code_len, InstVisitor &visitor,
+                                      bool only_pc_rel = false) = 0;
+            inline void Disassembler(void* codeStart, Addr codeLen, bool (*visitor)(Unit<Base>*, void*), bool only_pc_rel = false) {
                 InstVisitor vis = DefaultVisitor(visitor);
-                Disassembler(codeStart, codeLen, vis, onlyPcRelInst);
+                Disassembler(codeStart, codeLen, vis, only_pc_rel);
             };
         };
 
 
         class Disassembler {
         public:
-            static InstDecoder* get(Arch arch);
-            static InstDecoder* get();
+            static InstDecoder* Get(Arch arch);
+            static InstDecoder* Get();
         };
     }
 }

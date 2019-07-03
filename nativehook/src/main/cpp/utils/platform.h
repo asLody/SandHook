@@ -6,6 +6,6 @@
 
 #include "base.h"
 
-extern "C" bool flushCache(Addr addr, Off len);
+extern "C" bool FlushCache(Addr addr, Off len);
 
-extern "C" bool memUnprotect(Addr addr, Addr len);
+extern "C" bool MemUnprotect(Addr addr, Addr len);

@@ -22,9 +22,9 @@ namespace SandHook {
         public:
             CodeRelocateA64(AssemblerA64 &assembler);
 
-            void* relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) override;
+            void* Relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) override;
 
-            void* relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) override;
+            void* Relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) override;
 
             bool Visit(Unit<Base> *unit, void *pc) override;
 
