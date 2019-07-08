@@ -11,7 +11,7 @@ using namespace SandHook::AsmA32;
 
 #define CASE(T, X) \
 if (IS_OPCODE_##T(*reinterpret_cast<Inst##T *>(pc), X)) { \
-unit = reinterpret_cast<Unit<Base> *>(new INST_##T(X)(pc)); \
+unit = reinterpret_cast<BaseUnit*>(new INST_##T(X)(pc)); \
 goto label_matched; \
 }
 
@@ -30,9 +30,9 @@ void Arm32Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visi
     }
     void *pc = codeStart;
     Addr endAddr = (Addr) codeStart + codeLen;
-    Unit<Base>* unit = nullptr;
+    BaseUnit *unit = nullptr;
     while((Addr) pc < endAddr) {
-        bool thumb32 = IsThumb32(*reinterpret_cast<InstT16 *>(pc));
+        bool thumb32 = IsThumb32(*reinterpret_cast<InstT16*>(pc));
         if (thumb && thumb32) {
             CASE_T32(SUB_IMM)
             CASE_T32(B32)
@@ -43,7 +43,7 @@ void Arm32Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visi
                 CASE_T32(MOV_MOVT_IMM)
             }
             if (unit == nullptr) {
-                unit = reinterpret_cast<Unit<Base> *>(new INST_T32(UNKNOW)(pc));
+                unit = reinterpret_cast<BaseUnit*>(new INST_T32(UNKNOW)(pc));
             }
         } else if (thumb) {
             CASE_T16(B)
@@ -63,18 +63,19 @@ void Arm32Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visi
                 CASE_T16(PUSH)
             }
             if (unit == nullptr) {
-                unit = reinterpret_cast<Unit<Base> *>(new INST_T16(UNKNOW)(pc));
+                unit = reinterpret_cast<BaseUnit*>(new INST_T16(UNKNOW)(pc));
             }
         } else {
             //TODO arm32 support
-            unit = reinterpret_cast<Unit<Base> *>(new INST_T32(UNKNOW)(pc));
+            unit = reinterpret_cast<BaseUnit*>(new INST_T32(UNKNOW)(pc));
         }
 
         label_matched:
+        reinterpret_cast<BaseInst*>(unit)->Disassemble();
         if (!visitor.Visit(unit, pc)) {
             break;
         }
-        pc = reinterpret_cast<InstA64 *>((Addr)pc + unit->Size());
+        pc = reinterpret_cast<void*>((Addr)pc + unit->Size());
         unit = nullptr;
     }
 }

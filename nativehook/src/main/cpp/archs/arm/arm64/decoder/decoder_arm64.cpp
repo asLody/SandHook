@@ -20,7 +20,7 @@ void Arm64Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visi
                                 bool onlyPcRelInst) {
     InstA64 *pc = reinterpret_cast<InstA64 *>(codeStart);
     Addr end_addr = (Addr) codeStart + codeLen;
-    Unit<Base>* unit = nullptr;
+    BaseUnit* unit = nullptr;
     while((Addr) pc < end_addr) {
         // pc relate insts
         CASE(B_BL)

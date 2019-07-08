@@ -60,8 +60,7 @@ void *InlineHookArm32Android::Hook(void *origin, void *replace) {
     ALIGN_FOR_LDR
     __ Ldr(PC, origin_addr_label);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) GetThumbPC(
-            reinterpret_cast<void *>(reinterpret_cast<Addr>(origin_code) + relocate.cur_offset)));
+    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(origin_code) + relocate.cur_offset)));
     __ Finish();
 #undef __
 

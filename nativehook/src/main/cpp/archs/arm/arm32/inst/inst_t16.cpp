@@ -17,7 +17,7 @@ using namespace SandHook::RegistersA32;
 
 //Unknow
 
-T16_UNKNOW::T16_UNKNOW(void *inst) : InstructionT16(&inst) {
+T16_UNKNOW::T16_UNKNOW(void *inst) : InstructionT16(inst) {
 }
 
 //B
