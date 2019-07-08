@@ -17,7 +17,7 @@ android {
             cmake {
                 arguments '-DBUILD_TESTING=OFF'
                 cppFlags "-frtti -fexceptions -Wpointer-arith"
-                abiFilters 'armeabi-v7a'
+                abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
         }
     }

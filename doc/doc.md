@@ -1330,7 +1330,7 @@ JitCompile->CommitCode->CommitCodeInternal
 - 并且在跳转的时候要注意入口地址符合要求
 
 ```cpp
-bool isThumbCode(Size codeAddr) {
+bool IsThumbCode(Size codeAddr) {
             return (codeAddr & 0x1) == 0x1;
 }
 ```
