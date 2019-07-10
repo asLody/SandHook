@@ -15,7 +15,7 @@ namespace SandHook {
         class InstVisitor {
         public:
             //need free unit
-            virtual bool Visit(Unit<Base> *unit, void *pc) {
+            virtual bool Visit(BaseUnit *unit, void *pc) {
                 delete unit;
                 return false;
             };
@@ -32,11 +32,12 @@ namespace SandHook {
 
         class InstDecoder {
         public:
-            virtual void Disassembler(void *code_start, Addr code_len, InstVisitor &visitor,
-                                      bool only_pc_rel = false) = 0;
-            inline void Disassembler(void* codeStart, Addr codeLen, bool (*visitor)(Unit<Base>*, void*), bool only_pc_rel = false) {
+            virtual void Disassemble(void *code_start, Addr code_len, InstVisitor &visitor,
+                                     bool only_pc_rel = false) = 0;
+            inline void Disassemble(void *codeStart, Addr codeLen,
+                                    bool (*visitor)(BaseUnit *, void *), bool only_pc_rel = false) {
                 InstVisitor vis = DefaultVisitor(visitor);
-                Disassembler(codeStart, codeLen, vis, only_pc_rel);
+                Disassemble(codeStart, codeLen, vis, only_pc_rel);
             };
         };
 

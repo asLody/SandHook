@@ -99,7 +99,7 @@ namespace SandHook {
             S backup_;
         };
 
-        class Void : public Unit<Base> {
+        class Void : public BaseUnit {
         public:
             Void(U32 size) : size_(size) {}
 

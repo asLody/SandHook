@@ -44,7 +44,7 @@ void* CodeRelocateA32::Relocate(void *startPc, Addr len, void *toPc = nullptr) t
     __ AllocBufferFirst(static_cast<U32>(len * 8));
     void* curPc = __ GetPC();
     if (toPc == nullptr) {
-        Disassembler::Get()->Disassembler(startPc, len, *this, true);
+        Disassembler::Get()->Disassemble(startPc, len, *this, true);
     } else {
         //TODO
     }
@@ -52,7 +52,7 @@ void* CodeRelocateA32::Relocate(void *startPc, Addr len, void *toPc = nullptr) t
 }
 
 void* CodeRelocateA32::Relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) {
-    void* curPc = __ GetPC();
+    void* cur_pc = __ GetPC();
 
     //insert later AddBind labels
     __ Emit(GetLaterBindLabel(cur_offset));
@@ -60,7 +60,7 @@ void* CodeRelocateA32::Relocate(BaseInst *instruction, void *toPc) throw(ErrorCo
     if (!instruction->PcRelate()) {
         __ Emit(instruction);
         instruction->Ref();
-        return curPc;
+        return cur_pc;
     }
 
     if (instruction->InstType() == thumb32) {
@@ -88,7 +88,7 @@ void* CodeRelocateA32::Relocate(BaseInst *instruction, void *toPc) throw(ErrorCo
         __ Emit(instruction);
         instruction->Ref();
     }
-    return curPc;
+    return cur_pc;
 }
 
 
@@ -99,14 +99,14 @@ IMPL_RELOCATE(T16, B_COND) {
         return;
     }
 
-    Addr targetAddr = inst->GetImmPCOffsetTarget();
+    Addr target_addr = inst->GetImmPCOffsetTarget();
 
     if (inst->condition == al) {
         Label* target_label = new Label;
         ALIGN_FOR_LDR
         __ Ldr(PC, target_label);
         __ Emit(target_label);
-        __ Emit(targetAddr);
+        __ Emit(target_addr);
     } else {
         Label* true_label = new Label();
         Label* false_label = new Label();
@@ -117,7 +117,7 @@ IMPL_RELOCATE(T16, B_COND) {
         ALIGN_FOR_LDR
         __ Ldr(PC, target_label);
         __ Emit(target_label);
-        __ Emit(targetAddr);
+        __ Emit(target_addr);
         __ Emit(false_label);
     }
 
@@ -130,13 +130,13 @@ IMPL_RELOCATE(T16, B) {
         return;
     }
 
-    Addr targetAddr = inst->GetImmPCOffsetTarget();
+    Addr target_addr = inst->GetImmPCOffsetTarget();
 
     Label* target_label = new Label();
     ALIGN_FOR_LDR
     __ Ldr(PC, target_label);
     __ Emit(target_label);
-    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(targetAddr)));
+    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(target_addr)));
 
 }
 
@@ -155,7 +155,7 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
         return;
     }
 
-    Addr targetAddr = inst->GetImmPCOffsetTarget();
+    Addr target_addr = inst->GetImmPCOffsetTarget();
 
     Label* true_label = new Label;
     Label* false_label = new Label;
@@ -168,7 +168,7 @@ IMPL_RELOCATE(T16, CBZ_CBNZ) {
     ALIGN_FOR_LDR
     __ Ldr(PC, target_label);
     __ Emit(target_label);
-    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(targetAddr)));
+    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(target_addr)));
     __ Emit(false_label);
 
 }
@@ -182,9 +182,9 @@ IMPL_RELOCATE(T16, LDR_LIT) {
         return;
     }
 
-    Addr targetAddr = inst->GetImmPCOffsetTarget();
+    Addr target_addr = inst->GetImmPCOffsetTarget();
 
-    __ Mov(*inst->rt, targetAddr);
+    __ Mov(*inst->rt, target_addr);
     __ Ldr(*inst->rt, MemOperand(inst->rt, 0));
 }
 
@@ -197,9 +197,9 @@ IMPL_RELOCATE(T16, ADR) {
         return;
     }
 
-    Addr targetAddr = inst->GetImmPCOffsetTarget();
+    Addr target_addr = inst->GetImmPCOffsetTarget();
 
-    __ Mov(*inst->rd, targetAddr);
+    __ Mov(*inst->rd, target_addr);
 
 }
 
@@ -229,14 +229,14 @@ IMPL_RELOCATE(T32, B32) {
         return;
     }
 
-    Addr targetAddr = inst->GetImmPCOffsetTarget();
+    Addr target_addr = inst->GetImmPCOffsetTarget();
 
 
     if (inst->x == T32_B32::thumb) {
         //Thumb mode
-        targetAddr = reinterpret_cast<Addr>(GetThumbPC(reinterpret_cast<void *>(targetAddr)));
+        target_addr = reinterpret_cast<Addr>(GetThumbPC(reinterpret_cast<void *>(target_addr)));
     }
-    __ Mov(IP, targetAddr);
+    __ Mov(IP, target_addr);
     if (inst->op == T32_B32::BL) {
         __ Blx(IP);
     } else {
@@ -254,9 +254,9 @@ IMPL_RELOCATE(T32, LDR_LIT) {
         return;
     }
 
-    Addr targetAddr = inst->GetImmPCOffsetTarget();
+    Addr target_addr = inst->GetImmPCOffsetTarget();
 
-    __ Mov(*inst->rt, targetAddr);
+    __ Mov(*inst->rt, target_addr);
     switch (inst->op) {
         case T32_LDR_LIT::LDR:
             __ Ldr(*inst->rt, MemOperand(inst->rt, 0));

@@ -25,7 +25,7 @@ namespace SandHook {
 
             void Emit(U32 data32);
             void Emit(U64 data64);
-            void Emit(Unit<Base>* unit);
+            void Emit(BaseUnit* unit);
 
             void MoveWide(RegisterA64& rd, INST_A64(MOV_WIDE)::OP op, U64 imme, INST_A64(MOV_WIDE)::Shift shift);
 

@@ -9,24 +9,24 @@ using namespace SandHook::RegistersA64;
 using namespace SandHook::AsmA64;
 
 AssemblerA64::AssemblerA64(CodeBuffer* codeBuffer) {
-    code_container.setCodeBuffer(codeBuffer);
+    code_container.SetCodeBuffer(codeBuffer);
 }
 
 void *AssemblerA64::GetPC() {
-    return reinterpret_cast<void *>(code_container.curPc);
+    return reinterpret_cast<void *>(code_container.cur_pc);
 }
 
 void *AssemblerA64::GetStartPC() {
-    return reinterpret_cast<void *>(code_container.startPc);
+    return reinterpret_cast<void *>(code_container.start_pc);
 }
 
 void AssemblerA64::AllocBufferFirst(U32 size) {
-    code_container.allocBufferFirst(size);
+    code_container.AllocBufferFirst(size);
 }
 
 void *AssemblerA64::Finish() {
-    code_container.commit();
-    return reinterpret_cast<void *>(code_container.startPc);
+    code_container.Commit();
+    return reinterpret_cast<void *>(code_container.start_pc);
 }
 
 
@@ -39,7 +39,7 @@ void AssemblerA64::Emit(U32 data32) {
 }
 
 void AssemblerA64::Emit(BaseUnit *unit) {
-    code_container.append(unit);
+    code_container.Append(unit);
 }
 
 void AssemblerA64::MoveWide(RegisterA64 &rd, INST_A64(MOV_WIDE)::OP op, U64 imme,

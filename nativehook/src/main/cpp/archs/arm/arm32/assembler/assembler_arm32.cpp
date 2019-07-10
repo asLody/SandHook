@@ -10,24 +10,24 @@ using namespace SandHook::RegistersA32;
 using namespace SandHook::AsmA32;
 
 AssemblerA32::AssemblerA32(CodeBuffer* codeBuffer) {
-    code_container.setCodeBuffer(codeBuffer);
+    code_container.SetCodeBuffer(codeBuffer);
 }
 
 void *AssemblerA32::GetPC() {
-    return reinterpret_cast<void *>(code_container.curPc);
+    return reinterpret_cast<void *>(code_container.cur_pc);
 }
 
 void *AssemblerA32::GetStartPC() {
-    return reinterpret_cast<void *>(code_container.startPc);
+    return reinterpret_cast<void *>(code_container.start_pc);
 }
 
 void AssemblerA32::AllocBufferFirst(U32 size) {
-    code_container.allocBufferFirst(size);
+    code_container.AllocBufferFirst(size);
 }
 
 void *AssemblerA32::Finish() {
-    code_container.commit();
-    return reinterpret_cast<void *>(code_container.startPc);
+    code_container.Commit();
+    return reinterpret_cast<void *>(code_container.start_pc);
 }
 
 void AssemblerA32::Emit(U32 data32) {
@@ -39,7 +39,7 @@ void AssemblerA32::Emit(U16 data16) {
 }
 
 void AssemblerA32::Emit(BaseUnit *unit) {
-    code_container.append(unit);
+    code_container.Append(unit);
 }
 
 void AssemblerA32::Mov(RegisterA32 &rd, U16 imm16) {

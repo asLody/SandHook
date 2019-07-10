@@ -20,7 +20,7 @@ namespace SandHook {
 
             Label() {}
 
-            Label(void *pc) : Unit<Base>(pc) {}
+            Label(void *pc) : BaseUnit(pc) {}
 
             enum UnitTypeDef UnitType() override {
                 return UnitTypeDef::UnitLabel;

@@ -8,32 +8,32 @@
 using namespace SandHook::Assembler;
 using namespace SandHook::Asm;
 
-CodeContainer::CodeContainer(CodeBuffer *codeBuffer) : codeBuffer(codeBuffer) {}
+CodeContainer::CodeContainer(CodeBuffer *codeBuffer) : code_buffer(codeBuffer) {}
 
-void CodeContainer::setCodeBuffer(CodeBuffer *codeBuffer) {
-    this->codeBuffer = codeBuffer;
+void CodeContainer::SetCodeBuffer(CodeBuffer *codeBuffer) {
+    this->code_buffer = codeBuffer;
 }
 
-void CodeContainer::append(Unit<Base> *unit) {
+void CodeContainer::Append(BaseUnit *unit) {
     units.push_back(unit);
-    unit->SetVPC(curPc);
+    unit->SetVPC(cur_pc);
     switch (unit->UnitType()) {
         case UnitLabel:
             labels.push_back((Label*)unit);
             break;
         default:
-            curPc += unit->Size();
+            cur_pc += unit->Size();
     }
 }
 
-void CodeContainer::commit() {
-    U32 bufferSize = static_cast<U32>(curPc - startPc);
+void CodeContainer::Commit() {
+    U32 bufferSize = static_cast<U32>(cur_pc - start_pc);
     void* bufferStart;
-    if (startPc > 0) {
-        bufferStart = reinterpret_cast<void *>(startPc);
-        codeBuffer->ResetLastBufferSize(bufferSize);
+    if (start_pc > 0) {
+        bufferStart = reinterpret_cast<void *>(start_pc);
+        code_buffer->ResetLastBufferSize(bufferSize);
     } else {
-        bufferStart = codeBuffer->GetBuffer(bufferSize);
+        bufferStart = code_buffer->GetBuffer(bufferSize);
     }
     Addr pcNow = reinterpret_cast<Addr>(bufferStart);
 
@@ -61,23 +61,23 @@ void CodeContainer::commit() {
     FlushCache(reinterpret_cast<Addr>(bufferStart), pcNow - reinterpret_cast<Addr>(bufferStart));
 
     //Set pc
-    startPc = reinterpret_cast<Addr>(bufferStart);
-    curPc = pcNow;
+    start_pc = reinterpret_cast<Addr>(bufferStart);
+    cur_pc = pcNow;
 
 }
 
-void CodeContainer::allocBufferFirst(U32 size) {
-    startPc = reinterpret_cast<Addr>(codeBuffer->GetBuffer(size));
-    curPc = startPc;
+void CodeContainer::AllocBufferFirst(U32 size) {
+    start_pc = reinterpret_cast<Addr>(code_buffer->GetBuffer(size));
+    cur_pc = start_pc;
 }
 
 CodeContainer::~CodeContainer() {
-    std::list<Unit<Base>*>::iterator unit;
+    std::list<BaseUnit*>::iterator unit;
     for(unit = units.begin();unit != units.end(); ++unit) {
         delete (*unit);
     }
 }
 
-Addr CodeContainer::size() {
-    return curPc - startPc;
+Addr CodeContainer::Size() {
+    return cur_pc - start_pc;
 }

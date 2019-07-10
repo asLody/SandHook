@@ -36,13 +36,13 @@ void *InlineHookArm64Android::Hook(void *origin, void *replace) {
 
     //build backup method
     CodeRelocateA64 relocate = CodeRelocateA64(assembler_backup);
-    backup = relocate.Relocate(origin, code_container_inline->size(), nullptr);
+    backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
 #define __ assembler_backup.
     Label* origin_addr_label = new Label();
     __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) origin + code_container_inline->size());
+    __ Emit((Addr) origin + code_container_inline->Size());
     __ Finish();
 #undef __
 

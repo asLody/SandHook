@@ -31,7 +31,7 @@ namespace SandHook {
 
             void Emit(U32 data32);
             void Emit(U16 data16);
-            void Emit(Unit<Base>* unit);
+            void Emit(BaseUnit* unit);
 
 
             void Mov(RegisterA32 &rd, U16 imm16);

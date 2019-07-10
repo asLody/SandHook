@@ -12,8 +12,8 @@ namespace SandHook {
 
         class Arm32Decoder : public InstDecoder {
         public:
-            void Disassembler(void *codeStart, Addr codeLen, InstVisitor &visitor,
-                              bool onlyPcRelInst) override;
+            void Disassemble(void *codeStart, Addr codeLen, InstVisitor &visitor,
+                             bool onlyPcRelInst) override;
         public:
             static Arm32Decoder* instant;
         };

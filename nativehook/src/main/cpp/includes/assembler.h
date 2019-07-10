@@ -23,7 +23,7 @@ namespace SandHook {
         public:
             virtual void* GetBuffer(U32 size) = 0;
             virtual void ResetLastBufferSize(U32 size){};
-            virtual void* copy(void* start, U32 size) {
+            virtual void* Copy(void* start, U32 size) {
                 void* bufferStart = GetBuffer(size);
                 if (bufferStart == nullptr)
                     return nullptr;
@@ -38,26 +38,26 @@ namespace SandHook {
 
             CodeContainer(CodeBuffer *codeBuffer);
 
-            void setCodeBuffer(CodeBuffer *codeBuffer);
+            void SetCodeBuffer(CodeBuffer *codeBuffer);
 
             //allow code Relocate to Get new pc first
-            void allocBufferFirst(U32 size);
-            void append(Unit<Base>* unit);
-            void commit();
+            void AllocBufferFirst(U32 size);
+            void Append(BaseUnit *unit);
+            void Commit();
 
-            Addr size();
+            Addr Size();
 
             virtual ~CodeContainer();
 
         public:
             //before commit is virtual address so = 0, after commit is real address
-            Addr startPc = 0;
-            Addr curPc = 0;
+            Addr start_pc = 0;
+            Addr cur_pc = 0;
         private:
-            Addr maxSize = 0;
-            std::list<Unit<Base>*> units = std::list<Unit<Base>*>();
+            Addr max_size = 0;
+            std::list<BaseUnit*> units = std::list<BaseUnit*>();
             std::list<Label*> labels = std::list<Label*>();
-            CodeBuffer* codeBuffer = nullptr;
+            CodeBuffer* code_buffer = nullptr;
         };
 
 

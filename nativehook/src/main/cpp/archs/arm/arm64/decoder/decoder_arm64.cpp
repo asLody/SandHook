@@ -16,8 +16,8 @@ goto label_matched; \
 
 Arm64Decoder* Arm64Decoder::instant = new Arm64Decoder();
 
-void Arm64Decoder::Disassembler(void *codeStart, Addr codeLen, InstVisitor &visitor,
-                                bool onlyPcRelInst) {
+void Arm64Decoder::Disassemble(void *codeStart, Addr codeLen, InstVisitor &visitor,
+                               bool onlyPcRelInst) {
     InstA64 *pc = reinterpret_cast<InstA64 *>(codeStart);
     Addr end_addr = (Addr) codeStart + codeLen;
     BaseUnit* unit = nullptr;
