@@ -37,8 +37,6 @@ public class MyApp extends Application {
             SandHookConfig.SDK_INT = 29;
         }
 
-        NativeHook.test();
-
         SandHook.disableVMInline();
         SandHook.tryDisableProfile(getPackageName());
         SandHook.disableDex2oatInline(false);
