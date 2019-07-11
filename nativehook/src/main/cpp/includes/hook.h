@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/14.
 //
 
-#ifndef SANDHOOK_NH_HOOK_H
-#define SANDHOOK_NH_HOOK_H
+#pragma once
 
 #include <mutex>
 
@@ -20,17 +19,16 @@ namespace SandHook {
         class InlineHook {
         public:
             //return == backup method
-            virtual void* inlineHook(void* origin, void* replace) = 0;
-            virtual bool breakPoint(void* point, void (*callback)(REG[])) {
+            virtual void *Hook(void *origin, void *replace) = 0;
+            virtual bool BreakPoint(void *point, void (*callback)(REG[])) {
                 return false;
             };
         protected:
-            static CodeBuffer* backupBuffer;
+            static CodeBuffer* backup_buffer;
+            std::mutex hook_lock;
         public:
             static InlineHook* instance;
         };
 
     }
 }
-
-#endif //SANDHOOK_NH_HOOK_H

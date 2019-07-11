@@ -17,29 +17,29 @@ using namespace SandHook::Utils;
 
 #include "assembler_arm32.h"
 using namespace SandHook::RegistersA32;
-void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
+void *InlineHookArm32Android::Hook(void *origin, void *replace) {
     AutoLock lock(hookLock);
 
-    void* originCode;
-    if (isThumbCode((Addr)origin)) {
-        originCode = getThumbCodeAddress(origin);
+    void* origin_code;
+    if (IsThumbCode((Addr) origin)) {
+        origin_code = GetThumbCodeAddress(origin);
     } else {
         LOGE("hook %d error!, only support thumb2 now!", origin);
         return nullptr;
     }
 
-    bool changeMode = isThumbCode((Addr) origin) != isThumbCode((Addr) replace);
+    bool change_mode = IsThumbCode((Addr) origin) != IsThumbCode((Addr) replace);
 
     void* backup = nullptr;
-    AssemblerA32 assemblerBackup(backupBuffer);
+    AssemblerA32 assembler_backup(backup_buffer);
 
-    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(originCode));
-    AssemblerA32 assemblerInline(&inlineBuffer);
-    CodeContainer* codeContainerInline = &assemblerInline.codeContainer;
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin_code));
+    AssemblerA32 assembler_inline(&inline_buffer);
+    CodeContainer* code_container_inline = &assembler_inline.code_container;
 
     //build inline trampoline
-#define __ assemblerInline.
-    if (!changeMode) {
+#define __ assembler_inline.
+    if (!change_mode) {
         Label *target_addr_label = new Label();
         ALIGN_FOR_LDR
         __ Ldr(PC, target_addr_label);
@@ -53,65 +53,65 @@ void *InlineHookArm32Android::inlineHook(void *origin, void *replace) {
 #undef __
 
     //build backup method
-    CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
-    backup = relocate.relocate(origin, codeContainerInline->size(), nullptr);
-#define __ assemblerBackup.
+    CodeRelocateA32 relocate = CodeRelocateA32(assembler_backup);
+    backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
+#define __ assembler_backup.
     Label* origin_addr_label = new Label();
     ALIGN_FOR_LDR
     __ Ldr(PC, origin_addr_label);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
-    __ finish();
+    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(origin_code) + relocate.cur_offset)));
+    __ Finish();
 #undef __
 
     //commit inline trampoline
-    assemblerInline.finish();
-    return getThumbPC(backup);
+    assembler_inline.Finish();
+    return GetThumbPC(backup);
 }
 
 
 IMPORT_SHELLCODE(BP_SHELLCODE)
 IMPORT_LABEL(callback_addr_s, Addr)
 IMPORT_LABEL(origin_addr_s, Addr)
-bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
+bool InlineHookArm32Android::BreakPoint(void *origin, void (*callback)(REG *)) {
     AutoLock lock(hookLock);
 
-    void* originCode;
-    if (isThumbCode((Addr)origin)) {
-        originCode = getThumbCodeAddress(origin);
+    void* origin_code;
+    if (IsThumbCode((Addr) origin)) {
+        origin_code = GetThumbCodeAddress(origin);
     } else {
         LOGE("hook %d error!, only support thumb2 now!", origin);
         return false;
     }
 
-    bool changeMode = isThumbCode((Addr) origin) != isThumbCode((Addr) callback);
+    bool change_mode = IsThumbCode((Addr) origin) != IsThumbCode((Addr) callback);
 
     void* backup = nullptr;
-    AssemblerA32 assemblerBackup(backupBuffer);
+    AssemblerA32 assembler_backup(backup_buffer);
 
-    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(originCode));
-    AssemblerA32 assemblerInline(&inlineBuffer);
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin_code));
+    AssemblerA32 assembler_inline(&inline_buffer);
 
     //build backup method
-    CodeRelocateA32 relocate = CodeRelocateA32(assemblerBackup);
-    backup = relocate.relocate(origin, changeMode ? (4 * 2 + 2) : (4 * 2), nullptr);
-#define __ assemblerBackup.
+    CodeRelocateA32 relocate = CodeRelocateA32(assembler_backup);
+    backup = relocate.Relocate(origin, change_mode ? (4 * 2 + 2) : (4 * 2), nullptr);
+#define __ assembler_backup.
     Label* origin_addr_label = new Label();
     ALIGN_FOR_LDR
     __ Ldr(PC, origin_addr_label);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) getThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(originCode) + relocate.curOffset)));
-    __ finish();
+    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(origin_code) + relocate.cur_offset)));
+    __ Finish();
 #undef __
 
     //build trampoline
-    origin_addr_s = (Addr) getThumbPC(backup);
+    origin_addr_s = (Addr) GetThumbPC(backup);
     callback_addr_s = (Addr) callback;
-    void* trampoline = backupBuffer->copy((void*)BP_SHELLCODE, SHELLCODE_LEN(BP_SHELLCODE));
+    void* trampoline = backup_buffer->Copy((void*)BP_SHELLCODE, SHELLCODE_LEN(BP_SHELLCODE));
 
     //build inline trampoline
-#define __ assemblerInline.
-    if (!changeMode) {
+#define __ assembler_inline.
+    if (!change_mode) {
         Label *target_addr_label = new Label();
         ALIGN_FOR_LDR
         __ Ldr(PC, target_addr_label);
@@ -121,7 +121,7 @@ bool InlineHookArm32Android::breakPoint(void *origin, void (*callback)(REG *)) {
         __ Mov(IP, (Addr) trampoline);
         __ Bx(IP);
     }
-    __ finish();
+    __ Finish();
 #undef __
 
     return true;

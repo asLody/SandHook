@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/8.
 //
 
-#ifndef SANDHOOK_NH_REGISTER_LIST_A64_H
-#define SANDHOOK_NH_REGISTER_LIST_A64_H
+#pragma once
 
 #include "register_arm64.h"
 #include "base.h"
@@ -34,7 +33,7 @@ namespace SandHook {
         extern XRegister IP0;
         extern XRegister IP1;
         extern XRegister LR;
-//zero reg
+//zero reg_
         extern XRegister XZR;
         extern WRegister WZR;
         extern RegisterA64 UnknowRegiser;
@@ -59,5 +58,3 @@ namespace SandHook {
 
 #define XReg(N) XRegister::get(N)
 #define WReg(N) WRegister::get(N)
-
-#endif //SANDHOOK_NH_REGISTER_LIST_A64_H

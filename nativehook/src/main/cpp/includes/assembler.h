@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/7.
 //
 
-#ifndef SANDHOOK_NH_ASSEMBLER_H
-#define SANDHOOK_NH_ASSEMBLER_H
+#pragma once
 
 #include "label.h"
 #include "instruction.h"
@@ -22,14 +21,14 @@ namespace SandHook {
 
         class CodeBuffer {
         public:
-            virtual void* getBuffer(U32 size) = 0;
-            virtual void resetLastBufferSize(U32 size){};
-            virtual void* copy(void* start, U32 size) {
-                void* bufferStart = getBuffer(size);
+            virtual void* GetBuffer(U32 size) = 0;
+            virtual void ResetLastBufferSize(U32 size){};
+            virtual void* Copy(void* start, U32 size) {
+                void* bufferStart = GetBuffer(size);
                 if (bufferStart == nullptr)
                     return nullptr;
                 memcpy(bufferStart, start, size);
-                flushCache((Addr)bufferStart, size);
+                FlushCache((Addr) bufferStart, size);
                 return bufferStart;
             };
         };
@@ -39,31 +38,29 @@ namespace SandHook {
 
             CodeContainer(CodeBuffer *codeBuffer);
 
-            void setCodeBuffer(CodeBuffer *codeBuffer);
+            void SetCodeBuffer(CodeBuffer *codeBuffer);
 
-            //allow code relocate to get new pc first
-            void allocBufferFirst(U32 size);
-            void append(Unit<Base>* unit);
-            void commit();
+            //allow code Relocate to Get new pc first
+            void AllocBufferFirst(U32 size);
+            void Append(BaseUnit *unit);
+            void Commit();
 
-            Addr size();
+            Addr Size();
 
             virtual ~CodeContainer();
 
         public:
             //before commit is virtual address so = 0, after commit is real address
-            Addr startPc = 0;
-            Addr curPc = 0;
+            Addr start_pc = 0;
+            Addr cur_pc = 0;
         private:
-            Addr maxSize = 0;
-            std::list<Unit<Base>*> units = std::list<Unit<Base>*>();
+            Addr max_size = 0;
+            std::list<BaseUnit*> units = std::list<BaseUnit*>();
             std::list<Label*> labels = std::list<Label*>();
-            CodeBuffer* codeBuffer = nullptr;
+            CodeBuffer* code_buffer = nullptr;
         };
 
 
     }
 
 }
-
-#endif //SANDHOOK_NH_ASSEMBLER_H

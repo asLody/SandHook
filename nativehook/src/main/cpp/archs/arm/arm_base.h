@@ -2,30 +2,29 @@
 // Created by swift on 2019/5/16.
 //
 
-#ifndef SANDHOOK_ARM_BASE_H
-#define SANDHOOK_ARM_BASE_H
+#pragma once
 
 // Condition codes.
 enum Condition {
-    eq = 0,   // Z set            Equal.
+    eq = 0,   // Z Set            Equal.
     ne = 1,   // Z clear          Not equal.
-    cs = 2,   // C set            Carry set.
+    cs = 2,   // C Set            Carry Set.
     cc = 3,   // C clear          Carry clear.
-    mi = 4,   // N set            Negative.
+    mi = 4,   // N Set            Negative.
     pl = 5,   // N clear          Positive or zero.
-    vs = 6,   // V set            Overflow.
+    vs = 6,   // V Set            Overflow.
     vc = 7,   // V clear          No overflow.
-    hi = 8,   // C set, Z clear   Unsigned higher.
-    ls = 9,   // C clear or Z set Unsigned lower or same.
+    hi = 8,   // C Set, Z clear   Unsigned higher.
+    ls = 9,   // C clear or Z Set Unsigned lower or same.
     ge = 10,  // N == V           Greater or equal.
     lt = 11,  // N != V           Less than.
     gt = 12,  // Z clear, N == V  Greater than.
-    le = 13,  // Z set or N != V  Less then or equal
+    le = 13,  // Z Set or N != V  Less then or equal
     al = 14,  //                  Always.
     nv = 15,  // Behaves as always/al.
 
     // Aliases.
-    hs = cs,  // C set            Unsigned higher or same.
+    hs = cs,  // C Set            Unsigned higher or same.
     lo = cc   // C clear          Unsigned lower.
 };
 
@@ -42,31 +41,29 @@ enum Shift {
 enum AddrMode { Offset, PreIndex, PostIndex, NonAddrMode};
 
 
-//decode field & encode field
+//Disassembler field & encode field
 
 //condition
-#define DECODE_COND condition = Condition(inst->cond)
-#define ENCODE_COND get()->cond = condition
+#define DECODE_COND condition = Condition(Get()->cond)
+#define ENCODE_COND Get()->cond = condition
 
-//reg
-#define DECODE_RD(Type) rd = Type(static_cast<U8>(get()->rd))
-#define ENCODE_RD get()->rd = rd->getCode()
+//reg_
+#define DECODE_RD(Type) rd = Type(static_cast<U8>(Get()->rd))
+#define ENCODE_RD Get()->rd = rd->Code()
 
-#define DECODE_RT(Type) rt = Type(static_cast<U8>(get()->rt))
-#define ENCODE_RT get()->rt = rt->getCode()
+#define DECODE_RT(Type) rt = Type(static_cast<U8>(Get()->rt))
+#define ENCODE_RT Get()->rt = rt->Code()
 
-#define DECODE_RM(Type) rm = Type(static_cast<U8>(get()->rm))
-#define ENCODE_RM get()->rm = rm->getCode()
+#define DECODE_RM(Type) rm = Type(static_cast<U8>(Get()->rm))
+#define ENCODE_RM Get()->rm = rm->Code()
 
-#define DECODE_RN(Type) rn = Type(static_cast<U8>(get()->rn))
-#define ENCODE_RN get()->rn = rn->getCode()
+#define DECODE_RN(Type) rn = Type(static_cast<U8>(Get()->rn))
+#define ENCODE_RN Get()->rn = rn->Code()
 
 
 //op
-#define DECODE_OP op = OP(inst->op)
-#define ENCODE_OP get()->op = op
+#define DECODE_OP op = OP(Get()->op)
+#define ENCODE_OP Get()->op = op
 
-#define DECODE_SHIFT operand.shift = Shift(inst->shift)
-#define ENCODE_SHIFT get()->shift = operand.shift
-
-#endif //SANDHOOK_ARM_BASE_H
+#define DECODE_SHIFT operand.shift_ = Shift(Get()->shift)
+#define ENCODE_SHIFT Get()->shift = operand.shift_

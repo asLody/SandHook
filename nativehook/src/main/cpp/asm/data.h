@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/10.
 //
 
-#ifndef SANDHOOK_NH_DATA_H
-#define SANDHOOK_NH_DATA_H
+#pragma once
 
 #include "unit.h"
 
@@ -21,15 +20,22 @@ public: \
 namespace SandHook {
     namespace Asm {
 
-        template <typename DType>
-        class Data : public Unit<DType> {
+        template <typename D>
+        class Data : public Unit<D> {
         public:
-            Data(DType raw) : Unit<DType>() {
-                this->set(raw);
-            }
-            inline UnitType unitType() override {
-                return UnitType::UnitData;
+
+            Data(D raw) : backup_(raw) {}
+
+            INLINE UnitTypeDef UnitType() override {
+                return UnitTypeDef::UnitData;
             };
+
+            void Move(D *dest) override {
+                *dest = backup_;
+            }
+
+        private:
+            D backup_;
         };
 
 
@@ -53,5 +59,3 @@ namespace SandHook {
 
     }
 }
-
-#endif //SANDHOOK_NH_DATA_H

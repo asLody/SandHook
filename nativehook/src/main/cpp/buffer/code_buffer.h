@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/11.
 //
 
-#ifndef SANDHOOK_NH_CODE_BUFFER_H
-#define SANDHOOK_NH_CODE_BUFFER_H
+#pragma once
 
 #include <mutex>
 #include "assembler.h"
@@ -15,25 +14,25 @@ namespace SandHook {
 
             AndroidCodeBuffer();
 
-            void *getBuffer(U32 bufferSize) override;
+            void *GetBuffer(U32 bufferSize) override;
 
         protected:
-            std::list<void*> executeSpaceList = std::list<void*>();
-            std::mutex allocSpaceLock;
-            Addr executePageOffset = 0;
-            U32 currentExecutePageSize = 0;
+            std::list<void*> execute_space_list = std::list<void*>();
+            std::mutex alloc_space_lock;
+            Addr execute_page_offset = 0;
+            U32 current_execute_page_size = 0;
         };
 
         //thread unsafe
-        class AndroidRellocBufferUnsafe : public AndroidCodeBuffer {
+        class AndroidReSizableBufferUnsafe : public AndroidCodeBuffer {
         public:
         public:
-            void resetLastBufferSize(U32 size) override;
+            void ResetLastBufferSize(U32 size) override;
 
-            void *getBuffer(U32 bufferSize) override;
+            void *GetBuffer(U32 bufferSize) override;
 
         private:
-            U32 lastAllocSize;
+            U32 last_alloc_size;
         };
 
         class StaticCodeBuffer : public CodeBuffer {
@@ -41,12 +40,10 @@ namespace SandHook {
 
             StaticCodeBuffer(Addr pc);
 
-            void *getBuffer(U32 bufferSize) override;
+            void *GetBuffer(U32 bufferSize) override;
 
         private:
             Addr pc;
         };
     }
 }
-
-#endif //SANDHOOK_NH_CODE_BUFFER_H

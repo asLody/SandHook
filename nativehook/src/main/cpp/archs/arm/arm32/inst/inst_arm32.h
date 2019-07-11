@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/12.
 //
 
-#ifndef SANDHOOK_NH_INST_ARM32_H
-#define SANDHOOK_NH_INST_ARM32_H
+#pragma once
 
 namespace SandHook {
 
@@ -20,16 +19,16 @@ namespace SandHook {
 //
 //        DEFINE_IS_EXT(STR_IMM, TEST_INST_FIELD(opcode, OPCODE_A64(STR_IMM)) && TEST_INST_FIELD(unkown1_0, 0) && TEST_INST_FIELD(unkown2_0, 0))
 //
-//        inline U32 instCode() override {
+//        inline U32 InstCode() override {
 //        return STR_x;
 //    }
 //
-//    void decode(STRUCT_A64(STR_IMM) *inst) override;
+//    void DisAssembler(STRUCT_A64(STR_IMM) *inst) override;
 //
-//    void assembler() override;
+//    void Assemble() override;
 //
 //    AddrMode getAddrMode() {
-//        return operand.addr_mode;
+//        return operand.addr_mode_;
 //    }
 //
 //    private:
@@ -47,5 +46,3 @@ namespace SandHook {
 //};
     }
 }
-
-#endif //SANDHOOK_NH_INST_ARM32_H

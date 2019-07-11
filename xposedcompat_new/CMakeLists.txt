@@ -34,7 +34,6 @@ add_library( # Sets the name of the library.
         src/main/cpp/art_jni_trampoline.cpp
         # Provides a relative path to your source file(s).
         src/main/cpp/libffi/closures.c
-        src/main/cpp/libffi/closures.c
         src/main/cpp/libffi/debug.c
         src/main/cpp/libffi/dlmalloc.c
         src/main/cpp/libffi/java_raw_api.c

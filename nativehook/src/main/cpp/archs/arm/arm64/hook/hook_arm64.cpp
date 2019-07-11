@@ -15,18 +15,18 @@ using namespace SandHook::Utils;
 #include "assembler_arm64.h"
 #include "code_relocate_arm64.h"
 using namespace SandHook::RegistersA64;
-void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
-    AutoLock lock(hookLock);
+void *InlineHookArm64Android::Hook(void *origin, void *replace) {
+    AutoLock lock(hook_lock);
 
     void* backup = nullptr;
-    AssemblerA64 assemblerBackup(backupBuffer);
+    AssemblerA64 assembler_backup(backup_buffer);
 
-    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin));
-    AssemblerA64 assemblerInline(&inlineBuffer);
-    CodeContainer* codeContainerInline = &assemblerInline.codeContainer;
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin));
+    AssemblerA64 assembler_inline(&inline_buffer);
+    CodeContainer* code_container_inline = &assembler_inline.code_container;
 
     //build inline trampoline
-#define __ assemblerInline.
+#define __ assembler_inline.
     Label* target_addr_label = new Label();
     __ Ldr(IP1, target_addr_label);
     __ Br(IP1);
@@ -35,48 +35,48 @@ void *InlineHookArm64Android::inlineHook(void *origin, void *replace) {
 #undef __
 
     //build backup method
-    CodeRelocateA64 relocate = CodeRelocateA64(assemblerBackup);
-    backup = relocate.relocate(origin, codeContainerInline->size(), nullptr);
-#define __ assemblerBackup.
+    CodeRelocateA64 relocate = CodeRelocateA64(assembler_backup);
+    backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
+#define __ assembler_backup.
     Label* origin_addr_label = new Label();
     __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) origin + codeContainerInline->size());
-    __ finish();
+    __ Emit((Addr) origin + code_container_inline->Size());
+    __ Finish();
 #undef __
 
     //commit inline trampoline
-    assemblerInline.finish();
+    assembler_inline.Finish();
     return backup;
 }
 
-bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[])) {
-    AutoLock lock(hookLock);
+bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[])) {
+    AutoLock lock(hook_lock);
 
     void* backup = nullptr;
-    AssemblerA64 assemblerBackup(backupBuffer);
-    AssemblerA64 assemblerTrampoline(backupBuffer);
+    AssemblerA64 assembler_backup(backup_buffer);
+    AssemblerA64 assembler_trampoline(backup_buffer);
 
-    StaticCodeBuffer inlineBuffer = StaticCodeBuffer(reinterpret_cast<Addr>(point));
-    AssemblerA64 assemblerInline(&inlineBuffer);
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(point));
+    AssemblerA64 assembler_inline(&inline_buffer);
 
 
     //build backup inst
-    CodeRelocateA64 relocate = CodeRelocateA64(assemblerBackup);
-    backup = relocate.relocate(point, 4 * 4, nullptr);
-#define __ assemblerBackup.
+    CodeRelocateA64 relocate = CodeRelocateA64(assembler_backup);
+    backup = relocate.Relocate(point, 4 * 4, nullptr);
+#define __ assembler_backup.
     Label* origin_addr_label = new Label();
     __ Ldr(IP1, origin_addr_label);
     __ Br(IP1);
     __ Emit(origin_addr_label);
     __ Emit((Addr) point + 4 * 4);
-    __ finish();
+    __ Finish();
 #undef __
 
 
     //build shell code
-#define __ assemblerTrampoline.
+#define __ assembler_trampoline.
     //backup NZCV
     __ Sub(SP, Operand(&SP, 0x20));
 
@@ -114,19 +114,19 @@ bool InlineHookArm64Android::breakPoint(void *point, void (*callback)(REG regs[]
     __ Mov(IP1, (Addr) backup);
     __ Br(IP1);
 
-    __ finish();
+    __ Finish();
 #undef __
 
 
-    void* secondTrampoline = assemblerTrampoline.getStartPC();
+    void* second_trampoline = assembler_trampoline.GetStartPC();
     //build inline trampoline
-#define __ assemblerInline.
+#define __ assembler_inline.
     Label* target_addr_label = new Label();
     __ Ldr(IP1, target_addr_label);
     __ Br(IP1);
     __ Emit(target_addr_label);
-    __ Emit((Addr) secondTrampoline);
-    __ finish();
+    __ Emit((Addr) second_trampoline);
+    __ Finish();
 #undef __
 
     return true;

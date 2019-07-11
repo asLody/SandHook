@@ -1,11 +1,10 @@
 //
 // Created by swift on 2019/5/10.
 //
+#pragma once
 
 #include "exception"
 
-#ifndef SANDHOOK_NH_EXCEPTION_H
-#define SANDHOOK_NH_EXCEPTION_H
 
 namespace SandHook {
     namespace Asm {
@@ -25,5 +24,3 @@ namespace SandHook {
 
     }
 }
-
-#endif //SANDHOOK_NH_EXCEPTION_H

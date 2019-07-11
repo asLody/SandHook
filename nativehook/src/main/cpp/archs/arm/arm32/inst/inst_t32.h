@@ -2,8 +2,8 @@
 // Created by swift on 2019/5/16.
 //
 
-#ifndef SANDHOOK_INST_T32_H
-#define SANDHOOK_INST_T32_H
+#pragma once
+
 
 #include "arm_base.h"
 #include "arm32_base.h"
@@ -14,10 +14,10 @@
 
 #define INST_T32(X) T32_##X
 
-#define IS_OPCODE_T32(RAW,OP) INST_T32(OP)::is(RAW)
+#define IS_OPCODE_T32(RAW,OP) INST_T32(OP)::Is(RAW)
 
 #define DEFINE_IS_EXT(X, COND) \
-inline static bool is(InstT32& inst) { \
+inline static bool Is(InstT32& inst) { \
 union { \
     InstT32 raw; \
     STRUCT_T32(X) inst; \
@@ -34,10 +34,14 @@ return COND; \
 
 #define TEST_INST_OPCODE(X, INDEX) inst_test.inst.opcode##INDEX == OPCODE_T32(X##_##INDEX)
 
-#define DEFINE_INST_CODE(X) \
-inline U32 instCode() override { \
-return ENUM_VALUE(InstCodeT32, InstCodeT32::X); \
-}
+#define DEFINE_INST(X) class INST_T32(X) : public InstructionT32<STRUCT_T32(X), ENUM_VALUE(InstCodeT32, InstCodeT32::X)>
+
+#define DEFINE_INST_EXT(X,P) class INST_T32(X) : public INST_T32(P)
+
+#define DEFINE_INST_EXT_(X,P) class INST_T32(X) : public P<STRUCT_T32(X), ENUM_VALUE(InstCodeT32, InstCodeT32::X)>
+
+#define DEFINE_INST_PCREL(X) class INST_T32(X) : public T32_INST_PC_REL<STRUCT_T32(X), ENUM_VALUE(InstCodeT32, InstCodeT32::X)>
+
 
 using namespace SandHook::RegistersA32;
 
@@ -45,89 +49,73 @@ namespace SandHook {
 
     namespace AsmA32 {
 
-        template<typename Inst>
-        class InstructionT32 : public Instruction<Inst> {
+        template<typename S,U32 C>
+        class InstructionT32 : public Instruction<S,C> {
         public:
 
             InstructionT32() {}
 
-            InstructionT32(Inst *inst) : Instruction<Inst>(inst) {}
+            InstructionT32(void *inst) : Instruction<S,C>(inst) {}
 
-            Inst mask(Inst raw) {
-                return raw & *(this->get());
-            }
-
-            U32 size() override {
+            U32 Size() override {
                 return 4;
             }
 
-            void *getPC() override {
-                return reinterpret_cast<void *>((Addr) Instruction<Inst>::getPC() + 2 * 2);
+            void *GetPC() override {
+                return reinterpret_cast<void *>((Addr) Instruction<S,C>::GetPC() + 2 * 2);
             }
 
-            Addr getVPC() override {
-                return Instruction<Inst>::getVPC() + 2 * 2;
+            Addr GetVPC() override {
+                return Instruction<S,C>::GetVPC() + 2 * 2;
             }
 
-            static inline S32 signExtend32(unsigned int bits, U32 value) {
-                return ExtractSignedBitfield32(bits - 1, 0, value);
-            }
-
-            InstType instType() override {
+            InstType InstType() override {
                 return thumb32;
             }
 
-            Arch arch() override {
+            Arch Arch() override {
                 return arm32;
             }
 
         };
 
 
-        template <typename Inst>
-        class T32_INST_PC_REL : public InstructionT32<Inst> {
+        template <typename S,U32 C>
+        class T32_INST_PC_REL : public InstructionT32<S,C> {
         public:
 
-            T32_INST_PC_REL() {};
+            T32_INST_PC_REL() {}
 
-            T32_INST_PC_REL(Inst *inst) : InstructionT32<Inst>(inst) {};
+            T32_INST_PC_REL(void *inst) : InstructionT32<S,C>(inst) {};
 
-            virtual Off getImmPCOffset() {
+            virtual Off GetImmPCOffset() {
                 return 0;
             };
 
-            virtual Addr getImmPCOffsetTarget() {
-                return (Addr) this->getPC() + getImmPCOffset();
+            virtual Addr GetImmPCOffsetTarget() {
+                return (Addr) this->GetPC() + GetImmPCOffset();
             };
 
-            inline bool pcRelate() override {
+            inline bool PcRelate() override {
                 return true;
             };
 
         };
 
 
-        class INST_T32(UNKNOW) : public InstructionT32<STRUCT_T32(UNKNOW)> {
+        DEFINE_INST(UNKNOW) {
         public:
 
-            T32_UNKNOW(STRUCT_T32(UNKNOW) &inst);
+            T32_UNKNOW(void* inst);
 
-            DEFINE_INST_CODE(UNKNOW)
-
-            inline bool unknow() override {
+            inline bool Unknow() override {
                 return true;
             }
 
-            void decode(T32_STRUCT_UNKNOW *inst) override;
-
-            void assembler() override;
-
-        private:
-            STRUCT_T32(UNKNOW) inst_backup;
         };
 
 
-        class INST_T32(B32) : public T32_INST_PC_REL<STRUCT_T32(B32)> {
+        DEFINE_INST_PCREL(B32) {
         public:
 
             enum OP {
@@ -140,23 +128,21 @@ namespace SandHook {
                 thumb = 0b1
             };
 
-            T32_B32(T32_STRUCT_B32 *inst);
+            T32_B32(void *inst);
 
             T32_B32(OP op, X x, Off offset);
 
-            T32_B32(OP op, X x, Label& label);
-
-            DEFINE_INST_CODE(B32)
+            T32_B32(OP op, X x, Label* label);
 
             DEFINE_IS_EXT(B32, TEST_INST_FIELD(opcode, OPCODE_T32(B32)) && (TEST_INST_FIELD(op, B) || TEST_INST_FIELD(op, BL)))
 
-            Addr getImmPCOffsetTarget() override;
+            Addr GetImmPCOffsetTarget() override;
 
-            Off getImmPCOffset() override;
+            Off GetImmPCOffset() override;
 
-            void decode(T32_STRUCT_B32 *inst) override;
+            void Disassemble() override;
 
-            void assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -164,19 +150,18 @@ namespace SandHook {
             Off offset;
         };
 
-        class INST_T32(LDR_UIMM) : public InstructionT32<STRUCT_T32(LDR_UIMM)> {
+        DEFINE_INST(LDR_UIMM) {
         public:
-            T32_LDR_UIMM(T32_STRUCT_LDR_UIMM *inst);
+
+            T32_LDR_UIMM(void *inst);
 
             T32_LDR_UIMM(RegisterA32 &rt, RegisterA32 &rn, U32 offset);
 
-            DEFINE_INST_CODE(LDR_UIMM)
-
             DEFINE_IS(LDR_UIMM)
 
-            void decode(T32_STRUCT_LDR_UIMM *inst) override;
+            void Disassemble() override;
 
-            void assembler() override;
+            void Assemble() override;
 
         public:
             RegisterA32* rt;
@@ -185,7 +170,7 @@ namespace SandHook {
         };
 
 
-        class INST_T32(LDR_LIT) : public T32_INST_PC_REL<STRUCT_T32(LDR_LIT)> {
+        DEFINE_INST_PCREL(LDR_LIT) {
         public:
 
             enum OP {
@@ -204,25 +189,21 @@ namespace SandHook {
                 Sign = 0b1
             };
 
-            T32_LDR_LIT();
-
-            T32_LDR_LIT(T32_STRUCT_LDR_LIT *inst);
+            T32_LDR_LIT(void *inst);
 
             T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Off offset);
 
-            T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Label& label);
+            T32_LDR_LIT(OP op, S s, RegisterA32 &rt, Label* label);
 
             DEFINE_IS_EXT(LDR_LIT, TEST_INST_FIELD(opcode, OPCODE_T32(LDR_LIT)) && (TEST_INST_FIELD(op, LDR) || TEST_INST_FIELD(op, LDRB) || TEST_INST_FIELD(op, LDRH)))
 
-            DEFINE_INST_CODE(LDR_LIT)
+            Off GetImmPCOffset() override;
 
-            Off getImmPCOffset() override;
+            void OnOffsetApply(Off offset) override;
 
-            void onOffsetApply(Off offset) override;
+            void Disassemble() override;
 
-            void decode(T32_STRUCT_LDR_LIT *inst) override;
-
-            void assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -232,7 +213,7 @@ namespace SandHook {
         };
 
 
-        class INST_T32(MOV_MOVT_IMM) : public InstructionT32<STRUCT_T32(MOV_MOVT_IMM)> {
+        DEFINE_INST(MOV_MOVT_IMM) {
         public:
 
             enum OP {
@@ -240,19 +221,15 @@ namespace SandHook {
                 MOVT = 0b101100
             };
 
-            T32_MOV_MOVT_IMM();
-
-            T32_MOV_MOVT_IMM(T32_STRUCT_MOV_MOVT_IMM *inst);
+            T32_MOV_MOVT_IMM(void *inst);
 
             T32_MOV_MOVT_IMM(OP op, RegisterA32 &rd, U16 imm16);
 
             DEFINE_IS_EXT(MOV_MOVT_IMM, TEST_INST_OPCODE(MOV_MOVT_IMM, 1) && TEST_INST_OPCODE(MOV_MOVT_IMM, 2) && (TEST_INST_FIELD(op, MOV) || TEST_INST_FIELD(op, MOVT)))
 
-            DEFINE_INST_CODE(MOV_MOVT_IMM)
+            void Disassemble() override;
 
-            void decode(T32_STRUCT_MOV_MOVT_IMM *inst) override;
-
-            void assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -261,7 +238,7 @@ namespace SandHook {
         };
 
 
-        class INST_T32(LDR_IMM) : public InstructionT32<STRUCT_T32(LDR_IMM)> {
+        DEFINE_INST(LDR_IMM) {
         public:
 
             enum OP {
@@ -272,17 +249,15 @@ namespace SandHook {
                 LDRSH = 0b0011
             };
 
-            T32_LDR_IMM(T32_STRUCT_LDR_IMM *inst);
+            T32_LDR_IMM(void *inst);
 
             T32_LDR_IMM(OP op, RegisterA32 &rt, const MemOperand &operand);
 
             DEFINE_IS_EXT(LDR_IMM, TEST_INST_OPCODE(LDR_IMM, 1) && TEST_INST_OPCODE(LDR_IMM, 2))
 
-            DEFINE_INST_CODE(LDR_IMM)
+            void Disassemble() override;
 
-            void decode(T32_STRUCT_LDR_IMM *inst) override;
-
-            void assembler() override;
+            void Assemble() override;
 
         public:
             OP op;
@@ -291,7 +266,7 @@ namespace SandHook {
         };
 
 
-        class INST_T32(SUB_IMM) : public InstructionT32<STRUCT_T32(SUB_IMM)> {
+        DEFINE_INST(SUB_IMM) {
         public:
 
             enum OP {
@@ -299,11 +274,10 @@ namespace SandHook {
                 T4 = 0b10101
             };
 
-            T32_SUB_IMM(T32_STRUCT_SUB_IMM *inst);
+            T32_SUB_IMM(void *inst);
 
             DEFINE_IS_EXT(SUB_IMM, TEST_INST_OPCODE(SUB_IMM, 1) && TEST_INST_OPCODE(SUB_IMM, 2) && (TEST_INST_FIELD(op, T3) || TEST_INST_FIELD(op, T4)))
 
-            DEFINE_INST_CODE(SUB_IMM)
         };
 
     }
@@ -314,6 +288,7 @@ namespace SandHook {
 #undef DEFINE_IS
 #undef TEST_INST_FIELD
 #undef TEST_INST_OPCODE
-#undef DEFINE_INST_CODE
-
-#endif //SANDHOOK_INST_T32_H
+#undef DEFINE_INST
+#undef DEFINE_INST_EXT
+#undef DEFINE_INST_EXT_
+#undef DEFINE_INST_PCREL

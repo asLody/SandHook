@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/12.
 //
 
-#ifndef SANDHOOK_NH_INST_STRUCT_ARM32_H
-#define SANDHOOK_NH_INST_STRUCT_ARM32_H
+#pragma once
 
 
 #include "instruction.h"
@@ -27,6 +26,3 @@ DEFINE_STRUCT_A32(STR_IMM) {
         InstA64 opcode:3;
         InstA64 cond:4;
 };
-
-
-#endif //SANDHOOK_NH_INST_STRCUT_ARM32_H

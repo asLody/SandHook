@@ -8,7 +8,7 @@
 //A64_STR_IMM::A64_STR_IMM() {}
 //
 //A64_STR_IMM::A64_STR_IMM(STRUCT_A64(STR_IMM) *inst) : InstructionA64(inst) {
-//        decode(inst);
+//        DisAssembler(inst);
 //}
 //
 //A64_STR_IMM::A64_STR_IMM(RegisterA64 &rt, const MemOperand &operand) : rt(&rt), operand(operand) {}
@@ -17,11 +17,11 @@
 //        : condition(condition), rt(&rt), operand(operand) {}
 //
 //AddrMode A64_STR_IMM::decodeAddrMode() {
-//    if (get()->P == 1 && get()->W == 0) {
+//    if (Get()->P == 1 && Get()->W == 0) {
 //        return Offset;
-//    } else if (get()->P == 0 && get()->W == 0) {
+//    } else if (Get()->P == 0 && Get()->W == 0) {
 //        return PostIndex;
-//    } else if (get()->P == 1 && get()->W == 1) {
+//    } else if (Get()->P == 1 && Get()->W == 1) {
 //        return PreIndex;
 //    } else {
 //        valid = false;
@@ -29,20 +29,20 @@
 //    }
 //}
 //
-//void A64_STR_IMM::decode(STRUCT_A64(STR_IMM) *inst) {
+//void A64_STR_IMM::DisAssembler(STRUCT_A64(STR_IMM) *inst) {
 //    imm32 = zeroExtend32(12, inst->imm12);
 //    condition = Condition(inst->cond);
-//    operand.addr_mode = decodeAddrMode();
+//    operand.addr_mode_ = decodeAddrMode();
 //    index = inst->P == 1;
 //    wback = inst->P == 1 || inst->W == 0;
 //    add = inst->U == 0;
 //    rt = XReg(static_cast<U8>(inst->rt));
-//    operand.base = XReg(static_cast<U8>(inst->rn));
-//    operand.offset = add ? imm32 : -imm32;
+//    operand.base_ = XReg(static_cast<U8>(inst->rn));
+//    operand.offset_ = add ? imm32 : -imm32;
 //}
 //
 //
-//void A64_STR_IMM::assembler() {
+//void A64_STR_IMM::Assemble() {
 //    INST_DCHECK(condition, Condition::nv)
 //
 //}

@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/5.
 //
 
-#ifndef SANDHOOK_NH_INST_AARCH64_H
-#define SANDHOOK_NH_INST_AARCH64_H
+#pragma once
 
 
 #include "instruction.h"
@@ -39,7 +38,7 @@ enum FieldWide {
     WideReg = 5,
 };
 
-//unknow inst
+//Unknow inst
 DEFINE_STRUCT_A64(UNKNOW) {
     InstA64 raw;
 };
@@ -234,5 +233,3 @@ DEFINE_STRUCT_A64(MSR_MRS) {
     InstA64 op:1;
     InstA64 opcode:10;
 };
-
-#endif //SANDHOOK_NH_INST_AARCH64_H

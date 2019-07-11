@@ -12,7 +12,7 @@
 
 using namespace SandHook::Hook;
 
-CodeBuffer* InlineHook::backupBuffer = new AndroidCodeBuffer();
+CodeBuffer* InlineHook::backup_buffer = new AndroidCodeBuffer();
 
 #if defined(__arm__)
 InlineHook* InlineHook::instance = new InlineHookArm32Android();

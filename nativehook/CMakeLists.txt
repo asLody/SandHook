@@ -71,6 +71,7 @@ include_directories(
         src/main/cpp/archs/arm/arm32/decoder
         src/main/cpp/archs/arm/arm32/hook
         src/main/cpp/archs/arm/arm32/relocate
+        src/main/cpp/antihook
 )
 
 # Searches for a specified prebuilt library and stores the path as a

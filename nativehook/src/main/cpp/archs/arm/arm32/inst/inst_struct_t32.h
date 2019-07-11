@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/12.
 //
 
-#ifndef SANDHOOK_NH_INST_STRUCT_T32_H
-#define SANDHOOK_NH_INST_STRUCT_T32_H
+#pragma once
 
 
 #include "instruction.h"
@@ -16,7 +15,7 @@
 #define T32_REG_WIDE 4
 
 
-//unknow inst
+//Unknow inst
 DEFINE_STRUCT_T32(UNKNOW) {
     InstT32 raw;
 };
@@ -96,5 +95,3 @@ DEFINE_STRUCT_T32(SUB_IMM) {
     InstT32 imm3:3;
     InstT32 opcode2:1;
 };
-
-#endif //SANDHOOK_NH_INST_STRUCT_T32_H

@@ -19,7 +19,7 @@ EXPORT void* SandGetSym(const char* so, const char* symb) {
 
 extern "C"
 EXPORT void* SandInlineHook(void* origin, void* replace) {
-    return InlineHook::instance->inlineHook(origin, replace);
+    return InlineHook::instance->Hook(origin, replace);
 }
 
 extern "C"
@@ -29,10 +29,10 @@ EXPORT void* SandInlineHookSym(const char* so, const char* symb, void* replace) 
 
     if (origin == nullptr)
         return nullptr;
-    return InlineHook::instance->inlineHook(origin, replace);
+    return InlineHook::instance->Hook(origin, replace);
 }
 
 extern "C"
 EXPORT bool SandBreakpoint(void* origin, void (*callback)(REG[])) {
-    return InlineHook::instance->breakPoint(origin, callback);
+    return InlineHook::instance->BreakPoint(origin, callback);
 }

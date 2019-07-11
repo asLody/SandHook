@@ -2,110 +2,86 @@
 // Created by swift on 2019/5/10.
 //
 
-#ifndef SANDHOOK_NH_UNIT_H
-#define SANDHOOK_NH_UNIT_H
+#pragma once
 
 #include <malloc.h>
-#include "../includes/base.h"
+#include <memory>
+#include "base.h"
 
 namespace SandHook {
     namespace Asm {
 
-        template <typename Raw>
+        template <typename S>
         class Unit {
         public:
 
-            Unit() {
-                if (unitType() != UnitVoid) {
-                    raw = reinterpret_cast<Raw *>(malloc(size()));
-                    memset(raw, 0, size());
-                    auto_alloc = true;
-                }
+            Unit() {}
+
+            Unit<S>(S *pc) : pc_(pc) {}
+
+            Unit<S>(void *pc) : pc_(ForceCast<S*>(pc)) {}
+
+            virtual void* GetPC() {
+                return pc_;
             }
 
-            Unit<Raw>(Raw *raw) : raw(raw) {}
-
-            Unit<Raw>(Raw raw) {
-                Unit();
-                *this->raw = raw;
+            virtual Addr GetVPC() {
+                return virtual_pc_;
             }
 
-            virtual void* getPC() {
-                return auto_alloc ? nullptr : raw;
+            INLINE void SetVPC(Addr vPos) {
+                virtual_pc_ = vPos;
             }
 
-            virtual Addr getVPC() {
-                return vPos;
+            INLINE S* Get() {
+                return pc_;
             }
 
-            inline void setVPos(Addr vPos) {
-                this->vPos = vPos;
+            INLINE void Set(S raw) {
+                *pc_ = raw;
             }
 
-            inline Raw* get() const {
-                return raw;
+            INLINE void Set(S *raw) {
+                pc_ = raw;
             }
 
-            inline void set(Raw raw) const {
-                *this->raw = raw;
+            INLINE void Copy(S *dest) {
+                *dest = *pc_;
             }
 
-            inline void set(Raw* raw) {
-                if (auto_alloc) {
-                    free(this->raw);
-                    auto_alloc = false;
-                }
-                this->raw = raw;
+            virtual void Move(S *dest) {
+                *dest = *pc_;
+                pc_ = dest;
             }
 
-            inline void copy(void* dest) {
-                memcpy(dest, getPC(), size());
-            }
-
-
-            inline void move(Raw* dest) {
-                memcpy(dest, raw, size());
-                if (auto_alloc) {
-                    free(raw);
-                    auto_alloc = false;
-                }
-                raw = dest;
-            }
-
-            virtual UnitType unitType() {
-                return UnitType::UnitUnknow;
+            virtual UnitTypeDef UnitType() {
+                return UnitTypeDef::UnitUnknow;
             };
 
-            virtual U32 size() {
-                return sizeof(Raw);
+            virtual U32 Size() {
+                return sizeof(S);
             }
 
-            inline U8 ref() {
-                return ++ref_count;
+            INLINE U8 Ref() {
+                return ++ref_count_;
             }
 
-            inline U8 release() {
-                return --ref_count;
+            INLINE U8 Release() {
+                return --ref_count_;
             }
 
-            inline U8 refcount() {
-                return ref_count;
+            INLINE U8 RefCount() {
+                return ref_count_;
             }
 
-            virtual ~Unit() {
-                if (auto_alloc) {
-                    free(raw);
-                }
-            }
-
-        private:
-            Raw* raw = nullptr;
-            Addr vPos = 0;
-            bool auto_alloc = false;
-            U8 ref_count = 0;
+        protected:
+            S* pc_ = nullptr;
+            Addr virtual_pc_ = 0;
+            U8 ref_count_ = 0;
         };
+
+        using BaseUnit = Unit<Base>;
+        using BaseUnitRef = std::shared_ptr<BaseUnit>;
 
     }
 }
-
-#endif //SANDHOOK_NH_UNIT_H

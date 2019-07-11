@@ -2,10 +2,9 @@
 // Created by SwiftGan on 2019/4/15.
 //
 
-#ifndef SANDHOOK_REGISTER_H
-#define SANDHOOK_REGISTER_H
+#pragma once
 
-#include "../includes/base.h"
+#include "base.h"
 
 namespace SandHook {
     namespace Asm {
@@ -23,61 +22,55 @@ namespace SandHook {
 
             Register() {}
 
-            Register(U8 code) : code(code) {}
+            Register(U8 code) : code_(code) {}
 
-            inline U8 getCode() {
-                return code;
+            inline U8 Code() {
+                return code_;
             }
 
-            virtual bool isFP() {
+            virtual bool IsFP() {
                 return false;
             };
 
-            virtual U8 getWide() {
+            virtual U8 Wide() {
                 return 0;
             };
 
-            inline U8 getWideInBytes() {
-                return static_cast<U8>(getWide() / BITS_OF_BYTE);
+            INLINE U8 WideInBytes() {
+                return static_cast<U8>(Wide() / BITS_OF_BYTE);
             };
 
-            inline bool is32Bit() {
-                return getWide() == Reg32Bit;
+            INLINE bool is32Bit() {
+                return Wide() == Reg32Bit;
             }
 
-            inline bool is64Bit() {
-                return getWide() == Reg64Bit;
+            INLINE bool is64Bit() {
+                return Wide() == Reg64Bit;
             }
 
-            inline bool is128Bit() {
-                return getWide() == Reg128Bit;
-            }
-
-            virtual bool is(const Register &rhs) {
-                return rhs.code == code;
+            INLINE bool is128Bit() {
+                return Wide() == Reg128Bit;
             }
 
             bool operator==(const Register &rhs) const {
-                return code == rhs.code;
+                return code_ == rhs.code_;
             }
 
             bool operator!=(const Register &rhs) const {
-                return code != rhs.code;
+                return code_ != rhs.code_;
             }
 
-            virtual void setData(Data data) {
-                this->data = data;
+            virtual void SetData(Data data) {
+                data_ = data;
             }
 
-            virtual Data& getData() {
-                return data;
+            virtual Data& GetData() {
+                return data_;
             }
 
         private:
-            U8 code;
-            Data data;
+            U8 code_;
+            Data data_;
         };
     }
 }
-
-#endif //SANDHOOK_REGISTER_H

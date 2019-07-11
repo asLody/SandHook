@@ -11,27 +11,27 @@
 
 using namespace SandHook::Decoder;
 
-bool DefaultVisitor::visit(Unit<Base> *unit, void *pc) {
+bool DefaultVisitor::Visit(BaseUnit *unit, void *pc) {
     bool res = visitor(unit, pc);
     delete unit;
     return res;
 }
 
-DefaultVisitor::DefaultVisitor(bool (*visitor)(Unit<Base> *, void *)) : visitor(visitor) {}
+DefaultVisitor::DefaultVisitor(bool (*visitor)(BaseUnit *, void *)) : visitor(visitor) {}
 
 //do not support now
-InstDecoder* Disassembler::get(Arch arch) {
+InstDecoder* Disassembler::Get(Arch arch) {
     switch (arch) {
         case arm32:
-            return get();
+            return Get();
         case arm64:
-            return get();
+            return Get();
         default:
             return nullptr;
     }
 }
 
-InstDecoder *Disassembler::get() {
+InstDecoder *Disassembler::Get() {
 #if defined(__arm__)
     return Arm32Decoder::instant;
 #elif defined(__aarch64__)

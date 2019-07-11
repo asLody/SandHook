@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/6.
 //
 
-#ifndef SANDHOOK_NH_DECODER_ARM64_H
-#define SANDHOOK_NH_DECODER_ARM64_H
+#pragma once
 
 #include "decoder.h"
 
@@ -12,12 +11,11 @@ namespace SandHook {
 
         class Arm64Decoder : public InstDecoder {
         public:
-            void decode(void *codeStart, Addr codeLen, InstVisitor &visitor, bool onlyPcRelInst) override;
+            void Disassemble(void *codeStart, Addr codeLen, InstVisitor &visitor,
+                             bool onlyPcRelInst) override;
         public:
             static Arm64Decoder* instant;
         };
 
     }
 }
-
-#endif //SANDHOOK_NH_DECODER_ARM64_H

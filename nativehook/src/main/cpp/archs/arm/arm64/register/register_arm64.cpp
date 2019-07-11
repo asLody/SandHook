@@ -26,7 +26,7 @@ XRegister::XRegister(U8 code) : RegisterA64(code) {}
 
 XRegister::XRegister() {}
 
-U8 XRegister::getWide() {
+U8 XRegister::Wide() {
     return Reg64Bit;
 }
 
@@ -43,6 +43,6 @@ WRegister::WRegister(U8 code) : RegisterA64(code) {}
 
 WRegister::WRegister() {}
 
-U8 WRegister::getWide() {
+U8 WRegister::Wide() {
     return Reg32Bit;
 }
