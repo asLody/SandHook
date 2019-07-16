@@ -95,3 +95,12 @@ DEFINE_STRUCT_T32(SUB_IMM) {
     InstT32 imm3:3;
     InstT32 opcode2:1;
 };
+
+DEFINE_OPCODE_T32(HVC_1, 0b111101111110)
+DEFINE_OPCODE_T32(HVC_2, 0b1000)
+DEFINE_STRUCT_T32(HVC) {
+    InstT32 imm4:4;
+    InstT32 opcode1:12;
+    InstT32 imm12:12;
+    InstT32 opcode2:4;
+};

@@ -280,6 +280,23 @@ namespace SandHook {
 
         };
 
+
+        DEFINE_INST(HVC) {
+        public:
+            T32_HVC(void *inst);
+
+            T32_HVC(U16 imme);
+
+            DEFINE_IS_EXT(HVC, TEST_INST_OPCODE(HVC, 1) && TEST_INST_OPCODE(HVC, 2))
+
+            void Disassemble() override;
+
+            void Assemble() override;
+
+        public:
+            U16 imme;
+        };
+
     }
 }
 

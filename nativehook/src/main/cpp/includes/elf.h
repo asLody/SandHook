@@ -44,11 +44,11 @@ namespace SandHook {
 
             ElfImg(const char* elf);
 
-            Elf_Addr getSymbOffset(const char* name);
+            Elf_Addr GetSymOffset(const char *name);
 
-            static void* getModuleBase(const char* name);
+            static void* GetModuleBase(const char *name);
 
-            Elf_Addr getSymbAddress(const char* name);
+            Elf_Addr GetSymAddress(const char *name);
 
             ~ElfImg();
 

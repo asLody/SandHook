@@ -5,6 +5,7 @@
 #pragma once
 
 #include <mutex>
+#include <atomic>
 
 #include "code_buffer.h"
 #include "decoder.h"
@@ -16,6 +17,12 @@ typedef Addr REG;
 namespace SandHook {
     namespace Hook {
 
+        struct HookInfo {
+            void *origin;
+            void *replace;
+            void *backup;
+        };
+
         class InlineHook {
         public:
             //return == backup method
@@ -23,7 +30,15 @@ namespace SandHook {
             virtual bool BreakPoint(void *point, void (*callback)(REG[])) {
                 return false;
             };
+            virtual void *SingleInstHook(void *origin, void *replace) {
+                return nullptr;
+            };
+            virtual void ExceptionHandler(int num, sigcontext *context) {};
         protected:
+
+            virtual bool InitForSingleInstHook();
+
+            bool inited = false;
             static CodeBuffer* backup_buffer;
             std::mutex hook_lock;
         public:

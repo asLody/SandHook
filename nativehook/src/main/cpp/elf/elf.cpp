@@ -90,7 +90,7 @@ ElfImg::ElfImg(const char *elf) {
     }
 
     //load module rang
-    baseInRam = getModuleBase(elf);
+    baseInRam = GetModuleBase(elf);
 }
 
 ElfImg::~ElfImg() {
@@ -105,7 +105,7 @@ ElfImg::~ElfImg() {
     }
 }
 
-Elf_Addr ElfImg::getSymbOffset(const char *name) {
+Elf_Addr ElfImg::GetSymOffset(const char *name) {
     Elf_Addr _offset = 0;
 
     //search dynmtab
@@ -139,8 +139,8 @@ Elf_Addr ElfImg::getSymbOffset(const char *name) {
     return 0;
 }
 
-Elf_Addr ElfImg::getSymbAddress(const char *name) {
-    Elf_Addr offset = getSymbOffset(name);
+Elf_Addr ElfImg::GetSymAddress(const char *name) {
+    Elf_Addr offset = GetSymOffset(name);
     if (offset > 0 && baseInRam != nullptr) {
         return static_cast<Elf_Addr>((size_t) baseInRam + offset - bias);
     } else {
@@ -148,7 +148,7 @@ Elf_Addr ElfImg::getSymbAddress(const char *name) {
     }
 }
 
-void *ElfImg::getModuleBase(const char *name) {
+void *ElfImg::GetModuleBase(const char *name) {
     FILE *maps;
     char buff[256];
     off_t load_addr;

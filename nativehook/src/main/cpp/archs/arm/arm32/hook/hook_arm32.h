@@ -5,24 +5,23 @@
 #pragma once
 
 #include "hook.h"
+#include <vector>
 
 namespace SandHook {
     namespace Hook {
 
         class InlineHookArm32Android : public InlineHook {
         public:
-            inline InlineHookArm32Android() {
-                hookLock = new std::mutex();
-            };
-            inline ~InlineHookArm32Android() {
-                delete hookLock;
-            }
             void *Hook(void *origin, void *replace) override;
 
             bool BreakPoint(void *point, void (*callback)(REG *)) override;
 
-        protected:
-            std::mutex* hookLock;
+            void *SingleInstHook(void *origin, void *replace) override;
+
+            void ExceptionHandler(int num, sigcontext *context) override;
+
+        private:
+            std::vector<HookInfo> hook_infos;
         };
 
     }

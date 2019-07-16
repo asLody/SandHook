@@ -177,4 +177,8 @@ void AssemblerA32::Nop16() {
     Mov(IP, IP);
 }
 
+void AssemblerA32::Hvc(U16 num) {
+    Emit(reinterpret_cast<BaseUnit*>(new INST_T32(HVC)(num)));
+}
+
 

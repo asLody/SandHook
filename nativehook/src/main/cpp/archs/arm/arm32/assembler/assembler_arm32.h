@@ -77,6 +77,8 @@ namespace SandHook {
 
             void Nop16();
 
+            void Hvc(U16 num);
+
         public:
             CodeContainer code_container = CodeContainer(nullptr);
         };
