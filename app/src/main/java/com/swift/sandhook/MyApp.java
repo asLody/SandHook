@@ -5,7 +5,6 @@ import android.app.Application;
 import android.os.Build;
 import android.util.Log;
 
-import com.swift.sandhook.nativehook.NativeHook;
 import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
@@ -36,8 +35,6 @@ public class MyApp extends Application {
         if (testAndroidQ) {
             SandHookConfig.SDK_INT = 29;
         }
-
-        NativeHook.test();
 
         SandHook.disableVMInline();
         SandHook.tryDisableProfile(getPackageName());
