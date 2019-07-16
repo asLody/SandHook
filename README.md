@@ -239,6 +239,19 @@ you can insert a break point in body of method(not only start of method), so you
 
 bool SandBreakpoint(void* origin, void (*callback)(REG[]));
 
+## short method 
+
+#include "sanhook_native.h"  
+
+void* SandSingleInstHook(void* origin, void* replace);  
+
+void* SandSingleInstHookSym(const char* so, const char* symb, void* replace);  
+
+use it when your method is <= 16bytes(64bit)/8bytes(32bit)  
+
+SandSingleInstHook only need 4bytes length
+
+
 ## more
 
 - disassembler (only implement important instructions)
