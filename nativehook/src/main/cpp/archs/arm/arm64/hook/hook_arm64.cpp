@@ -131,3 +131,50 @@ bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[]
 
     return true;
 }
+
+
+void *InlineHookArm64Android::SingleInstHook(void *origin, void *replace) {
+    if (!InitForSingleInstHook()) {
+        return nullptr;
+    }
+    AutoLock lock(hook_lock);
+    void* backup = nullptr;
+    AssemblerA64 assembler_backup(backup_buffer);
+
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(origin));
+    AssemblerA64 assembler_inline(&inline_buffer);
+    CodeContainer* code_container_inline = &assembler_inline.code_container;
+
+    //build inline trampoline
+#define __ assembler_inline.
+    __ Hvc(static_cast<U16>(hook_infos.size()));
+#undef __
+
+    //build backup method
+    CodeRelocateA64 relocate = CodeRelocateA64(assembler_backup);
+    backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
+#define __ assembler_backup.
+    Label* origin_addr_label = new Label();
+    __ Ldr(IP1, origin_addr_label);
+    __ Br(IP1);
+    __ Emit(origin_addr_label);
+    __ Emit((Addr) origin + code_container_inline->Size());
+    __ Finish();
+#undef __
+
+    hook_infos.push_back({origin, replace, backup});
+
+    //commit inline trampoline
+    assembler_inline.Finish();
+    return backup;
+}
+
+void InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
+    void *code = reinterpret_cast<void*>(context->pc);
+    INST_A64(EXCEPTION_GEN) hvc(code);
+    hvc.Disassemble();
+    if (hvc.imme >= hook_infos.size())
+        return;
+    HookInfo &hook_info = hook_infos[hvc.imme];
+    context->pc = reinterpret_cast<U64>(hook_info.replace);
+}
