@@ -40,4 +40,5 @@ enum class InstCodeT32 : InstCode {
     LDR_UIMM,
     MOV_MOVT_IMM,
     SUB_IMM,
+    HVC
 };

@@ -239,3 +239,19 @@ void T32_LDR_IMM::Assemble() {
 
 T32_SUB_IMM::T32_SUB_IMM(void *inst) : InstructionT32(inst) {
 }
+
+
+T32_HVC::T32_HVC(void *inst) : InstructionT32(inst) {}
+
+T32_HVC::T32_HVC(U16 imme) : imme(imme) {}
+
+void T32_HVC::Disassemble() {
+    imme = static_cast<U16>(COMBINE(Get()->imm4, Get()->imm12, 12));
+}
+
+void T32_HVC::Assemble() {
+    SET_OPCODE_MULTI(HVC, 1);
+    SET_OPCODE_MULTI(HVC, 2);
+    Get()->imm12 = BITS(imme, 0, 11);
+    Get()->imm4 = BITS(imme, 12, 15);
+}

@@ -2,6 +2,7 @@
 // Created by swift on 2019/5/23.
 //
 
+#include <cstdlib>
 #include "hook_arm64.h"
 #include "code_buffer.h"
 #include "lock.h"
@@ -170,7 +171,10 @@ void *InlineHookArm64Android::SingleInstHook(void *origin, void *replace) {
 }
 
 void InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
-    void *code = reinterpret_cast<void*>(context->pc);
+    InstA64 *code = reinterpret_cast<InstA64*>(context->pc);
+    if (!IS_OPCODE_A64(*code, EXCEPTION_GEN)) {
+        abort();
+    }
     INST_A64(EXCEPTION_GEN) hvc(code);
     hvc.Disassemble();
     if (hvc.imme >= hook_infos.size())
