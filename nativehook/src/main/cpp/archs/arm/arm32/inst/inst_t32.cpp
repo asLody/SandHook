@@ -120,6 +120,10 @@ Off T32_LDR_LIT::GetImmPCOffset() {
     return Get()->U == add ? Get()->imm12 : -Get()->imm12;
 }
 
+Addr T32_LDR_LIT::GetImmPCOffsetTarget() {
+    return ALIGN((Addr) GetPC() + offset, 4);
+}
+
 void T32_LDR_LIT::OnOffsetApply(Off offset) {
     this->offset = offset;
     if (offset >= 0) {
@@ -151,7 +155,6 @@ void T32_LDR_LIT::Assemble() {
         Get()->imm12 = static_cast<InstT32>(-offset);
     }
 }
-
 
 
 T32_MOV_MOVT_IMM::T32_MOV_MOVT_IMM(void *inst) : InstructionT32(inst) {

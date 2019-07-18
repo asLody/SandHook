@@ -199,6 +199,8 @@ namespace SandHook {
 
             Off GetImmPCOffset() override;
 
+            Addr GetImmPCOffsetTarget() override;
+
             void OnOffsetApply(Off offset) override;
 
             void Disassemble() override;
