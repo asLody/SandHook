@@ -58,8 +58,8 @@ Off A64_ADR_ADRP::GetImmPCOffset() {
 }
 
 Addr A64_ADR_ADRP::GetImmPCOffsetTarget() {
-    void* base = AlignDown(GetPC(), P_SIZE);
-    return offset + reinterpret_cast<Addr>(base);
+    Addr base = AlignDown((Addr) GetPC(), PAGE_SIZE);
+    return offset + base;
 }
 
 void A64_ADR_ADRP::Assemble() {

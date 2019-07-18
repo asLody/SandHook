@@ -27,7 +27,7 @@ void *AndroidCodeBuffer::GetBuffer(U32 size) {
         return reinterpret_cast<void *>(retSpace);
     }
 label_alloc_new_space:
-    current_execute_page_size = static_cast<U32>(FIT(size, P_SIZE));
+    current_execute_page_size = static_cast<U32>(FIT(size, PAGE_SIZE));
     mmapRes = mmap(NULL, current_execute_page_size, PROT_READ | PROT_WRITE | PROT_EXEC,
                    MAP_ANON | MAP_PRIVATE, -1, 0);
     if (mmapRes == MAP_FAILED) {
