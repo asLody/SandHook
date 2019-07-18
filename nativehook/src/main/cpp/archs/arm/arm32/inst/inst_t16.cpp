@@ -252,7 +252,7 @@ void T16_MOV_REG::Disassemble() {
 }
 
 void T16_MOV_REG::Assemble() {
-    SET_BASE_OPCODE(DATA_PROC);
+    SET_BASE_OPCODE(SPDIABE);
     SET_OPCODE(MOV_REG);
     ENCODE_RM;
     Get()->rd = BITS(rd->Code(), 0, 2);
