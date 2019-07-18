@@ -35,7 +35,7 @@ typedef S64 Off;
 
 const int BITS_OF_BYTE = 8;
 
-const Addr P_SIZE = 2 << PAGE_OFFSET;
+#define P_SIZE PAGE_SIZE
 
 enum Arch {
     arm32,

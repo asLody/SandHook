@@ -22,7 +22,7 @@ bool FlushCache(Addr addr, Off len) {
 
 
 extern "C" bool MemUnprotect(Addr addr, Addr len) {
-    long pagesize = P_SIZE;
+    long pagesize = PAGE_SIZE;
     unsigned alignment = (unsigned)((unsigned long long)addr % pagesize);
     int i = mprotect((void *) (addr - alignment), (size_t) (alignment + len),
                      PROT_READ | PROT_WRITE | PROT_EXEC);
