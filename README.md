@@ -173,16 +173,6 @@ XposedHelpers.findAndHookMethod(Activity.class, "onResume", new XC_MethodHook() 
 
 # Notice
 
-## Call Origin
-
-!!!!!!!!  
-
-when OS >= 8.0
-you must call backup method in hook method, if you want call it in other method, please call  SandHook.compileMethod(otherMethod) before call backup method.
-    
-because when ART trigger JIT from profiling, JIT will invoke -> ResolveCompilingMethodsClass -> ClassLinker::ResolveMethod -> CheckIncompatibleClassChange -> ThrowIncompatibleClassChangeError finally!!!
-
-
 ## Disable Inline
 
 ### JIT inline
@@ -214,6 +204,12 @@ You can also deoptimize a caller that inlined your hook method by SandHook.deCom
 SandHook.passApiCheck();
 
 To bypass hidden api on P & Q
+
+## Debuggable
+
+You must set debuggble of the target hook process before init when OS >= 8.0.  
+
+SandHookConfig.DEBUG = <Debuggable of target process>  
 
 # Native Hook
 
