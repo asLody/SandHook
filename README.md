@@ -219,7 +219,7 @@ SandHookConfig.DEBUG = <Debuggable of target process>
 bool nativeHookNoBackup(void* origin, void* hook);
 
 ## need backup origin method
-#include "sanhook_native.h"  
+#include "sandhook_native.h"  
 
 void* SandInlineHook(void* origin, void* replace);  
 
@@ -237,7 +237,7 @@ bool SandBreakpoint(void* origin, void (*callback)(REG[]));
 
 ## short method 
 
-#include "sanhook_native.h"  
+#include "sandhook_native.h"  
 
 void* SandSingleInstHook(void* origin, void* replace);  
 
