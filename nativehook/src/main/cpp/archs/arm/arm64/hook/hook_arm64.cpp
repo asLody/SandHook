@@ -3,6 +3,7 @@
 //
 
 #include <cstdlib>
+#include <unistd.h>
 #include "hook_arm64.h"
 #include "code_buffer.h"
 #include "lock.h"
@@ -181,4 +182,8 @@ void InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
         return;
     HookInfo &hook_info = hook_infos[hvc.imme];
     context->pc = reinterpret_cast<U64>(hook_info.replace);
+    if (callback != nullptr) {
+        callback();
+        callback = nullptr;
+    }
 }

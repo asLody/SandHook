@@ -43,6 +43,7 @@ namespace SandHook {
             std::mutex hook_lock;
         public:
             static InlineHook* instance;
+            void (*callback)(void) = nullptr;
         };
 
     }

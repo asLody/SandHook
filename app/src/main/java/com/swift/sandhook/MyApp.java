@@ -5,6 +5,7 @@ import android.app.Application;
 import android.os.Build;
 import android.util.Log;
 
+import com.swift.sandhook.nativehook.NativeHook;
 import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
@@ -35,6 +36,8 @@ public class MyApp extends Application {
         if (testAndroidQ) {
             SandHookConfig.SDK_INT = 29;
         }
+
+        NativeHook.test();
 
         SandHook.disableVMInline();
         SandHook.tryDisableProfile(getPackageName());
@@ -80,20 +83,25 @@ public class MyApp extends Application {
         });
 
 
-        XposedHelpers.findAndHookMethod(MainActivity.class, "testStub", TestClass.class, int.class, String.class, boolean.class, char.class, String.class, new XC_MethodHook() {
+        new Thread(new Runnable() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                super.beforeHookedMethod(param);
-                param.args[1] = 2;
-                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
-            }
+            public void run() {
+                XposedHelpers.findAndHookMethod(MainActivity.class, "testStub", TestClass.class, int.class, String.class, boolean.class, char.class, String.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        super.beforeHookedMethod(param);
+                        param.args[1] = 2;
+                        Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
+                    }
 
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        super.afterHookedMethod(param);
+                        Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+                    }
+                });
             }
-        });
+        }).start();
 
         try {
             ClassLoader classLoader = getClassLoader();

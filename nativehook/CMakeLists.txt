@@ -17,7 +17,9 @@ if(${CMAKE_ANDROID_ARCH_ABI} STREQUAL "arm64-v8a")
             src/main/cpp/archs/arm/arm64/register/register_list_arm64.cpp
             src/main/cpp/archs/arm/arm64/decoder/decoder_arm64.cpp
             src/main/cpp/archs/arm/arm64/relocate/code_relocate_arm64.cpp
-            src/main/cpp/archs/arm/arm64/hook/hook_arm64.cpp)
+            src/main/cpp/archs/arm/arm64/hook/hook_arm64.cpp
+            src/main/cpp/libffi/aarch64/ffi_arm64.c
+            src/main/cpp/libffi/aarch64/sysv_arm64.S)
 
 elseif (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
     set(OS_DEPENDENDED_SRC
@@ -30,7 +32,9 @@ elseif (${CMAKE_ANDROID_ARCH_ABI} STREQUAL "armeabi-v7a")
             src/main/cpp/archs/arm/arm32/decoder/decoder_arm32.cpp
             src/main/cpp/archs/arm/arm32/hook/hook_arm32.cpp
             src/main/cpp/archs/arm/arm32/hook/breakpoint_shellcode.S
-            src/main/cpp/archs/arm/arm32/relocate/code_relocate_arm32.cpp)
+            src/main/cpp/archs/arm/arm32/relocate/code_relocate_arm32.cpp
+            src/main/cpp/libffi/arm/ffi_armv7.c
+            src/main/cpp/libffi/arm/sysv_armv7.S)
 endif()
 
 add_library( # Sets the name of the library.
@@ -48,6 +52,17 @@ add_library( # Sets the name of the library.
         src/main/cpp/buffer/code_buffer.cpp
         src/main/cpp/utils/platform.cpp
         src/main/cpp/hook/hook.cpp
+        src/main/cpp/javabridge/type_bridge.cpp
+        src/main/cpp/javabridge/arguments.cpp
+
+        src/main/cpp/libffi/closures.c
+        src/main/cpp/libffi/debug.c
+        src/main/cpp/libffi/dlmalloc.c
+        src/main/cpp/libffi/java_raw_api.c
+        src/main/cpp/libffi/prep_cif.c
+        src/main/cpp/libffi/raw_api.c
+        src/main/cpp/libffi/types.c
+        src/main/cpp/libffi/ffi_cxx.cc
         ${OS_DEPENDENDED_SRC})
 
 
@@ -71,7 +86,10 @@ include_directories(
         src/main/cpp/archs/arm/arm32/decoder
         src/main/cpp/archs/arm/arm32/hook
         src/main/cpp/archs/arm/arm32/relocate
-        src/main/cpp/antihook
+        src/main/cpp
+        src/main/javabridge
+        src/main/cpp/libffi
+        src/main/cpp/libffi/platform_include
 )
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -99,6 +117,6 @@ target_link_libraries( # Specifies the target library.
         ${log-lib})
 
 
-add_definitions(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
 
 ENABLE_LANGUAGE(ASM)
