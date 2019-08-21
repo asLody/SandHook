@@ -594,7 +594,7 @@ void A64_LDR_IMM::Assemble() {
 
 
 
-A64_LDR_UIMM::A64_LDR_UIMM(void *inst) : A64LoadAndStoreImm(&inst) {
+A64_LDR_UIMM::A64_LDR_UIMM(void *inst) : A64LoadAndStoreImm(inst) {
 }
 
 A64_LDR_UIMM::A64_LDR_UIMM(RegisterA64 &rt, const MemOperand &operand) : A64LoadAndStoreImm(&rt,
@@ -717,7 +717,7 @@ void A64_LDRSW_UIMM::Assemble() {
 
 
 
-A64_STP_LDP::A64_STP_LDP(void *inst) : InstructionA64(&inst) {
+A64_STP_LDP::A64_STP_LDP(void *inst) : InstructionA64(inst) {
 }
 
 A64_STP_LDP::A64_STP_LDP(OP op, RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand &operand) : op(op), rt1(&rt1),
@@ -775,7 +775,7 @@ void A64_STP_LDP::Assemble() {
 }
 
 
-A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(void *inst) : InstructionA64(&inst) {
+A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(void *inst) : InstructionA64(inst) {
 }
 
 A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(A64_ADD_SUB_IMM::OP op, A64_ADD_SUB_IMM::S sign, RegisterA64 &rd,
@@ -818,7 +818,7 @@ void A64_ADD_SUB_IMM::Assemble() {
     }
 }
 
-A64_MSR_MRS::A64_MSR_MRS(void *inst) : InstructionA64(&inst) {
+A64_MSR_MRS::A64_MSR_MRS(void *inst) : InstructionA64(inst) {
 }
 
 A64_MSR_MRS::A64_MSR_MRS(OP op, SystemRegister &systemRegister, RegisterA64 &rt) : op(op), system_reg(
