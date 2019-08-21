@@ -23,21 +23,21 @@ namespace SandHook {
 
         class DefaultVisitor : public InstVisitor {
         public:
-            DefaultVisitor(bool (*visitor)(BaseUnit *, void *));
+            DefaultVisitor(std::function<bool(BaseInst *inst, void *pc)> visitor);
 
             bool Visit(BaseUnit *unit, void *pc) override;
         private:
-            bool (*visitor)(BaseUnit*, void*);
+            std::function<bool(BaseInst *inst, void *pc)> visitor_;
         };
 
         class InstDecoder {
         public:
             virtual void Disassemble(void *code_start, Addr code_len, InstVisitor &visitor,
                                      bool only_pc_rel = false) = 0;
-            inline void Disassemble(void *codeStart, Addr codeLen,
-                                    bool (*visitor)(BaseUnit *, void *), bool only_pc_rel = false) {
-                InstVisitor vis = DefaultVisitor(visitor);
-                Disassemble(codeStart, codeLen, vis, only_pc_rel);
+            inline void Disassemble(void *code_start, Addr codeLen,
+                                    std::function<bool(BaseInst *inst, void *pc)> visitor, bool only_pc_rel = false) {
+                DefaultVisitor vis = DefaultVisitor(visitor);
+                Disassemble(code_start, codeLen, vis, only_pc_rel);
             };
         };
 

@@ -28,7 +28,7 @@ namespace SandHook {
             enum RegisterType {
                 // The kInvalid value is used to detect uninitialized static instances,
                 // which are always zero-initialized before any constructors are called.
-                kInvalid = 0,
+                        kInvalid = 0,
                 kRegister,
                 kVRegister,
                 kFPRegister = kVRegister,
@@ -99,6 +99,8 @@ namespace SandHook {
                 U16 op0:2;
             };
 
+            SystemRegister() {}
+
             SystemRegister(U16 value) : value(value) {}
 
             SystemRegister(U16 op0, U16 op1, U16 crn, U16 crm, U16 op2) {
@@ -115,7 +117,7 @@ namespace SandHook {
             }
 
             bool operator!=(const SystemRegister &rhs) const {
-                return !(rhs == *this);
+                return value != rhs.value;
             }
 
         public:

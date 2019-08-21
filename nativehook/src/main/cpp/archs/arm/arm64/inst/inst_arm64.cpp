@@ -141,11 +141,11 @@ void A64_B_BL::Assemble() {
 A64_CBZ_CBNZ::A64_CBZ_CBNZ(void *inst) : A64_INST_PC_REL(inst) {}
 
 A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Off offset, RegisterA64 &rt) : op(op),
-                                                                                offset(offset),
-                                                                                rt(&rt) {}
+                                                                               offset(offset),
+                                                                               rt(&rt) {}
 
 A64_CBZ_CBNZ::A64_CBZ_CBNZ(A64_CBZ_CBNZ::OP op, Label *label, RegisterA64 &rt) : op(op),
-                                                                               rt(&rt) {
+                                                                                 rt(&rt) {
     BindLabel(label);
 }
 
@@ -216,13 +216,13 @@ void A64_B_COND::OnOffsetApply(Off offset) {
 A64_TBZ_TBNZ::A64_TBZ_TBNZ(void *inst) : A64_INST_PC_REL(inst) {}
 
 A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 &rt, U32 bit, Off offset) : op(op),
-                                                                                         rt(&rt),
-                                                                                         bit(bit),
-                                                                                         offset(offset) {}
+                                                                                        rt(&rt),
+                                                                                        bit(bit),
+                                                                                        offset(offset) {}
 
 A64_TBZ_TBNZ::A64_TBZ_TBNZ(A64_TBZ_TBNZ::OP op, RegisterA64 &rt, U32 bit, Label *label) : op(op),
-                                                                                     rt(&rt),
-                                                                                     bit(bit) {
+                                                                                          rt(&rt),
+                                                                                          bit(bit) {
     BindLabel(label);
 }
 
@@ -262,7 +262,7 @@ void A64_TBZ_TBNZ::OnOffsetApply(Off offset) {
 A64_LDR_LIT::A64_LDR_LIT(void *inst) : A64_INST_PC_REL(inst) {}
 
 A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 &rt, Off offset) : op(op), rt(&rt),
-                                                                             offset(offset) {}
+                                                                            offset(offset) {}
 
 A64_LDR_LIT::A64_LDR_LIT(A64_LDR_LIT::OP op, RegisterA64 &rt, Label *label) : op(op), rt(&rt) {
     BindLabel(label);
@@ -459,8 +459,8 @@ void A64_MOV_REG::Assemble() {
 A64_SUB_EXT_REG::A64_SUB_EXT_REG(void *inst) : InstructionA64(inst) {}
 
 A64_SUB_EXT_REG::A64_SUB_EXT_REG(RegisterA64 &rd, RegisterA64 &rn, const Operand &operand,
-                                   FlagsUpdate flagsUpdate) : rd(&rd), rn(&rn), operand(operand),
-                                                              flagsUpdate(flagsUpdate) {}
+                                 FlagsUpdate flagsUpdate) : rd(&rd), rn(&rn), operand(operand),
+                                                            flagsUpdate(flagsUpdate) {}
 
 void A64_SUB_EXT_REG::Disassemble() {
     flagsUpdate = FlagsUpdate(Get()->S);
@@ -598,7 +598,7 @@ A64_LDR_UIMM::A64_LDR_UIMM(void *inst) : A64LoadAndStoreImm(inst) {
 }
 
 A64_LDR_UIMM::A64_LDR_UIMM(RegisterA64 &rt, const MemOperand &operand) : A64LoadAndStoreImm(&rt,
-                                                                                          operand) {}
+                                                                                            operand) {}
 
 void A64_LDR_UIMM::Disassemble() {
     regSize = RegSize(Get()->size);
@@ -696,7 +696,7 @@ void A64_LDRSW_IMM::Assemble() {
 A64_LDRSW_UIMM::A64_LDRSW_UIMM(void *inst) : A64_LDR_UIMM(inst) {}
 
 A64_LDRSW_UIMM::A64_LDRSW_UIMM(XRegister &rt, const MemOperand &operand) : A64_LDR_UIMM(rt,
-                                                                                          operand) {}
+                                                                                        operand) {}
 
 void A64_LDRSW_UIMM::Disassemble() {
     DECODE_RT(XReg);
@@ -721,8 +721,8 @@ A64_STP_LDP::A64_STP_LDP(void *inst) : InstructionA64(inst) {
 }
 
 A64_STP_LDP::A64_STP_LDP(OP op, RegisterA64 &rt1, RegisterA64 &rt2, const MemOperand &operand) : op(op), rt1(&rt1),
-                                                                                          rt2(&rt2),
-                                                                                          operand(operand) {}
+                                                                                                 rt2(&rt2),
+                                                                                                 operand(operand) {}
 
 void A64_STP_LDP::Disassemble() {
     DECODE_OP;
@@ -779,7 +779,7 @@ A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(void *inst) : InstructionA64(inst) {
 }
 
 A64_ADD_SUB_IMM::A64_ADD_SUB_IMM(A64_ADD_SUB_IMM::OP op, A64_ADD_SUB_IMM::S sign, RegisterA64 &rd,
-                         const Operand &operand) : op(op), sign(sign), rd(&rd), operand(operand) {}
+                                 const Operand &operand) : op(op), sign(sign), rd(&rd), operand(operand) {}
 
 void A64_ADD_SUB_IMM::Disassemble() {
     DECODE_OP;
@@ -822,17 +822,17 @@ A64_MSR_MRS::A64_MSR_MRS(void *inst) : InstructionA64(inst) {
 }
 
 A64_MSR_MRS::A64_MSR_MRS(OP op, SystemRegister &systemRegister, RegisterA64 &rt) : op(op), system_reg(
-        &systemRegister), rt(&rt) {}
+        systemRegister), rt(&rt) {}
 
 void A64_MSR_MRS::Disassemble() {
     DECODE_OP;
     DECODE_RT(XReg);
-    system_reg->value = static_cast<U16>(Get()->sysreg);
+    system_reg.value = static_cast<U16>(Get()->sysreg);
 }
 
 void A64_MSR_MRS::Assemble() {
     SET_OPCODE(MSR_MRS);
     ENCODE_OP;
     ENCODE_RT;
-    Get()->sysreg = system_reg->value;
+    Get()->sysreg = system_reg.value;
 }

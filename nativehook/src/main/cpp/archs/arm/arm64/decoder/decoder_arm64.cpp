@@ -31,6 +31,9 @@ void Arm64Decoder::Disassemble(void *codeStart, Addr codeLen, InstVisitor &visit
         CASE(ADR_ADRP)
         if (onlyPcRelInst)
             goto label_matched;
+        CASE(BR_BLR_RET)
+        CASE(EXCEPTION_GEN)
+        CASE(MSR_MRS)
         CASE(MOV_WIDE)
         CASE(MOV_REG)
         CASE(LDR_IMM)
@@ -39,10 +42,7 @@ void Arm64Decoder::Disassemble(void *codeStart, Addr codeLen, InstVisitor &visit
         CASE(LDRSW_UIMM)
         CASE(STR_UIMM)
         CASE(STR_IMM)
-        CASE(BR_BLR_RET)
         CASE(SUB_EXT_REG)
-        CASE(SVC)
-        CASE(EXCEPTION_GEN)
         CASE(STP_LDP)
         CASE(ADD_SUB_IMM)
 

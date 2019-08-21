@@ -753,7 +753,7 @@ namespace SandHook {
 
         public:
             OP op;
-            SystemRegister* system_reg;
+            SystemRegister system_reg{};
             RegisterA64* rt;
         };
 
