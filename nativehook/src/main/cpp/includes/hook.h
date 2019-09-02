@@ -40,7 +40,9 @@ namespace SandHook {
             virtual void *SingleInstHook(void *origin, void *replace) {
                 return nullptr;
             };
-            virtual void ExceptionHandler(int num, sigcontext *context) {};
+            virtual bool ExceptionHandler(int num, sigcontext *context) {
+                return false;
+            };
         protected:
 
             virtual bool InitForSingleInstHook();
@@ -48,8 +50,13 @@ namespace SandHook {
             bool inited = false;
             static CodeBuffer* backup_buffer;
             std::mutex hook_lock;
+
+        private:
+            using SigAct = int (*)(int, struct sigaction *, struct sigaction *);
+            SigAct sigaction_backup = nullptr;
         public:
             static InlineHook* instance;
+            struct sigaction old_sig_act{};
         };
 
     }

@@ -5,6 +5,7 @@
 #include <log.h>
 #include <cstdlib>
 #include <cassert>
+#include <signal.h>
 #include "code_relocate_arm32.h"
 #include "hook_arm32.h"
 #include "code_buffer.h"
@@ -224,14 +225,14 @@ bool InlineHookArm32Android::SingleBreakPoint(void *point, BreakCallback callbac
     return true;
 }
 
-void InlineHookArm32Android::ExceptionHandler(int num, sigcontext *context) {
-    assert(num == SIGILL);
+bool InlineHookArm32Android::ExceptionHandler(int num, sigcontext *context) {
     InstT32 *code = reinterpret_cast<InstT32*>(context->arm_pc);
-    assert(IS_OPCODE_T32(*code, HVC));
+    if (!IS_OPCODE_T32(*code, HVC))
+        return false;
     INST_T32(HVC) hvc(code);
     hvc.Disassemble();
     if (hvc.imme >= hook_infos.size())
-        return;
+        return false;
     HookInfo &hook_info = hook_infos[hvc.imme];
     if (!hook_info.is_break_point) {
         context->arm_pc = reinterpret_cast<U32>(hook_info.replace);
@@ -243,4 +244,5 @@ void InlineHookArm32Android::ExceptionHandler(int num, sigcontext *context) {
             context->arm_pc += 4;
         }
     }
+    return true;
 }

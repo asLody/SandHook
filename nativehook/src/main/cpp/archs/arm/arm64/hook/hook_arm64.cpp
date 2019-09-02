@@ -211,14 +211,14 @@ bool InlineHookArm64Android::SingleBreakPoint(void *point, BreakCallback callbac
     return true;
 }
 
-void InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
-    assert(num == SIGILL);
+bool InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
     InstA64 *code = reinterpret_cast<InstA64*>(context->pc);
-    assert(IS_OPCODE_A64(*code, EXCEPTION_GEN));
+    if (!IS_OPCODE_A64(*code, EXCEPTION_GEN))
+        return false;
     INST_A64(EXCEPTION_GEN) hvc(code);
     hvc.Disassemble();
     if (hvc.imme >= hook_infos.size())
-        return;
+        return false;
     HookInfo &hook_info = hook_infos[hvc.imme];
     if (!hook_info.is_break_point) {
         context->pc = reinterpret_cast<U64>(hook_info.replace);
@@ -230,4 +230,5 @@ void InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
             context->pc += 4;
         }
     }
+    return true;
 }

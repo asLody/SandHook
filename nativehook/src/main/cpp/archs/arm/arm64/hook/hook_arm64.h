@@ -19,7 +19,7 @@ namespace SandHook {
 
             void *SingleInstHook(void *origin, void *replace) override;
 
-            void ExceptionHandler(int num, sigcontext *context) override;
+            bool ExceptionHandler(int num, sigcontext *context) override;
 
         private:
             std::vector<HookInfo> hook_infos;
