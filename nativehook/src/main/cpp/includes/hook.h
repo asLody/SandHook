@@ -18,16 +18,23 @@ namespace SandHook {
     namespace Hook {
 
         struct HookInfo {
+            bool is_break_point;
+            void *user_data;
             void *origin;
             void *replace;
             void *backup;
         };
+
+        using BreakCallback = bool (*)(sigcontext*, void*);
 
         class InlineHook {
         public:
             //return == backup method
             virtual void *Hook(void *origin, void *replace) = 0;
             virtual bool BreakPoint(void *point, void (*callback)(REG[])) {
+                return false;
+            };
+            virtual bool SingleBreakPoint(void *point, BreakCallback callback, void *data = nullptr) {
                 return false;
             };
             virtual void *SingleInstHook(void *origin, void *replace) {
