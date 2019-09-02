@@ -238,7 +238,7 @@ void InlineHookArm32Android::ExceptionHandler(int num, sigcontext *context) {
     } else {
         BreakCallback callback = reinterpret_cast<BreakCallback>(hook_info.replace);
         if (callback(context, hook_info.user_data)) {
-            context->arm_pc = reinterpret_cast<U32>(hook_info.replace);
+            context->arm_pc = reinterpret_cast<U32>(hook_info.backup);
         } else {
             context->arm_pc += 4;
         }
