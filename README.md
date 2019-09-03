@@ -235,7 +235,7 @@ return is backup method
 you can insert a break point in body of method(not only start of method), so you can read/write registers in break point.  
 
 
-bool SandBreakpoint(void* origin, void (*callback)(REG[]));
+bool SandBreakPoint(void* origin, void (*callback)(REG[]));
 
 ## short method 
 

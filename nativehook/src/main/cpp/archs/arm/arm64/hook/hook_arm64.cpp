@@ -3,6 +3,7 @@
 //
 
 #include <cstdlib>
+#include <cassert>
 #include "hook_arm64.h"
 #include "code_buffer.h"
 #include "lock.h"
@@ -53,6 +54,8 @@ void *InlineHookArm64Android::Hook(void *origin, void *replace) {
 }
 
 bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[])) {
+    if (point == nullptr || callback == nullptr)
+        return false;
     AutoLock lock(hook_lock);
 
     void* backup = nullptr;
@@ -135,9 +138,10 @@ bool InlineHookArm64Android::BreakPoint(void *point, void (*callback)(REG regs[]
 
 
 void *InlineHookArm64Android::SingleInstHook(void *origin, void *replace) {
-    if (!InitForSingleInstHook()) {
+    if (origin == nullptr || replace == nullptr)
         return nullptr;
-    }
+    if (!InitForSingleInstHook())
+        return nullptr;
     AutoLock lock(hook_lock);
     void* backup = nullptr;
     AssemblerA64 assembler_backup(backup_buffer);
@@ -163,22 +167,68 @@ void *InlineHookArm64Android::SingleInstHook(void *origin, void *replace) {
     __ Finish();
 #undef __
 
-    hook_infos.push_back({origin, replace, backup});
+    hook_infos.push_back({false, nullptr, origin, replace, backup});
 
     //commit inline trampoline
     assembler_inline.Finish();
     return backup;
 }
 
-void InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
+bool InlineHookArm64Android::SingleBreakPoint(void *point, BreakCallback callback, void *data) {
+    if (point == nullptr || callback == nullptr)
+        return false;
+    if (!InitForSingleInstHook())
+        return false;
+    AutoLock lock(hook_lock);
+    void* backup = nullptr;
+    AssemblerA64 assembler_backup(backup_buffer);
+
+    StaticCodeBuffer inline_buffer = StaticCodeBuffer(reinterpret_cast<Addr>(point));
+    AssemblerA64 assembler_inline(&inline_buffer);
+    CodeContainer* code_container_inline = &assembler_inline.code_container;
+
+    //build inline trampoline
+#define __ assembler_inline.
+    __ Hvc(static_cast<U16>(hook_infos.size()));
+#undef __
+
+    //build backup method
+    CodeRelocateA64 relocate = CodeRelocateA64(assembler_backup);
+    backup = relocate.Relocate(point, code_container_inline->Size(), nullptr);
+#define __ assembler_backup.
+    Label* origin_addr_label = new Label();
+    __ Ldr(IP1, origin_addr_label);
+    __ Br(IP1);
+    __ Emit(origin_addr_label);
+    __ Emit((Addr) point + code_container_inline->Size());
+    __ Finish();
+#undef __
+
+    hook_infos.push_back({true, data, point, (void*)callback, backup});
+
+    //commit inline trampoline
+    assembler_inline.Finish();
+    return true;
+}
+
+bool InlineHookArm64Android::ExceptionHandler(int num, sigcontext *context) {
     InstA64 *code = reinterpret_cast<InstA64*>(context->pc);
-    if (!IS_OPCODE_A64(*code, EXCEPTION_GEN)) {
-        abort();
-    }
+    if (!IS_OPCODE_A64(*code, EXCEPTION_GEN))
+        return false;
     INST_A64(EXCEPTION_GEN) hvc(code);
     hvc.Disassemble();
     if (hvc.imme >= hook_infos.size())
-        return;
+        return false;
     HookInfo &hook_info = hook_infos[hvc.imme];
-    context->pc = reinterpret_cast<U64>(hook_info.replace);
+    if (!hook_info.is_break_point) {
+        context->pc = reinterpret_cast<U64>(hook_info.replace);
+    } else {
+        BreakCallback callback = reinterpret_cast<BreakCallback>(hook_info.replace);
+        if (callback(context, hook_info.user_data)) {
+            context->pc = reinterpret_cast<U64>(hook_info.backup);
+        } else {
+            context->pc += 4;
+        }
+    }
+    return true;
 }
