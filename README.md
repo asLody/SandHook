@@ -120,7 +120,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:4.0.0'
+provided 'com.swift.sandhook:hookannotation:4.0.2'
 ```
   
 in your plugin
@@ -137,12 +137,12 @@ Now you can use Xposed api:
 We have two different implements:
 ```groovy
 //stable
-implementation 'com.swift.sandhook:xposedcompat:4.0.0'
+implementation 'com.swift.sandhook:xposedcompat:4.0.2'
 
 //or
 
 //hook fast first time
-implementation 'com.swift.sandhook:xposedcompat_new:4.0.0'
+implementation 'com.swift.sandhook:xposedcompat_new:4.0.2'
 ```
 
 ```java
