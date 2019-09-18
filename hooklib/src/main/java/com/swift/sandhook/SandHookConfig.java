@@ -8,10 +8,13 @@ import com.swift.sandhook.lib.BuildConfig;
 public class SandHookConfig {
 
     public volatile static int SDK_INT = Build.VERSION.SDK_INT;
-    public volatile static boolean DEBUG = BuildConfig.DEBUG;
+    //Debug status of hook target process
+    public volatile static boolean DEBUG = true;
+    //Enable compile with jit
     public volatile static boolean compiler = true;
     public volatile static ClassLoader initClassLoader;
     public volatile static int curUse = 0;
+    public volatile static boolean delayHook = true;
 
     public volatile static String libSandHookPath;
     public volatile static LibLoader libLoader = new LibLoader() {

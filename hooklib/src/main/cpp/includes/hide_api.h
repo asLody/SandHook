@@ -37,6 +37,10 @@ extern "C" {
 
     bool forceProcessProfiles();
 
+    bool hookClassInit(void(*callback)(void*));
+
+    JNIEnv *attachAndGetEvn();
+
 }
 
 #endif //SANDHOOK_HIDE_API_H

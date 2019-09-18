@@ -5,6 +5,7 @@ import android.app.Application;
 import android.os.Build;
 import android.util.Log;
 
+import com.swift.sandhook.test.PendingHookTest;
 import com.swift.sandhook.test.TestClass;
 import com.swift.sandhook.testHookers.ActivityHooker;
 import com.swift.sandhook.testHookers.CtrHook;
@@ -16,7 +17,6 @@ import com.swift.sandhook.testHookers.ObjectHooker;
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.xposedcompat.XposedCompat;
 
-import dalvik.system.DexClassLoader;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 
@@ -24,6 +24,8 @@ public class MyApp extends Application {
 
     //if you want test Android Q, please Set true, because SDK_INT of Android Q is still 28
     public final static boolean testAndroidQ = false;
+    //for test pending hook case
+    public volatile static boolean initedTest = false;
 
     @Override
     public void onCreate() {
@@ -95,18 +97,17 @@ public class MyApp extends Application {
             }
         });
 
-        try {
-            ClassLoader classLoader = getClassLoader();
-            DexClassLoader dexClassLoader = new DexClassLoader("/sdcard/hookers-debug.apk",
-                    getCacheDir().getAbsolutePath(), null, classLoader);
-            Class absHookerClass = Class.forName("com.swift.sandhook.hookers.AbsHooker", true, dexClassLoader);
-            Class pluginHookerClass = Class.forName("com.swift.sandhook.hookers.PluginHooker", true, dexClassLoader);
-            SandHook.addHookClass(getClassLoader(), absHookerClass, pluginHookerClass);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (HookErrorException e) {
-            e.printStackTrace();
-        }
+        XposedHelpers.findAndHookMethod(PendingHookTest.class, "test", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+                param.returnEarly = true;
+            }
 
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+            }
+        });
     }
 }

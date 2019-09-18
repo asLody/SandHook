@@ -324,7 +324,7 @@ Java_com_swift_sandhook_SandHook_skipAllSafeCheck(JNIEnv *env, jclass type, jboo
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_swift_sandhook_SandHook_is64Bit(JNIEnv *env, jclass type) {
-    return BYTE_POINT == 8;
+    return static_cast<jboolean>(BYTE_POINT == 8);
 }
 
 extern "C"
@@ -359,6 +359,23 @@ Java_com_swift_sandhook_SandHook_setNativeEntry(JNIEnv *env, jclass type, jobjec
     hookMethod->disableCompilable();
     hookMethod->flushCache();
     return JNI_TRUE;
+}
+
+
+static jclass class_pending_hook = nullptr;
+static jmethodID method_class_init = nullptr;
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_swift_sandhook_SandHook_initForPendingHook(JNIEnv *env, jclass type) {
+    class_pending_hook = static_cast<jclass>(env->NewGlobalRef(
+            env->FindClass("com/swift/sandhook/PendingHookHandler")));
+    method_class_init = env->GetStaticMethodID(class_pending_hook, "onClassInit", "(J)V");
+    auto class_init_handler = [](void *clazz_ptr) {
+        attachAndGetEvn()->CallStaticVoidMethod(class_pending_hook, method_class_init, (jlong) clazz_ptr);
+        attachAndGetEvn()->ExceptionClear();
+    };
+    return static_cast<jboolean>(hookClassInit(class_init_handler));
 }
 
 extern "C"
@@ -477,6 +494,11 @@ static JNINativeMethod jniSandHook[] = {
                 "setNativeEntry",
                 "(Ljava/lang/reflect/Member;Ljava/lang/reflect/Member;J)Z",
                 (void *) Java_com_swift_sandhook_SandHook_setNativeEntry
+        },
+        {
+                "initForPendingHook",
+                "()Z",
+                (void *) Java_com_swift_sandhook_SandHook_initForPendingHook
         }
 };
 
