@@ -1,7 +1,5 @@
 package com.swift.sandhook;
 
-import android.util.Log;
-
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
@@ -47,6 +45,7 @@ public class PendingHookHandler {
         for (HookWrapper.HookEntity entity:entities) {
             HookLog.w("do pending hook for method: " + entity.target.toString());
             try {
+                entity.initClass = false;
                 SandHook.hook(entity);
             } catch (HookErrorException e) {
                 HookLog.e("Pending Hook Error!", e);

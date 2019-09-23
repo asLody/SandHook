@@ -57,7 +57,11 @@ void *InlineHookArm32Android::Hook(void *origin, void *replace) {
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assembler_backup);
-    backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
+    try {
+        backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
+    } catch (ErrorCodeException e) {
+        return nullptr;
+    }
 #define __ assembler_backup.
     Label* origin_addr_label = new Label();
     ALIGN_FOR_LDR
@@ -99,7 +103,11 @@ bool InlineHookArm32Android::BreakPoint(void *origin, void (*callback)(REG *)) {
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assembler_backup);
-    backup = relocate.Relocate(origin, change_mode ? (4 * 2 + 2) : (4 * 2), nullptr);
+    try {
+        backup = relocate.Relocate(origin, change_mode ? (4 * 2 + 2) : (4 * 2), nullptr);
+    } catch (ErrorCodeException e) {
+        return nullptr;
+    }
 #define __ assembler_backup.
     Label* origin_addr_label = new Label();
     ALIGN_FOR_LDR
@@ -161,14 +169,33 @@ void *InlineHookArm32Android::SingleInstHook(void *origin, void *replace) {
 #undef __
 
     //build backup method
+    bool rec_to_thumb = true;
     CodeRelocateA32 relocate = CodeRelocateA32(assembler_backup);
-    backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
+    try {
+        backup = relocate.Relocate(origin, code_container_inline->Size(), nullptr);
+    } catch (ErrorCodeException e) {
+        if (e.Code() == ERROR_SWITCH_TO_ARM32) {
+            //to arm32 mode
+            rec_to_thumb = false;
+            assembler_backup.AllocBufferFirst(4 * 4);
+            backup = assembler_backup.GetPC();
+        } else {
+            return nullptr;
+        }
+    }
+    Addr rec_addr = reinterpret_cast<Addr>(origin_code);
+    if (rec_to_thumb) {
+        rec_addr += relocate.cur_offset;
+        rec_addr = reinterpret_cast<Addr>(GetThumbPC(reinterpret_cast<void *>(rec_addr)));
+    } else {
+        rec_addr += 4;
+    }
 #define __ assembler_backup.
-    Label* origin_addr_label = new Label();
+    Label *origin_addr_label = new Label();
     ALIGN_FOR_LDR
     __ Ldr(PC, origin_addr_label);
     __ Emit(origin_addr_label);
-    __ Emit((Addr) GetThumbPC(reinterpret_cast<void *>(reinterpret_cast<Addr>(origin_code) + relocate.cur_offset)));
+    __ Emit(rec_addr);
     __ Finish();
 #undef __
 
@@ -208,7 +235,11 @@ bool InlineHookArm32Android::SingleBreakPoint(void *point, BreakCallback callbac
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assembler_backup);
-    backup = relocate.Relocate(point, code_container_inline->Size(), nullptr);
+    try {
+        backup = relocate.Relocate(point, code_container_inline->Size(), nullptr);
+    } catch (ErrorCodeException e) {
+        return nullptr;
+    }
 #define __ assembler_backup.
     Label* origin_addr_label = new Label();
     ALIGN_FOR_LDR

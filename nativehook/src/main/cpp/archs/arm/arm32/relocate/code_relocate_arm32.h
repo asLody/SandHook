@@ -22,7 +22,7 @@ namespace SandHook {
         public:
             CodeRelocateA32(AssemblerA32 &assembler);
 
-            void* Relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) override;
+            void* Relocate(BaseInst *instruction, void *to_pc) throw(ErrorCodeException) override;
 
             void* Relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) override;
 
@@ -48,7 +48,7 @@ namespace SandHook {
 
 
         private:
-            AssemblerA32* assemblerA32;
+            AssemblerA32* assembler_a32;
         };
 
     }

@@ -11,17 +11,17 @@ using namespace SandHook::AsmA32;
 using namespace SandHook::Utils;
 using namespace SandHook::Decoder;
 
-#define __ assemblerA32->
+#define __ assembler_a32->
 
-#define IMPL_RELOCATE(T, X) void CodeRelocateA32::relocate_##T##_##X (INST_##T(X)* inst, void* toPc) throw(ErrorCodeException)
+#define IMPL_RELOCATE(T, X) void CodeRelocateA32::relocate_##T##_##X (INST_##T(X)* inst, void* to_pc) throw(ErrorCodeException)
 
 #define CASE(T, X) \
 case ENUM_VALUE(InstCode##T, InstCode##T::X): \
-relocate_##T##_##X(reinterpret_cast<INST_##T(X)*>(instruction), toPc); \
+relocate_##T##_##X(reinterpret_cast<INST_##T(X)*>(instruction), to_pc); \
 break;
 
 CodeRelocateA32::CodeRelocateA32(AssemblerA32 &assembler) : CodeRelocate(assembler.code_container) {
-    this->assemblerA32 = &assembler;
+    this->assembler_a32 = &assembler;
 }
 
 bool CodeRelocateA32::Visit(BaseUnit *unit, void *pc) {
@@ -33,7 +33,7 @@ bool CodeRelocateA32::Visit(BaseUnit *unit, void *pc) {
     return true;
 }
 
-void* CodeRelocateA32::Relocate(void *startPc, Addr len, void *toPc = nullptr) throw(ErrorCodeException) {
+void* CodeRelocateA32::Relocate(void *startPc, Addr len, void *to_pc = nullptr) throw(ErrorCodeException) {
     AutoLock autoLock(relocate_lock);
     start_addr = reinterpret_cast<Addr>(startPc);
     if (IsThumbCode(start_addr)) {
@@ -43,7 +43,7 @@ void* CodeRelocateA32::Relocate(void *startPc, Addr len, void *toPc = nullptr) t
     cur_offset = 0;
     __ AllocBufferFirst(static_cast<U32>(len * 8));
     void* curPc = __ GetPC();
-    if (toPc == nullptr) {
+    if (to_pc == nullptr) {
         Disassembler::Get()->Disassemble(startPc, len, *this, true);
     } else {
         //TODO
@@ -51,7 +51,7 @@ void* CodeRelocateA32::Relocate(void *startPc, Addr len, void *toPc = nullptr) t
     return curPc;
 }
 
-void* CodeRelocateA32::Relocate(BaseInst *instruction, void *toPc) throw(ErrorCodeException) {
+void* CodeRelocateA32::Relocate(BaseInst *instruction, void *to_pc) throw(ErrorCodeException) {
     void* cur_pc = __ GetPC();
 
     //insert later AddBind labels
@@ -141,8 +141,18 @@ IMPL_RELOCATE(T16, B) {
 }
 
 IMPL_RELOCATE(T16, BX_BLX) {
-    __ Emit(reinterpret_cast<BaseInst*>(inst));
-    inst->Ref();
+    if (*inst->rm == PC) {
+        //maybe mode switch!
+        if (IsThumbCode(reinterpret_cast<Addr>(inst->GetPC()))) {
+            __ Nop16();
+        } else {
+            //switch to arm mode
+            throw ErrorCodeException(ERROR_SWITCH_TO_ARM32, "switch to arm32! not impl!");
+        }
+    } else {
+        __ Emit(reinterpret_cast<BaseInst *>(inst));
+        inst->Ref();
+    }
 }
 
 IMPL_RELOCATE(T16, CBZ_CBNZ) {

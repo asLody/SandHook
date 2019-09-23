@@ -85,7 +85,11 @@ public class MainActivity extends AppCompatActivity {
         testPluginHook(str);
 
         MyApp.initedTest = true;
-        PendingHookTest.test();
+        try {
+            PendingHookTest.test();
+        } catch (Throwable e) {
+
+        }
     }
 
     public static Field getField(Class topClass, String fieldName) throws NoSuchFieldException {
