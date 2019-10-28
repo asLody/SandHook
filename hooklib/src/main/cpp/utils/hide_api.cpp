@@ -274,6 +274,12 @@ extern "C" {
 
     bool hookClassInit(void(*callback)(void*)) {
         void* symFixupStaticTrampolines = getSymCompat(art_lib_path, "_ZN3art11ClassLinker22FixupStaticTrampolinesENS_6ObjPtrINS_6mirror5ClassEEE");
+
+        if (symFixupStaticTrampolines == nullptr) {
+            //huawei lon-al00 android 7.0 api level 24
+            symFixupStaticTrampolines = getSymCompat(art_lib_path,
+                                                     "_ZN3art11ClassLinker22FixupStaticTrampolinesEPNS_6mirror5ClassE");
+        }
         if (symFixupStaticTrampolines == nullptr || hook_native == nullptr)
             return false;
         backup_fixup_static_trampolines = reinterpret_cast<void (*)(void *, void *)>(hook_native(
