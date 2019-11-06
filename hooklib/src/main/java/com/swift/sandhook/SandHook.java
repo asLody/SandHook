@@ -336,7 +336,7 @@ public class SandHook {
         if (SandHookConfig.SDK_INT < Build.VERSION_CODES.N)
             return false;
         try {
-            File profile = new File("/data/misc/profiles/cur/" + SandHookConfig.curUse + "/" + selfPackageName + "/primary.prof");
+            File profile = new File("/data/misc/profiles/cur/" + SandHookConfig.curUser + "/" + selfPackageName + "/primary.prof");
             if (!profile.getParentFile().exists()) return false;
             try {
                 profile.delete();
