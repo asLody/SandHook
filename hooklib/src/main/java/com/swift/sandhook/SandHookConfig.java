@@ -15,8 +15,6 @@ public class SandHookConfig {
     public volatile static ClassLoader initClassLoader;
     public volatile static int curUser = 0;
     public volatile static boolean delayHook = true;
-    //is for edxposed?
-    public volatile static boolean edxpEnv = false;
 
     public volatile static String libSandHookPath;
     public volatile static LibLoader libLoader = new LibLoader() {

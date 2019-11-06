@@ -17,15 +17,10 @@ public class PendingHookHandler {
 
     static {
         //init native hook
-        if (!SandHookConfig.edxpEnv) {
-            canUsePendingHook = SandHook.initForPendingHook();
-        }
+        canUsePendingHook = SandHook.initForPendingHook();
     }
 
     public static boolean canWork() {
-        if (SandHookConfig.edxpEnv) {
-            return true;
-        }
         return canUsePendingHook && SandHook.canGetObject() && !SandHookConfig.DEBUG;
     }
 
@@ -42,10 +37,6 @@ public class PendingHookHandler {
         if (clazz_ptr == 0)
             return;
         Class clazz = (Class) SandHook.getObject(clazz_ptr);
-        onClassInit(clazz);
-    }
-
-    public static void onClassInit(Class clazz) {
         if (clazz == null)
             return;
         Vector<HookWrapper.HookEntity> entities = pendingHooks.get(clazz);
