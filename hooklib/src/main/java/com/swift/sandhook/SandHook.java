@@ -69,6 +69,10 @@ public class SandHook {
         HookWrapper.addHookClass(hookWrapperClass);
     }
 
+    public static void addHookClass(ClassLoader classLoader, Class... hookWrapperClass) throws HookErrorException {
+        HookWrapper.addHookClass(classLoader, hookWrapperClass);
+    }
+
     public static synchronized void hook(HookWrapper.HookEntity entity) throws HookErrorException {
 
         if (entity == null)
