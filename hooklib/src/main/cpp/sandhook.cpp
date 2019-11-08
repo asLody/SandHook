@@ -70,7 +70,7 @@ bool doHookWithReplacement(JNIEnv* env,
         hookMethod->disableCompilable();
     }
 
-    if (SDK_INT > ANDROID_N) {
+    if (SDK_INT > ANDROID_N && SDK_INT < ANDROID_Q) {
         forceProcessProfiles();
     }
     if ((SDK_INT >= ANDROID_N && SDK_INT <= ANDROID_P)
@@ -122,7 +122,7 @@ bool doHookWithInline(JNIEnv* env,
     }
 
     originMethod->disableCompilable();
-    if (SDK_INT > ANDROID_N) {
+    if (SDK_INT > ANDROID_N && SDK_INT < ANDROID_Q) {
         forceProcessProfiles();
     }
     if ((SDK_INT >= ANDROID_N && SDK_INT <= ANDROID_P)
