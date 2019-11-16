@@ -157,17 +157,23 @@ extern "C" {
         if (jitCompilerHandle == nullptr)
             return false;
         if (!canCompile()) return false;
+
+        //backup thread flag and state because of jit compile function will modify thread state
+        uint32_t old_flag_and_state = *((uint32_t *) thread);
+        bool ret;
         if (SDK_INT >= ANDROID_Q) {
             if (jitCompileMethodQ == nullptr) {
                 return false;
             }
-            return jitCompileMethodQ(jitCompilerHandle, artMethod, thread, false, false);
+            ret = jitCompileMethodQ(jitCompilerHandle, artMethod, thread, false, false);
         } else {
             if (jitCompileMethod == nullptr) {
                 return false;
             }
-            return jitCompileMethod(jitCompilerHandle, artMethod, thread, false);
+            ret= jitCompileMethod(jitCompilerHandle, artMethod, thread, false);
         }
+        memcpy(thread, &old_flag_and_state, 4);
+        return ret;
     }
 
     void suspendVM() {
