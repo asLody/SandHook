@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/11.
 //
 
-#ifndef SANDHOOK_NH_ASSEMBLER_A64_H
-#define SANDHOOK_NH_ASSEMBLER_A64_H
+#pragma once
 
 #include "assembler.h"
 #include "register_arm64.h"
@@ -19,14 +18,14 @@ namespace SandHook {
         public:
             AssemblerA64(CodeBuffer* codeBuffer);
 
-            void allocBufferFirst(U32 size);
-            void* getStartPC();
-            void* getPC();
-            void* finish();
+            void AllocBufferFirst(U32 size);
+            void* GetStartPC();
+            void* GetPC();
+            void* Finish();
 
             void Emit(U32 data32);
             void Emit(U64 data64);
-            void Emit(Unit<Base>* unit);
+            void Emit(BaseUnit* unit);
 
             void MoveWide(RegisterA64& rd, INST_A64(MOV_WIDE)::OP op, U64 imme, INST_A64(MOV_WIDE)::Shift shift);
 
@@ -85,7 +84,7 @@ namespace SandHook {
             void Subs(RegisterA64& rd, const Operand& operand);
 
             void Msr(SystemRegister &sysReg, RegisterA64& rt);
-            void Mrs(SystemRegister &sysReg, RegisterA64& rt);
+            void Mrs(SystemRegister &sys_reg, RegisterA64& rt);
 
             void Mov(RegisterA64& rd, RegisterA64& rt);
 
@@ -95,10 +94,8 @@ namespace SandHook {
 
 
         public:
-            CodeContainer codeContainer = CodeContainer(nullptr);
+            CodeContainer code_container = CodeContainer(nullptr);
         };
 
     }
 }
-
-#endif //SANDHOOK_NH_ASSEMBLER_A64_H

@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.swift.sandhook.test.Inter;
 import com.swift.sandhook.test.InterImpl;
+import com.swift.sandhook.test.PendingHookTest;
 import com.swift.sandhook.test.TestClass;
 
 import java.lang.reflect.Field;
@@ -82,6 +83,13 @@ public class MainActivity extends AppCompatActivity {
         inter.dosth();
 
         testPluginHook(str);
+
+        MyApp.initedTest = true;
+        try {
+            PendingHookTest.test();
+        } catch (Throwable e) {
+
+        }
     }
 
     public static Field getField(Class topClass, String fieldName) throws NoSuchFieldException {

@@ -2,13 +2,10 @@
 // Created by swift on 2019/5/11.
 //
 
-#ifndef SANDHOOK_NH_PLATFORM_H
-#define SANDHOOK_NH_PLATFORM_H
+#pragma once
 
 #include "base.h"
 
-extern "C" bool flushCache(Addr addr, Off len);
+extern "C" bool FlushCache(Addr addr, Off len);
 
-extern "C" bool memUnprotect(Addr addr, Addr len);
-
-#endif //SANDHOOK_NH_PLATFORM_H
+extern "C" bool MemUnprotect(Addr addr, Addr len);

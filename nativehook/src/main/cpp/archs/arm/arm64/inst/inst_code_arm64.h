@@ -2,12 +2,11 @@
 // Created by swift on 2019/5/8.
 //
 
-#ifndef SANDHOOK_NH_INST_CODE_ARM64_H
-#define SANDHOOK_NH_INST_CODE_ARM64_H
+#pragma once
 
 #include "inst_struct_aarch64.h"
 
-enum class InstCodeA64 {
+enum class InstCodeA64 : InstCode {
     UNKNOW,
     MOV_WIDE,
     MOV_REG,
@@ -31,5 +30,3 @@ enum class InstCodeA64 {
     ADD_SUB_IMM,
     MSR_MRS
 };
-
-#endif //SANDHOOK_NH_INST_CODE_ARM64_H

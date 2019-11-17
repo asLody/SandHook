@@ -35,6 +35,12 @@ extern "C" {
 
     JavaVM* jvm;
 
+    void *(*hook_native)(void* origin, void *replace) = nullptr;
+
+    void (*class_init_callback)(void*) = nullptr;
+
+    void (*backup_fixup_static_trampolines)(void *, void *) = nullptr;
+
     bool fileExits(const char* path) {
          int fd = open(path, O_RDONLY);
          if (fd < 0) {
@@ -125,6 +131,15 @@ extern "C" {
             profileSaver_ForceProcessProfiles = reinterpret_cast<void (*)()>(getSymCompat(art_lib_path, "_ZN3art12ProfileSaver20ForceProcessProfilesEv"));
         }
 
+        //init native hook lib
+        void* native_hook_handle = dlopen("libsandhook-native.so", RTLD_LAZY | RTLD_GLOBAL);
+        if (native_hook_handle) {
+            hook_native = reinterpret_cast<void *(*)(void *, void *)>(dlsym(native_hook_handle, "SandInlineHook"));
+        } else {
+            hook_native = reinterpret_cast<void *(*)(void *, void *)>(getSymCompat(
+                    "libsandhook-native.so", "SandInlineHook"));
+        }
+
     }
 
     bool canCompile() {
@@ -142,17 +157,23 @@ extern "C" {
         if (jitCompilerHandle == nullptr)
             return false;
         if (!canCompile()) return false;
+
+        //backup thread flag and state because of jit compile function will modify thread state
+        uint32_t old_flag_and_state = *((uint32_t *) thread);
+        bool ret;
         if (SDK_INT >= ANDROID_Q) {
             if (jitCompileMethodQ == nullptr) {
                 return false;
             }
-            return jitCompileMethodQ(jitCompilerHandle, artMethod, thread, false, false);
+            ret = jitCompileMethodQ(jitCompilerHandle, artMethod, thread, false, false);
         } else {
             if (jitCompileMethod == nullptr) {
                 return false;
             }
-            return jitCompileMethod(jitCompilerHandle, artMethod, thread, false);
+            ret= jitCompileMethod(jitCompilerHandle, artMethod, thread, false);
         }
+        memcpy(thread, &old_flag_and_state, 4);
+        return ret;
     }
 
     void suspendVM() {
@@ -248,6 +269,47 @@ extern "C" {
             return false;
         profileSaver_ForceProcessProfiles();
         return true;
+    }
+
+    void replaceFixupStaticTrampolines(void *thiz, void *clazz_ptr) {
+        backup_fixup_static_trampolines(thiz, clazz_ptr);
+        if (class_init_callback) {
+            class_init_callback(clazz_ptr);
+        }
+    }
+
+    bool hookClassInit(void(*callback)(void*)) {
+        void* symFixupStaticTrampolines = getSymCompat(art_lib_path, "_ZN3art11ClassLinker22FixupStaticTrampolinesENS_6ObjPtrINS_6mirror5ClassEEE");
+
+        if (symFixupStaticTrampolines == nullptr) {
+            //huawei lon-al00 android 7.0 api level 24
+            symFixupStaticTrampolines = getSymCompat(art_lib_path,
+                                                     "_ZN3art11ClassLinker22FixupStaticTrampolinesEPNS_6mirror5ClassE");
+        }
+        if (symFixupStaticTrampolines == nullptr || hook_native == nullptr)
+            return false;
+        backup_fixup_static_trampolines = reinterpret_cast<void (*)(void *, void *)>(hook_native(
+                symFixupStaticTrampolines, (void *) replaceFixupStaticTrampolines));
+        if (backup_fixup_static_trampolines) {
+            class_init_callback = callback;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    JNIEnv *getEnv() {
+        JNIEnv *env;
+        jvm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_6);
+        return env;
+    }
+
+    JNIEnv *attachAndGetEvn() {
+        JNIEnv *env = getEnv();
+        if (env == nullptr) {
+            jvm->AttachCurrentThread(&env, nullptr);
+        }
+        return env;
     }
 
 }

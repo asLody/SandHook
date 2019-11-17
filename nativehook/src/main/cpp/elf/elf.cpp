@@ -9,10 +9,15 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <elf.h>
+
 
 #include "log.h"
 
 using namespace SandHook::Elf;
+
+
+TextSegment::TextSegment(void *start, void *end) : start(start), end(end) {}
 
 ElfImg::ElfImg(const char *elf) {
     this->elf = elf;
@@ -84,8 +89,8 @@ ElfImg::ElfImg(const char *elf) {
         LOGW("can't find symtab from sections\n");
     }
 
-    //load module base
-    base = getModuleBase(elf);
+    //load module rang
+    baseInRam = GetModuleBase(elf);
 }
 
 ElfImg::~ElfImg() {
@@ -100,7 +105,7 @@ ElfImg::~ElfImg() {
     }
 }
 
-Elf_Addr ElfImg::getSymbOffset(const char *name) {
+Elf_Addr ElfImg::GetSymOffset(const char *name) {
     Elf_Addr _offset = 0;
 
     //search dynmtab
@@ -134,16 +139,16 @@ Elf_Addr ElfImg::getSymbOffset(const char *name) {
     return 0;
 }
 
-Elf_Addr ElfImg::getSymbAddress(const char *name) {
-    Elf_Addr offset = getSymbOffset(name);
-    if (offset > 0 && base != nullptr) {
-        return static_cast<Elf_Addr>((size_t) base + offset - bias);
+Elf_Addr ElfImg::GetSymAddress(const char *name) {
+    Elf_Addr offset = GetSymOffset(name);
+    if (offset > 0 && baseInRam != nullptr) {
+        return static_cast<Elf_Addr>((size_t) baseInRam + offset - bias);
     } else {
         return 0;
     }
 }
 
-void *ElfImg::getModuleBase(const char *name) {
+void *ElfImg::GetModuleBase(const char *name) {
     FILE *maps;
     char buff[256];
     off_t load_addr;
@@ -167,7 +172,47 @@ void *ElfImg::getModuleBase(const char *name) {
 
     fclose(maps);
 
-    LOGD("get module base %s: %lu", name, load_addr);
+    LOGD("Get module baseInRam %s: %lu", name, load_addr);
 
     return reinterpret_cast<void *>(load_addr);
 }
+
+bool isRXPerm(const char *perm) {
+    bool r = false, x = false;
+    for (int i = 0; i < 5; ++i) {
+        if (perm[i] == 'r') {
+            r = true;
+        }
+        if (perm[i] == 'x') {
+            x = true;
+        }
+    }
+    return r && x;
+}
+
+void ElfImg::searchMaps() {
+    FILE *f;
+    if ((f = fopen("/proc/self/maps", "r")) == NULL) {
+        return;
+    }
+    char buf[PATH_MAX], perm[12] = {'\0'}, dev[12] = {'\0'}, mapname[PATH_MAX] = {'\0'};
+    Addr begin, end, inode, foo;
+    while (!feof(f)) {
+        if (fgets(buf, sizeof(buf), f) == 0)
+            break;
+        mapname[0] = '\0';
+        sscanf(buf, "%lx-%lx %s %lx %s %ld %s", &begin, &end, perm,
+               &foo, dev, &inode, mapname);
+        if (strstr(buf, elf)) {
+            if (baseInRam == nullptr) {
+                baseInRam = reinterpret_cast<void *>(begin);
+            }
+            endInRam = reinterpret_cast<void *>(end);
+            if (isRXPerm(perm)) {
+                textSegments.emplace_back((void*)begin, (void*)end);
+            }
+        }
+    }
+    fclose(f);
+}
+

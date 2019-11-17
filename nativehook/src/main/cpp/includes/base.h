@@ -2,8 +2,7 @@
 // Created by SwiftGan on 2019/4/15.
 //
 
-#ifndef SANDHOOK_BASE_H
-#define SANDHOOK_BASE_H
+#pragma once
 
 #include <cstdint>
 #include <cstring>
@@ -22,6 +21,8 @@ typedef int64_t S64;
 
 typedef size_t Addr;
 
+using InstCode = U32;
+
 //32bit
 #if defined(__i386__) || defined(__arm__)
 typedef S32 Off;
@@ -30,13 +31,11 @@ typedef S32 Off;
 typedef S64 Off;
 #endif
 
-const int PTR_BYTE = sizeof(void*);
-
 #define PAGE_OFFSET 12
 
 const int BITS_OF_BYTE = 8;
 
-const Addr P_SIZE = 2 << PAGE_OFFSET;
+#define P_SIZE PAGE_SIZE
 
 enum Arch {
     arm32,
@@ -44,7 +43,7 @@ enum Arch {
     unknowArch
 };
 
-enum UnitType {
+enum UnitTypeDef {
     UnitInst,
     UnitData,
     UnitLabel,
@@ -79,12 +78,17 @@ struct Unsigned<64> {
 };
 
 
-struct Base {};
+struct Base {
+};
+
+
+#define INLINE __always_inline
+
 
 template <typename T>
 T AlignDown(T pointer,
             typename Unsigned<sizeof(T) * BITS_OF_BYTE>::type alignment) {
-    // Use C-style casts to get static_cast behaviour for integral types (T), and
+    // Use C-style casts to Get static_cast behaviour for integral types (T), and
     // reinterpret_cast behaviour for other types.
 
     typename Unsigned<sizeof(T)* BITS_OF_BYTE>::type pointer_raw =
@@ -181,26 +185,26 @@ INT_1_TO_32_LIST(DECLARE_TRUNCATE_TO_UINT_32)
 
 //位提取
 // Bit field extraction.
-inline uint64_t ExtractUnsignedBitfield64(int msb, int lsb, uint64_t x) {
+inline U64 ExtractUnsignedBitfield64(int msb, int lsb, U64 x) {
     if ((msb == 63) && (lsb == 0)) return x;
-    return (x >> lsb) & ((static_cast<uint64_t>(1) << (1 + msb - lsb)) - 1);
+    return (x >> lsb) & ((static_cast<U64>(1) << (1 + msb - lsb)) - 1);
 }
 
 
-inline int64_t ExtractSignedBitfield64(int msb, int lsb, U64 x) {
-    uint64_t temp = ExtractUnsignedBitfield64(msb, lsb, x);
-    // If the highest extracted bit is set, sign extend.
+inline S64 ExtractSignedBitfield64(int msb, int lsb, U64 x) {
+    U64 temp = ExtractUnsignedBitfield64(msb, lsb, x);
+    // If the highest extracted bit is Set, sign extend_.
     if ((temp >> (msb - lsb)) == 1) {
         temp |= ~UINT64_C(0) << (msb - lsb);
     }
-    int64_t result;
+    S64 result;
     memcpy(&result, &temp, sizeof(result));
     return result;
 }
 
 inline int32_t ExtractSignedBitfield32(int msb, int lsb, U32 x) {
-    uint32_t temp = TruncateToUint32(ExtractSignedBitfield64(msb, lsb, x));
-    int32_t result;
+    U32 temp = TruncateToUint32(ExtractSignedBitfield64(msb, lsb, x));
+    S32 result;
     memcpy(&result, &temp, sizeof(result));
     return result;
 }
@@ -216,25 +220,17 @@ inline T SignExtend(T val, int bitSize) {
 }
 
 
-inline U16 BITS16L(U32 value) {
-    return static_cast<U16>(value & 0xffff);
-}
+#define BITS16L(value) static_cast<U16>(value & 0xffff)
 
-inline U16 BITS16H(U32 value) {
-    return static_cast<U16>(value >> 16);
-}
+#define BITS16H(value)  static_cast<U16>(value >> 16)
 
-inline U32 BITS32L(U64 value) {
-    return static_cast<U32>(value);
-}
+#define BITS32L(value) static_cast<U32>(value)
 
-inline U32 BITS32H(U64 value) {
-    return static_cast<U32>(value >> 32);
-}
+#define BITS32H(value) static_cast<U32>(value >> 32)
 
 #define COMBINE(hi, lo, lowide) (hi << lowide) | lo
 
-/* borrow from gdb, refer: binutils-gdb/gdb/arch/arm.h */
+/* borrow from gdb, refer: binutils-gdb/gdb/Arch/arm.h */
 #define SUB_MASK(x) ((1L << ((x) + 1)) - 1)
 #define BITS(obj, st, fn) (((obj) >> (st)) & SUB_MASK((fn) - (st)))
 #define BIT(obj, st) (((obj) >> (st)) & 1)
@@ -254,4 +250,21 @@ if (X != V) { \
 
 #define ENUM_VALUE(Type, Value) static_cast<std::underlying_type<Type>::type>(Value)
 
-#endif //SANDHOOK_BASE_H
+static inline S64 SignExtend64(unsigned int bits, U64 value) {
+    return ExtractSignedBitfield64(bits - 1, 0, value);
+}
+
+static inline S32 SignExtend32(unsigned int bits, U32 value) {
+    return ExtractSignedBitfield32(bits - 1, 0, value);
+}
+
+template<typename U, typename T>
+U ForceCast(T *x) {
+    return (U) (uintptr_t) x;
+}
+
+template<typename U, typename T>
+U ForceCast(T &x) {
+    return *(U *) &x;
+}
+

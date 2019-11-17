@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/11.
 //
 
-#ifndef SANDHOOK_NH_LOCK_H
-#define SANDHOOK_NH_LOCK_H
+#pragma once
 
 #include <mutex>
 
@@ -22,5 +21,3 @@ namespace SandHook {
 
     }
 }
-
-#endif //SANDHOOK_NH_LOCK_H

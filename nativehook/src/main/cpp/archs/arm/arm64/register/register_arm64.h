@@ -1,9 +1,7 @@
 //
 // Created by swift on 2019/5/8.
 //
-
-#ifndef SANDHOOK_NH_REGISTER_A64_H
-#define SANDHOOK_NH_REGISTER_A64_H
+#pragma once
 
 #include "register.h"
 
@@ -30,7 +28,7 @@ namespace SandHook {
             enum RegisterType {
                 // The kInvalid value is used to detect uninitialized static instances,
                 // which are always zero-initialized before any constructors are called.
-                kInvalid = 0,
+                        kInvalid = 0,
                 kRegister,
                 kVRegister,
                 kFPRegister = kVRegister,
@@ -62,7 +60,7 @@ namespace SandHook {
             XRegister();
             XRegister(U8 code);
 
-            U8 getWide() override;
+            U8 Wide() override;
 
             static XRegister* get(U8 code) {
                 return registers[code];
@@ -75,9 +73,10 @@ namespace SandHook {
         class WRegister : public RegisterA64 {
         public:
             WRegister();
+
             WRegister(U8 code);
 
-            U8 getWide() override;
+            U8 Wide() override;
 
             static WRegister* get(U8 code) {
                 return registers[code];
@@ -86,6 +85,8 @@ namespace SandHook {
         private:
             static WRegister* registers[];
         };
+
+
 
         class SystemRegister {
         public:
@@ -98,34 +99,33 @@ namespace SandHook {
                 U16 op0:2;
             };
 
+            SystemRegister() {}
+
+            SystemRegister(U16 value) : value(value) {}
+
             SystemRegister(U16 op0, U16 op1, U16 crn, U16 crm, U16 op2) {
                 reg.op0 = op0;
                 reg.op1 = op1;
                 reg.CRn = crn;
                 reg.CRm = crm;
                 reg.op2 = op2;
+                value = ForceCast<U16>(reg);
             }
 
-            U16 value() {
+            bool operator==(const SystemRegister &rhs) const {
+                return value == rhs.value;
+            }
 
-                union {
-                    U16 raw;
-                    SystemReg reg;
-                } ret;
-
-                ret.reg = reg;
-
-                return ret.raw;
+            bool operator!=(const SystemRegister &rhs) const {
+                return value != rhs.value;
             }
 
         public:
+            U16 value;
             SystemReg reg;
         };
-
 
 
     }
 
 }
-
-#endif //SANDHOOK_NH_REGISTER_A64_H

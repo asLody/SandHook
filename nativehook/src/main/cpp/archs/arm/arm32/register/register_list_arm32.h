@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/8.
 //
 
-#ifndef SANDHOOK_NH_REGISTER_LIST_A32_H
-#define SANDHOOK_NH_REGISTER_LIST_A32_H
+#pragma once
 
 #include "register_arm32.h"
 
@@ -31,5 +30,3 @@ namespace RegistersA32 {
     extern RegisterA32 UnknowRegiser;
 }}
 #define Reg(N) RegisterA32::get(N)
-
-#endif //SANDHOOK_NH_REGISTER_LIST_A32_H

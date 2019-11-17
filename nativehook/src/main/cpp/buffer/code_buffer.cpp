@@ -11,31 +11,31 @@
 using namespace SandHook::Assembler;
 using namespace SandHook::Utils;
 
-void *AndroidCodeBuffer::getBuffer(U32 size) {
-    AutoLock autoLock(allocSpaceLock);
+void *AndroidCodeBuffer::GetBuffer(U32 size) {
+    AutoLock autoLock(alloc_space_lock);
     void* mmapRes;
     Addr exeSpace = 0;
-    if (executeSpaceList.size() == 0) {
+    if (execute_space_list.size() == 0) {
         goto label_alloc_new_space;
-    } else if (executePageOffset + size + 4> currentExecutePageSize) {
+    } else if (execute_page_offset + size + 4> current_execute_page_size) {
         goto label_alloc_new_space;
     } else {
-        exeSpace = reinterpret_cast<Addr>(executeSpaceList.back());
+        exeSpace = reinterpret_cast<Addr>(execute_space_list.back());
         //4 字节对齐
-        Addr retSpace = RoundUp(exeSpace + executePageOffset, 4);
-        executePageOffset = retSpace + size - exeSpace;
+        Addr retSpace = RoundUp(exeSpace + execute_page_offset, 4);
+        execute_page_offset = retSpace + size - exeSpace;
         return reinterpret_cast<void *>(retSpace);
     }
 label_alloc_new_space:
-    currentExecutePageSize = static_cast<U32>(FIT(size, P_SIZE));
-    mmapRes = mmap(NULL, currentExecutePageSize, PROT_READ | PROT_WRITE | PROT_EXEC,
+    current_execute_page_size = static_cast<U32>(FIT(size, PAGE_SIZE));
+    mmapRes = mmap(NULL, current_execute_page_size, PROT_READ | PROT_WRITE | PROT_EXEC,
                    MAP_ANON | MAP_PRIVATE, -1, 0);
     if (mmapRes == MAP_FAILED) {
         return 0;
     }
-    memset(mmapRes, 0, currentExecutePageSize);
-    executeSpaceList.push_back(mmapRes);
-    executePageOffset = size;
+    memset(mmapRes, 0, current_execute_page_size);
+    execute_space_list.push_back(mmapRes);
+    execute_page_offset = size;
     return mmapRes;
 }
 
@@ -43,24 +43,24 @@ AndroidCodeBuffer::AndroidCodeBuffer() {}
 
 StaticCodeBuffer::StaticCodeBuffer(Addr pc) : pc(pc) {}
 
-void *StaticCodeBuffer::getBuffer(U32 bufferSize) {
-    if (!memUnprotect(pc, bufferSize)) {
-        LOGE("error memUnprotect!");
+void *StaticCodeBuffer::GetBuffer(U32 bufferSize) {
+    if (!MemUnprotect(pc, bufferSize)) {
+        LOGE("error MemUnprotect!");
     }
     return reinterpret_cast<void *>(pc);
 }
 
-void AndroidRellocBufferUnsafe::resetLastBufferSize(U32 size) {
-    if (executePageOffset + (size - lastAllocSize) <= currentExecutePageSize) {
-        executePageOffset += size - lastAllocSize;
-        lastAllocSize = size;
+void AndroidReSizableBufferUnsafe::ResetLastBufferSize(U32 size) {
+    if (execute_page_offset + (size - last_alloc_size) <= current_execute_page_size) {
+        execute_page_offset += size - last_alloc_size;
+        last_alloc_size = size;
     }
 }
 
-void *AndroidRellocBufferUnsafe::getBuffer(U32 bufferSize) {
-    void* res = AndroidCodeBuffer::getBuffer(bufferSize);
+void *AndroidReSizableBufferUnsafe::GetBuffer(U32 bufferSize) {
+    void* res = AndroidCodeBuffer::GetBuffer(bufferSize);
     if (res) {
-        lastAllocSize = bufferSize;
+        last_alloc_size = bufferSize;
     }
     return res;
 }

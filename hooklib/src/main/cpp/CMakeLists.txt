@@ -3,6 +3,8 @@ project(sandhook)
 
 ENABLE_LANGUAGE(ASM)
 
+add_definitions(-std=c++11)
+
 set(${PROJECT_NAME}_SOURCES
         sandhook.cpp
         trampoline/trampoline.cpp
@@ -22,8 +24,6 @@ set(${PROJECT_NAME}_SOURCES
         inst/insts_arm64.cpp
         nativehook/native_hook.cpp
         )
-
-add_definitions(-std=c++11)
 
 add_library(${PROJECT_NAME}
         SHARED

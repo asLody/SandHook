@@ -11,7 +11,7 @@
 #include "inst_t32.h"
 
 #define ALIGN_FOR_LDR \
-if ((Addr) __ getPC() % 4 != 0) { \
+if ((Addr) __ GetPC() % 4 != 0) { \
 __ Nop16(); \
 }
 
@@ -24,14 +24,14 @@ namespace SandHook {
         public:
             AssemblerA32(CodeBuffer* codeBuffer);
 
-            void allocBufferFirst(U32 size);
-            void* getStartPC();
-            void* getPC();
-            void* finish();
+            void AllocBufferFirst(U32 size);
+            void* GetStartPC();
+            void* GetPC();
+            void* Finish();
 
             void Emit(U32 data32);
             void Emit(U16 data16);
-            void Emit(Unit<Base>* unit);
+            void Emit(BaseUnit* unit);
 
 
             void Mov(RegisterA32 &rd, U16 imm16);
@@ -77,8 +77,10 @@ namespace SandHook {
 
             void Nop16();
 
+            void Hvc(U16 num);
+
         public:
-            CodeContainer codeContainer = CodeContainer(nullptr);
+            CodeContainer code_container = CodeContainer(nullptr);
         };
     }
 }

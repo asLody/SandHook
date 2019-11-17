@@ -2,29 +2,27 @@
 // Created by swift on 2019/5/23.
 //
 
-#ifndef SANDHOOK_HOOK_ARM64_H
-#define SANDHOOK_HOOK_ARM64_H
+#pragma once
 
 #include "hook.h"
+#include <vector>
 
 namespace SandHook {
     namespace Hook {
         class InlineHookArm64Android : public InlineHook {
         public:
-            inline InlineHookArm64Android() {
-                hookLock = new std::mutex();
-            };
-            inline ~InlineHookArm64Android() {
-                delete hookLock;
-            }
-            void *inlineHook(void *origin, void *replace) override;
+            void *Hook(void *origin, void *replace) override;
 
-            bool breakPoint(void *point, void (*callback)(REG[])) override;
+            bool BreakPoint(void *point, void (*callback)(REG[])) override;
 
-        protected:
-            std::mutex* hookLock;
+            bool SingleBreakPoint(void *point, BreakCallback callback, void *data) override;
+
+            void *SingleInstHook(void *origin, void *replace) override;
+
+            bool ExceptionHandler(int num, sigcontext *context) override;
+
+        private:
+            std::vector<HookInfo> hook_infos;
         };
     }
 }
-
-#endif //SANDHOOK_HOOK_ARM64_H

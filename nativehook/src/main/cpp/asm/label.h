@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/10.
 //
 
-#ifndef SANDHOOK_NH_LABEL_H
-#define SANDHOOK_NH_LABEL_H
+#pragma once
 
 #include "unit.h"
 #include <list>
@@ -13,53 +12,42 @@ namespace SandHook {
 
         class LabelBinder {
         public:
-            virtual void onLabelApply(Addr pc) = 0;
+            virtual void OnLabelApply(Addr pc) = 0;
         };
 
-        class Label : public Unit<Base> {
+        class Label : public BaseUnit {
         public:
 
             Label() {}
 
-            Label(void *pc) : pc(pc) {}
+            Label(void *pc) : BaseUnit(pc) {}
 
-            inline UnitType unitType() override {
-                return UnitType::UnitLabel;
+            enum UnitTypeDef UnitType() override {
+                return UnitTypeDef::UnitLabel;
             }
 
-            inline U32 size() override {
+            INLINE U32 Size() override {
                 return 0;
             }
 
-            inline void setPC(void* pc) {
-                this->pc = pc;
-            }
-
-            inline void *getPC() override {
-                return pc;
-            }
-
-            inline void addBinder(LabelBinder* binder) {
+            INLINE void AddBind(LabelBinder *binder) {
                 binders.push_back(binder);
             }
 
-            inline void removeBinder(LabelBinder* binder) {
+            INLINE void RemoveBind(LabelBinder *binder) {
                 binders.push_back(binder);
             }
 
-            inline void bindLabel() {
+            INLINE void BindLabel() {
                 std::list<LabelBinder*>::iterator binder;
                 for(binder = binders.begin();binder != binders.end(); ++binder) {
-                    (*binder)->onLabelApply(getVPC());
+                    (*binder)->OnLabelApply(GetVPC());
                 }
             }
 
         private:
-            void* pc;
             std::list<LabelBinder*> binders = std::list<LabelBinder*>();
         };
 
     }
 }
-
-#endif //SANDHOOK_NH_LABEL_H

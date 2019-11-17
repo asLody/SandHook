@@ -409,6 +409,7 @@ public class HookWrapper {
         public boolean hookIsStub = false;
         public boolean resolveDexCache = true;
         public boolean backupIsStub = true;
+        public boolean initClass = true;
 
         public Class[] pars;
         public int hookMode;

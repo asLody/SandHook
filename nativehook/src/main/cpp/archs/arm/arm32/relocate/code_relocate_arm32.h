@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/23.
 //
 
-#ifndef SANDHOOK_CODE_RELOCATE_ARM32_H
-#define SANDHOOK_CODE_RELOCATE_ARM32_H
+#pragma once
 
 #include <mutex>
 #include <map>
@@ -23,11 +22,11 @@ namespace SandHook {
         public:
             CodeRelocateA32(AssemblerA32 &assembler);
 
-            void* relocate(Instruction<Base> *instruction, void *toPc) throw(ErrorCodeException) override;
+            void* Relocate(BaseInst *instruction, void *to_pc) throw(ErrorCodeException) override;
 
-            void* relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) override;
+            void* Relocate(void *startPc, Addr len, void *toPc) throw(ErrorCodeException) override;
 
-            bool visit(Unit<Base> *unit, void *pc) override;
+            bool Visit(BaseUnit *unit, void *pc) override;
 
             DEFINE_RELOCATE(T16, B_COND)
 
@@ -49,12 +48,10 @@ namespace SandHook {
 
 
         private:
-            AssemblerA32* assemblerA32;
+            AssemblerA32* assembler_a32;
         };
 
     }
 }
 
 #undef DEFINE_RELOCATE
-
-#endif //SANDHOOK_CODE_RELOCATE_ARM32_H

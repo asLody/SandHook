@@ -2,8 +2,7 @@
 // Created by swift on 2019/5/6.
 //
 
-#ifndef SANDHOOK_NH_DECODER_H
-#define SANDHOOK_NH_DECODER_H
+#pragma once
 
 #include "base.h"
 #include "instruction.h"
@@ -16,7 +15,7 @@ namespace SandHook {
         class InstVisitor {
         public:
             //need free unit
-            virtual bool visit(Unit<Base>* unit, void* pc) {
+            virtual bool Visit(BaseUnit *unit, void *pc) {
                 delete unit;
                 return false;
             };
@@ -24,29 +23,29 @@ namespace SandHook {
 
         class DefaultVisitor : public InstVisitor {
         public:
-            DefaultVisitor(bool (*visitor)(Unit<Base> *, void *));
+            DefaultVisitor(std::function<bool(BaseInst *inst, void *pc)> visitor);
 
-            bool visit(Unit<Base> *unit, void *pc) override;
+            bool Visit(BaseUnit *unit, void *pc) override;
         private:
-            bool (*visitor)(Unit<Base>*, void*);
+            std::function<bool(BaseInst *inst, void *pc)> visitor_;
         };
 
         class InstDecoder {
         public:
-            virtual void decode(void* codeStart, Addr codeLen, InstVisitor& visitor, bool onlyPcRelInst = false) = 0;
-            inline void decode(void* codeStart, Addr codeLen, bool (*visitor)(Unit<Base>*, void*), bool onlyPcRelInst = false) {
-                InstVisitor vis = DefaultVisitor(visitor);
-                decode(codeStart, codeLen, vis, onlyPcRelInst);
+            virtual void Disassemble(void *code_start, Addr code_len, InstVisitor &visitor,
+                                     bool only_pc_rel = false) = 0;
+            inline void Disassemble(void *code_start, Addr codeLen,
+                                    std::function<bool(BaseInst *inst, void *pc)> visitor, bool only_pc_rel = false) {
+                DefaultVisitor vis = DefaultVisitor(visitor);
+                Disassemble(code_start, codeLen, vis, only_pc_rel);
             };
         };
 
 
         class Disassembler {
         public:
-            static InstDecoder* get(Arch arch);
-            static InstDecoder* get();
+            static InstDecoder* Get(Arch arch);
+            static InstDecoder* Get();
         };
     }
 }
-
-#endif //SANDHOOK_NH_DECODER_H

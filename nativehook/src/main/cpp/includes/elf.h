@@ -2,10 +2,10 @@
 // Created by swift on 2019/5/10.
 //
 
-#ifndef SANDHOOK_NH_ELF_H
-#define SANDHOOK_NH_ELF_H
+#pragma once
 
 #include <linux/elf.h>
+#include <list>
 #include "base.h"
 
 #if defined(__LP64__)
@@ -32,22 +32,34 @@ typedef Elf32_Off Elf_Off;
 
 namespace SandHook {
     namespace Elf {
+
+        struct TextSegment {
+            TextSegment(void *start, void *end);
+            void* start;
+            void* end;
+        };
+
         class ElfImg {
         public:
 
             ElfImg(const char* elf);
 
-            Elf_Addr getSymbOffset(const char* name);
+            Elf_Addr GetSymOffset(const char *name);
 
-            static void* getModuleBase(const char* name);
+            static void* GetModuleBase(const char *name);
 
-            Elf_Addr getSymbAddress(const char* name);
+            Elf_Addr GetSymAddress(const char *name);
 
             ~ElfImg();
 
         private:
+            void searchMaps();
+
+        private:
             const char* elf = nullptr;
-            void* base = nullptr;
+            void* baseInRam = nullptr;
+            void* endInRam = nullptr;
+            std::list<TextSegment> textSegments = std::list<TextSegment>();
             char* buffer = nullptr;
             off_t size = 0;
             off_t bias = -4396;
@@ -70,5 +82,3 @@ namespace SandHook {
         };
     }
 }
-
-#endif //SANDHOOK_NH_ELF_H

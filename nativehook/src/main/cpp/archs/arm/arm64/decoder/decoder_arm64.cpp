@@ -10,18 +10,18 @@ using namespace SandHook::AsmA64;
 
 #define CASE(X) \
 if (IS_OPCODE_A64(*pc, X)) { \
-STRUCT_A64(X) *s = reinterpret_cast<STRUCT_A64(X) *>(pc); \
-unit = reinterpret_cast<Unit<Base> *>(new INST_A64(X)(*s)); \
+unit = reinterpret_cast<BaseUnit*>(new INST_A64(X)(pc)); \
 goto label_matched; \
 }
 
 Arm64Decoder* Arm64Decoder::instant = new Arm64Decoder();
 
-void Arm64Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, bool onlyPcRelInst) {
+void Arm64Decoder::Disassemble(void *codeStart, Addr codeLen, InstVisitor &visitor,
+                               bool onlyPcRelInst) {
     InstA64 *pc = reinterpret_cast<InstA64 *>(codeStart);
-    Addr endAddr = (Addr) codeStart + codeLen;
-    Unit<Base>* unit = nullptr;
-    while((Addr) pc < endAddr) {
+    Addr end_addr = (Addr) codeStart + codeLen;
+    BaseUnit* unit = nullptr;
+    while((Addr) pc < end_addr) {
         // pc relate insts
         CASE(B_BL)
         CASE(B_COND)
@@ -31,6 +31,9 @@ void Arm64Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, b
         CASE(ADR_ADRP)
         if (onlyPcRelInst)
             goto label_matched;
+        CASE(BR_BLR_RET)
+        CASE(EXCEPTION_GEN)
+        CASE(MSR_MRS)
         CASE(MOV_WIDE)
         CASE(MOV_REG)
         CASE(LDR_IMM)
@@ -39,21 +42,19 @@ void Arm64Decoder::decode(void *codeStart, Addr codeLen, InstVisitor &visitor, b
         CASE(LDRSW_UIMM)
         CASE(STR_UIMM)
         CASE(STR_IMM)
-        CASE(BR_BLR_RET)
         CASE(SUB_EXT_REG)
-        CASE(SVC)
-        CASE(EXCEPTION_GEN)
         CASE(STP_LDP)
         CASE(ADD_SUB_IMM)
 
         label_matched:
         if (unit == nullptr) {
-            unit = reinterpret_cast<Unit<Base> *>(new INST_A64(UNKNOW)(*reinterpret_cast<STRUCT_A64(UNKNOW) *>(pc)));
+            unit = reinterpret_cast<BaseUnit*>(new INST_A64(UNKNOW)(pc));
         }
-        if (!visitor.visit(unit, pc)) {
+        reinterpret_cast<BaseInst*>(unit)->Disassemble();
+        if (!visitor.Visit(unit, pc)) {
             break;
         }
-        pc = reinterpret_cast<InstA64 *>((Addr)pc + unit->size());
+        pc = reinterpret_cast<InstA64 *>((Addr)pc + unit->Size());
         unit = nullptr;
     }
 }
