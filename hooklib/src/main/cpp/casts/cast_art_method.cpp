@@ -47,9 +47,11 @@ namespace SandHook {
     class CastEntryPointFormInterpreter : public IMember<art::mirror::ArtMethod, void *> {
     protected:
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod *p) override {
-            if (SDK_INT >= ANDROID_L2 && SDK_INT <= ANDROID_M)
+            if (SDK_INT == ANDROID_L2) {
+                return RoundUpToPtrSize(4 * 7 + 4 * 2);
+            } else if (SDK_INT == ANDROID_M) {
                 return getParentSize() - 3 * BYTE_POINT;
-            else if (SDK_INT <= ANDROID_L) {
+            } else if (SDK_INT <= ANDROID_L) {
                 Size addr = getAddressFromJava(jniEnv, "com/swift/sandhook/SandHookMethodResolver",
                                                "entryPointFromInterpreter");
                 int offset = 0;
@@ -83,7 +85,7 @@ namespace SandHook {
                 }
                 return getParentSize() - 4 - 2 * BYTE_POINT;
             } else {
-                return getParentSize() - 4 - 2 * BYTE_POINT;
+                return CastArtMethod::entryPointFromInterpreter->getOffset() + 2 * BYTE_POINT;
             }
         }
     };
@@ -189,8 +191,6 @@ namespace SandHook {
         art::mirror::ArtMethod *m2 = reinterpret_cast<art::mirror::ArtMethod *>(artMethod2);
 
         //init Members
-        entryPointQuickCompiled = new CastEntryPointQuickCompiled();
-        entryPointQuickCompiled->init(env, m1, size);
 
         accessFlag = new CastAccessFlag();
         accessFlag->init(env, m1, size);
@@ -198,11 +198,14 @@ namespace SandHook {
         entryPointFromInterpreter = new CastEntryPointFormInterpreter();
         entryPointFromInterpreter->init(env, m1, size);
 
-        dexCacheResolvedMethods = new CastDexCacheResolvedMethods();
-        dexCacheResolvedMethods->init(env, m1, size);
+        entryPointQuickCompiled = new CastEntryPointQuickCompiled();
+        entryPointQuickCompiled->init(env, m1, size);
 
         dexMethodIndex = new CastDexMethodIndex();
         dexMethodIndex->init(env, m1, size);
+
+        dexCacheResolvedMethods = new CastDexCacheResolvedMethods();
+        dexCacheResolvedMethods->init(env, m1, size);
 
         declaringClass = new CastShadowClass();
         declaringClass->init(env, m1, size);

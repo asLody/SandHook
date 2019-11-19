@@ -69,8 +69,12 @@ public class SandHookMethodResolver {
         }
         try {
             try {
+                dexMethodIndex = (int) dexMethodIndexField.get(testArtMethod);
+            } catch (Throwable e) {
+            }
+            try {
                 fieldEntryPointFromCompiledCode = getField(artMethodClass, "entryPointFromQuickCompiledCode");
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 fieldEntryPointFromCompiledCode = getField(artMethodClass, "entryPointFromCompiledCode");
             }
             if (fieldEntryPointFromCompiledCode.getType() == int.class) {
