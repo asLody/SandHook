@@ -192,14 +192,18 @@ extern "C" {
         return addWeakGlobalRef != nullptr;
     }
 
+    void *getCurrentThread() {
+        return __get_tls()[TLS_SLOT_ART_THREAD];
+    }
+
     jobject getJavaObject(JNIEnv* env, void* thread, void* address) {
 
         if (addWeakGlobalRef == nullptr)
-            return NULL;
+            return nullptr;
 
         jobject object = addWeakGlobalRef(jvm, thread, address);
-        if (object == NULL)
-            return NULL;
+        if (object == nullptr)
+            return nullptr;
 
         jobject result = env->NewLocalRef(object);
         env->DeleteWeakGlobalRef(object);

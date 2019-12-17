@@ -294,7 +294,7 @@ extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_swift_sandhook_SandHook_getObjectNative(JNIEnv *env, jclass type, jlong thread,
                                                  jlong address) {
-    return getJavaObject(env, reinterpret_cast<void *>(thread), reinterpret_cast<void *>(address));
+    return getJavaObject(env, thread ? reinterpret_cast<void *>(thread) : getCurrentThread(), reinterpret_cast<void *>(address));
 }
 
 extern "C"
