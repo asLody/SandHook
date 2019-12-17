@@ -30,7 +30,7 @@ ext {
     userOrg = 'ganyao114'
     groupId = 'com.swift.sandhook'
     repoName = 'SandHook'
-    publishVersion = '4.1.5'
+    publishVersion = '4.1.6'
     desc = 'android art hook'
     website = 'https://github.com/ganyao114/SandHook'
     licences = ['Apache-2.0']
