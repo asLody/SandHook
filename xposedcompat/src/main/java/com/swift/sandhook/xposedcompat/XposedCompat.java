@@ -3,7 +3,7 @@ package com.swift.sandhook.xposedcompat;
 import android.app.Application;
 import android.content.Context;
 
-import com.swift.sandhook.xposedcompat.classloaders.ComposeClassLoader;
+import com.swift.sandhook.xposedcompat.classloaders.ProxyClassLoader;
 import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
 import com.swift.sandhook.xposedcompat.utils.ApplicationUtils;
 import com.swift.sandhook.xposedcompat.utils.FileUtils;
@@ -76,7 +76,7 @@ public class XposedCompat {
         if (sandHookXposedClassLoader != null) {
             return sandHookXposedClassLoader;
         } else {
-            sandHookXposedClassLoader = new ComposeClassLoader(sandBoxHostClassLoader, appOriginClassLoader);
+            sandHookXposedClassLoader = new ProxyClassLoader(sandBoxHostClassLoader, appOriginClassLoader);
             return sandHookXposedClassLoader;
         }
     }
