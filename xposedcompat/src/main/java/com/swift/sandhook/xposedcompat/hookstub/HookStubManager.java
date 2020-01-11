@@ -243,6 +243,11 @@ public class HookStubManager {
             thiz = entity.getThis(stubArgs[0]);
             args = entity.getArgs(stubArgs);
         }
+        
+        if (thiz == null) {
+            thiz = originMethod.getDeclaringClass();
+        }
+        
 
         if (XposedBridge.disableHooks) {
             if (hasStubBackup) {
