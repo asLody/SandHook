@@ -11,7 +11,7 @@ import com.swift.sandhook.wrapper.HookWrapper;
 import com.swift.sandhook.wrapper.StubMethodsFactory;
 import com.swift.sandhook.xposedcompat.utils.ApplicationUtils;
 import com.swift.sandhook.xposedcompat.utils.ClassUtils;
-import com.swift.sandhook.xposedcompat.utils.ComposeClassLoader;
+import com.swift.sandhook.xposedcompat.utils.ProxyClassLoader;
 import com.swift.sandhook.xposedcompat.utils.ProcessUtils;
 
 import java.lang.reflect.Constructor;
@@ -227,7 +227,7 @@ public class XposedCompat {
         if (sandHookXposedClassLoader != null) {
             return sandHookXposedClassLoader;
         } else {
-            sandHookXposedClassLoader = new ComposeClassLoader(sandBoxHostClassLoader, appOriginClassLoader);
+            sandHookXposedClassLoader = new ProxyClassLoader(sandBoxHostClassLoader, appOriginClassLoader);
             return sandHookXposedClassLoader;
         }
     }
