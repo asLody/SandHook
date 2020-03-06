@@ -92,6 +92,7 @@ bool doHookWithReplacement(JNIEnv* env,
     hookMethod->flushCache();
 
     originMethod->disableInterpreterForO();
+    originMethod->disableFastInterpreterForQ();
 
     SandHook::HookTrampoline* hookTrampoline = trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod);
     if (hookTrampoline != nullptr) {
