@@ -3,6 +3,7 @@ package com.swift.sandhook.xposedcompat;
 import android.app.Application;
 import android.content.Context;
 
+import com.swift.sandhook.SandHookConfig;
 import com.swift.sandhook.xposedcompat.classloaders.ProxyClassLoader;
 import com.swift.sandhook.xposedcompat.methodgen.DynamicBridge;
 import com.swift.sandhook.xposedcompat.utils.ApplicationUtils;
@@ -28,7 +29,7 @@ public class XposedCompat {
     public static boolean isFirstApplication;
 
     //try to use internal stub hooker & backup method to speed up hook
-    public static volatile boolean useInternalStub = true;
+    public static volatile boolean useInternalStub = SandHookConfig.SDK_INT < 29;
     public static volatile boolean useNewCallBackup = true;
     public static volatile boolean retryWhenCallOriginError = false;
 

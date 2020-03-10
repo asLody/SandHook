@@ -11,7 +11,7 @@ public class SandHookConfig {
     //Debug status of hook target process
     public volatile static boolean DEBUG = true;
     //Enable compile with jit
-    public volatile static boolean compiler = true;
+    public volatile static boolean compiler = SDK_INT < 29;
     public volatile static ClassLoader initClassLoader;
     public volatile static int curUser = 0;
     public volatile static boolean delayHook = true;
