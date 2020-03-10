@@ -29,7 +29,7 @@ public class XposedCompat {
     public static boolean isFirstApplication;
 
     //try to use internal stub hooker & backup method to speed up hook
-    public static volatile boolean useInternalStub = SandHookConfig.SDK_INT < 29;
+    public static volatile boolean useInternalStub = true;
     public static volatile boolean useNewCallBackup = true;
     public static volatile boolean retryWhenCallOriginError = false;
 
