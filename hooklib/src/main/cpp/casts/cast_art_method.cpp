@@ -5,6 +5,7 @@
 #include "../includes/cast_art_method.h"
 #include "../includes/utils.h"
 #include "../includes/never_call.h"
+#include "../includes/log.h"
 
 extern int SDK_INT;
 
@@ -182,13 +183,17 @@ namespace SandHook {
     void CastArtMethod::init(JNIEnv *env) {
         //init ArtMethodSize
         jclass sizeTestClass = env->FindClass("com/swift/sandhook/ArtMethodSizeTest");
-        Size artMethod1 = (Size) env->GetStaticMethodID(sizeTestClass, "method1", "()V");
-        Size artMethod2 = (Size) env->GetStaticMethodID(sizeTestClass, "method2", "()V");
+        jmethodID artMethod1 = env->GetStaticMethodID(sizeTestClass, "method1", "()V");
+        jmethodID artMethod2 = env->GetStaticMethodID(sizeTestClass, "method2", "()V");
 
-        size = artMethod2 - artMethod1;
+        env->CallStaticVoidMethod(sizeTestClass, reinterpret_cast<jmethodID>(artMethod1));
 
-        art::mirror::ArtMethod *m1 = reinterpret_cast<art::mirror::ArtMethod *>(artMethod1);
-        art::mirror::ArtMethod *m2 = reinterpret_cast<art::mirror::ArtMethod *>(artMethod2);
+        std::atomic_thread_fence(std::memory_order_acquire);
+
+        art::mirror::ArtMethod *m1 = getArtMethod(artMethod1);
+        art::mirror::ArtMethod *m2 = getArtMethod(artMethod2);
+
+        size = m2 - m1;
 
         //init Members
 
@@ -210,15 +215,15 @@ namespace SandHook {
         declaringClass = new CastShadowClass();
         declaringClass->init(env, m1, size);
 
+
         hotnessCount = new CastHotnessCount();
         hotnessCount->init(env, m1, size);
 
         jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
 
-
-        art::mirror::ArtMethod *neverCall = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
+        art::mirror::ArtMethod *neverCall = getArtMethod(env->GetMethodID(
                 neverCallTestClass, "neverCall", "()V"));
-        art::mirror::ArtMethod *neverCall2 = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
+        art::mirror::ArtMethod *neverCall2 = getArtMethod(env->GetMethodID(
                 neverCallTestClass, "neverCall2", "()V"));
 
         bool beAot = entryPointQuickCompiled->get(neverCall) != entryPointQuickCompiled->get(neverCall2);
@@ -233,9 +238,9 @@ namespace SandHook {
         }
 
 
-        art::mirror::ArtMethod *neverCallNative = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
+        art::mirror::ArtMethod *neverCallNative = getArtMethod(env->GetMethodID(
                 neverCallTestClass, "neverCallNative", "()V"));
-        art::mirror::ArtMethod *neverCallNative2 = reinterpret_cast<art::mirror::ArtMethod *>(env->GetMethodID(
+        art::mirror::ArtMethod *neverCallNative2 = getArtMethod(env->GetMethodID(
                 neverCallTestClass, "neverCallNative2", "()V"));
 
         beAot = entryPointQuickCompiled->get(neverCallNative) != entryPointQuickCompiled->get(neverCallNative2);
@@ -252,7 +257,7 @@ namespace SandHook {
         entryPointFromJNI = new CastEntryPointFromJni();
         entryPointFromJNI->init(env, neverCallNative, size);
 
-        art::mirror::ArtMethod *neverCallStatic = reinterpret_cast<art::mirror::ArtMethod *>(env->GetStaticMethodID(
+        art::mirror::ArtMethod *neverCallStatic = getArtMethod(env->GetStaticMethodID(
                 neverCallTestClass, "neverCallStatic", "()V"));
         staticResolveStub = entryPointQuickCompiled->get(neverCallStatic);
 

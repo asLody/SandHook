@@ -6,7 +6,7 @@
 #include "../includes/elf_util.h"
 #include "../includes/log.h"
 #include "../includes/utils.h"
-#include <fcntl.h>
+#include "../includes/trampoline_manager.h"
 
 extern int SDK_INT;
 
@@ -30,6 +30,23 @@ extern "C" {
 
     void (*profileSaver_ForceProcessProfiles)() = nullptr;
 
+    //for Android R
+    void *jniIdManager = nullptr;
+    ArtMethod *(*origin_DecodeArtMethodId)(void *thiz, jmethodID jmethodId) = nullptr;
+    ArtMethod *replace_DecodeArtMethodId(void *thiz, jmethodID jmethodId) {
+        jniIdManager = thiz;
+        return origin_DecodeArtMethodId(thiz, jmethodId);
+    }
+
+    bool (*origin_ShouldUseInterpreterEntrypoint)(ArtMethod *artMethod, const void* quick_code) = nullptr;
+    bool replace_ShouldUseInterpreterEntrypoint(ArtMethod *artMethod, const void* quick_code) {
+        if (SandHook::TrampolineManager::get().methodHooked(artMethod) && quick_code != nullptr) {
+            return false;
+        }
+        return origin_ShouldUseInterpreterEntrypoint(artMethod, quick_code);
+    }
+
+    // paths
     const char* art_lib_path;
     const char* jit_lib_path;
 
@@ -41,31 +58,22 @@ extern "C" {
 
     void (*backup_fixup_static_trampolines)(void *, void *) = nullptr;
 
-    bool fileExits(const char* path) {
-         int fd = open(path, O_RDONLY);
-         if (fd < 0) {
-              return false;
-         }
-         close(fd);
-         return true;
-    }
-
     void initHideApi(JNIEnv* env) {
 
         env->GetJavaVM(&jvm);
 
         if (BYTE_POINT == 8) {
-            if (SDK_INT >= ANDROID_Q && fileExits("/apex/com.android.runtime/lib64/libart.so")) {
-                art_lib_path = "/apex/com.android.runtime/lib64/libart.so";
-                jit_lib_path = "/apex/com.android.runtime/lib64/libart-compiler.so";
+            if (SDK_INT >= ANDROID_Q) {
+                art_lib_path = "/lib64/libart.so";
+                jit_lib_path = "/lib64/libart-compiler.so";
             } else {
                 art_lib_path = "/system/lib64/libart.so";
                 jit_lib_path = "/system/lib64/libart-compiler.so";
             }
         } else {
-            if (SDK_INT >= ANDROID_Q && fileExits("/apex/com.android.runtime/lib/libart.so")) {
-                art_lib_path = "/apex/com.android.runtime/lib/libart.so";
-                jit_lib_path = "/apex/com.android.runtime/lib/libart-compiler.so";
+            if (SDK_INT >= ANDROID_Q) {
+                art_lib_path = "/lib/libart.so";
+                jit_lib_path = "/lib/libart-compiler.so";
              } else {
                 art_lib_path = "/system/lib/libart.so";
                 jit_lib_path = "/system/lib/libart-compiler.so";
@@ -140,9 +148,30 @@ extern "C" {
                     "libsandhook-native.so", "SandInlineHook"));
         }
 
+        if (SDK_INT >= ANDROID_R && hook_native) {
+            const char *symbol_decode_method = sizeof(void*) == 8 ? "_ZN3art3jni12JniIdManager15DecodeGenericIdINS_9ArtMethodEEEPT_m" : "_ZN3art3jni12JniIdManager15DecodeGenericIdINS_9ArtMethodEEEPT_j";
+            void *decodeArtMethod = getSymCompat(art_lib_path, symbol_decode_method);
+            if (art_lib_path != nullptr) {
+                origin_DecodeArtMethodId = reinterpret_cast<ArtMethod *(*)(void *,
+                                                                           jmethodID)>(hook_native(
+                        decodeArtMethod,
+                        reinterpret_cast<void *>(replace_DecodeArtMethodId)));
+            }
+            void *shouldUseInterpreterEntrypoint = getSymCompat(art_lib_path,
+                                                                "_ZN3art11ClassLinker30ShouldUseInterpreterEntrypointEPNS_9ArtMethodEPKv");
+            if (shouldUseInterpreterEntrypoint != nullptr) {
+                origin_ShouldUseInterpreterEntrypoint = reinterpret_cast<bool (*)(ArtMethod *,
+                                                                                  const void *)>(hook_native(
+                        shouldUseInterpreterEntrypoint,
+                        reinterpret_cast<void *>(replace_ShouldUseInterpreterEntrypoint)));
+            }
+        }
+
     }
 
     bool canCompile() {
+        if (SDK_INT >= ANDROID_R)
+            return false;
         if (getGlobalJitCompiler() == nullptr) {
             LOGE("JIT not init!");
             return false;
@@ -197,7 +226,6 @@ extern "C" {
     }
 
     jobject getJavaObject(JNIEnv* env, void* thread, void* address) {
-
         if (addWeakGlobalRef == nullptr)
             return nullptr;
 
@@ -314,6 +342,21 @@ extern "C" {
             jvm->AttachCurrentThread(&env, nullptr);
         }
         return env;
+    }
+
+    static bool isIndexId(jmethodID mid) {
+        return (reinterpret_cast<uintptr_t>(mid) % 2) != 0;
+    }
+
+    ArtMethod* getArtMethod(jmethodID jmethodId) {
+        if (SDK_INT >= ANDROID_R && isIndexId(jmethodId)) {
+            if (origin_DecodeArtMethodId == nullptr) {
+                return reinterpret_cast<ArtMethod *>(jmethodId);
+            }
+            return origin_DecodeArtMethodId(jniIdManager, jmethodId);
+        } else {
+            return reinterpret_cast<ArtMethod *>(jmethodId);
+        }
     }
 
 }

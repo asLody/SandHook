@@ -316,4 +316,9 @@ namespace SandHook {
         return nullptr;
     }
 
+    TrampolineManager &TrampolineManager::get() {
+        static TrampolineManager trampolineManager;
+        return trampolineManager;
+    }
+
 }
