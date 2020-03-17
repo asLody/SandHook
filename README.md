@@ -23,7 +23,7 @@ QQ Group：756071167
 
 # OS
 
-4.4(ART Runtime) - 10.0
+4.4(ART Runtime) - 11.0 dev-preview-1
 
 # Project Struct
 
