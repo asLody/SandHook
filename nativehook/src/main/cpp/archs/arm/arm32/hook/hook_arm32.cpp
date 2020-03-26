@@ -213,12 +213,13 @@ bool InlineHookArm32Android::SingleBreakPoint(void *point, BreakCallback callbac
         return false;
     AutoLock lock(hook_lock);
 
+    bool is_a32 = false;
     void* origin_code;
     if (IsThumbCode((Addr) point)) {
         origin_code = GetThumbCodeAddress(point);
     } else {
-        LOGE("hook %d error!, only support thumb2 now!", point);
-        return nullptr;
+        origin_code = point;
+        is_a32 = true;
     }
 
     void* backup = nullptr;
@@ -235,10 +236,17 @@ bool InlineHookArm32Android::SingleBreakPoint(void *point, BreakCallback callbac
 
     //build backup method
     CodeRelocateA32 relocate = CodeRelocateA32(assembler_backup);
-    try {
-        backup = relocate.Relocate(point, code_container_inline->Size(), nullptr);
-    } catch (ErrorCodeException e) {
-        return nullptr;
+    if (!is_a32) {
+        try {
+            backup = relocate.Relocate(point, code_container_inline->Size(), nullptr);
+        } catch (ErrorCodeException e) {
+            return nullptr;
+        }
+    } else {
+        // a32 emit directly temp
+        assembler_backup.AllocBufferFirst(4 * 8);
+        backup = assembler_backup.GetPC();
+        assembler_backup.Emit(*reinterpret_cast<U32*>(origin_code));
     }
 #define __ assembler_backup.
     Label* origin_addr_label = new Label();
