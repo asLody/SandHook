@@ -23,7 +23,7 @@ QQ Group：756071167
 
 # OS
 
-4.4(ART Runtime) - 10.0
+4.4(ART Runtime) - 11.0 dev-preview-1
 
 # Project Struct
 
@@ -43,7 +43,9 @@ hook plugin demo for annotation api
 # how to use
 
 ```gradle
-implementation 'com.swift.sandhook:hooklib:4.0.0'
+implementation 'com.swift.sandhook:hooklib:4.2.0'
+// need for android 11
+implementation 'com.swift.sandhook:nativehook:4.2.0'
 ```
 
 ## Annotation API
@@ -120,7 +122,7 @@ SanHook.public static boolean hook(Member target, Method hook, Method backup) {}
 if hookers is in plugin(like xposed):  
 
 ```groovy
-provided 'com.swift.sandhook:hookannotation:4.0.2'
+provided 'com.swift.sandhook:hookannotation:4.2.0'
 ```
   
 in your plugin
@@ -137,12 +139,12 @@ Now you can use Xposed api:
 We have two different implements:
 ```groovy
 //stable
-implementation 'com.swift.sandhook:xposedcompat:4.0.2'
+implementation 'com.swift.sandhook:xposedcompat:4.2.0'
 
 //or
 
 //hook fast first time
-implementation 'com.swift.sandhook:xposedcompat_new:4.0.2'
+implementation 'com.swift.sandhook:xposedcompat_new:4.2.0'
 ```
 
 ```java
