@@ -1,6 +1,7 @@
 package com.swift.sandhook;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import static com.swift.sandhook.SandHook.artMethodClass;
@@ -50,6 +51,16 @@ public class SandHookMethodResolver {
             }
 
         } catch (Exception e) {
+        }
+    }
+
+    public static long getArtMethod(Member member) {
+        if (artMethodField == null)
+            return 0;
+        try {
+            return (long) artMethodField.get(member);
+        } catch (IllegalAccessException e) {
+            return 0;
         }
     }
 

@@ -53,8 +53,8 @@ void ensureDeclareClass(JNIEnv *env, jclass type, jobject originMethod,
                          jobject backupMethod) {
     if (originMethod == NULL || backupMethod == NULL)
         return;
-    art::mirror::ArtMethod* origin = getArtMethod(env->FromReflectedMethod(originMethod));
-    art::mirror::ArtMethod* backup = getArtMethod(env->FromReflectedMethod(backupMethod));
+    art::mirror::ArtMethod* origin = getArtMethod(env, originMethod);
+    art::mirror::ArtMethod* backup = getArtMethod(env, backupMethod);
     if (origin->getDeclaringClass() != backup->getDeclaringClass()) {
         LOGW("declaring class has been moved!");
         backup->setDeclaringClass(origin->getDeclaringClass());
@@ -170,9 +170,10 @@ JNIEXPORT jint JNICALL
 Java_com_swift_sandhook_SandHook_hookMethod(JNIEnv *env, jclass type, jobject originMethod,
                                             jobject hookMethod, jobject backupMethod, jint hookMode) {
 
-    art::mirror::ArtMethod* origin = getArtMethod(env->FromReflectedMethod(originMethod));
-    art::mirror::ArtMethod* hook = getArtMethod(env->FromReflectedMethod(hookMethod));
-    art::mirror::ArtMethod* backup = backupMethod == NULL ? nullptr : getArtMethod(env->FromReflectedMethod(backupMethod));
+    art::mirror::ArtMethod* origin = getArtMethod(env, originMethod);
+    art::mirror::ArtMethod* hook = getArtMethod(env, hookMethod);
+    art::mirror::ArtMethod* backup = backupMethod == NULL ? nullptr : getArtMethod(env,
+                                                                                   backupMethod);
 
     bool isInlineHook = false;
 
@@ -228,8 +229,8 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_SandHook_ensureMethodCached(JNIEnv *env, jclass type, jobject hook,
                                                     jobject backup) {
-    art::mirror::ArtMethod* hookeMethod = getArtMethod(env->FromReflectedMethod(hook));
-    art::mirror::ArtMethod* backupMethod = backup == NULL ? nullptr : getArtMethod(env->FromReflectedMethod(backup));
+    art::mirror::ArtMethod* hookeMethod = getArtMethod(env, hook);
+    art::mirror::ArtMethod* backupMethod = backup == NULL ? nullptr : getArtMethod(env, backup);
     ensureMethodCached(hookeMethod, backupMethod);
 }
 
@@ -239,7 +240,7 @@ Java_com_swift_sandhook_SandHook_compileMethod(JNIEnv *env, jclass type, jobject
 
     if (member == NULL)
         return JNI_FALSE;
-    art::mirror::ArtMethod* method = getArtMethod(env->FromReflectedMethod(member));
+    art::mirror::ArtMethod* method = getArtMethod(env, member);
 
     if (method == nullptr)
         return JNI_FALSE;
@@ -267,7 +268,7 @@ Java_com_swift_sandhook_SandHook_deCompileMethod(JNIEnv *env, jclass type, jobje
 
     if (member == NULL)
         return JNI_FALSE;
-    art::mirror::ArtMethod* method = getArtMethod(env->FromReflectedMethod(member));
+    art::mirror::ArtMethod* method = getArtMethod(env, member);
 
     if (method == nullptr)
         return JNI_FALSE;
@@ -347,8 +348,8 @@ JNIEXPORT jboolean JNICALL
 Java_com_swift_sandhook_SandHook_setNativeEntry(JNIEnv *env, jclass type, jobject origin, jobject hook, jlong jniTrampoline) {
     if (origin == nullptr || hook == NULL)
         return JNI_FALSE;
-    art::mirror::ArtMethod* hookMethod = getArtMethod(env->FromReflectedMethod(hook));
-    art::mirror::ArtMethod* originMethod = getArtMethod(env->FromReflectedMethod(origin));
+    art::mirror::ArtMethod* hookMethod = getArtMethod(env, hook);
+    art::mirror::ArtMethod* originMethod = getArtMethod(env, origin);
     originMethod->backup(hookMethod);
     hookMethod->setNative();
     hookMethod->setQuickCodeEntry(SandHook::CastArtMethod::genericJniStub);

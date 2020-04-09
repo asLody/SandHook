@@ -19,6 +19,12 @@ extern "C" {
 
 Size getAddressFromJava(JNIEnv *env, const char *className, const char *fieldName);
 
+Size callStaticMethodAddr(JNIEnv *env, const char *className, const char *method, const char *sig, ...);
+
+jobject callStaticMethodObject(JNIEnv *env, const char *className, const char *method, const char *sig, ...);
+
+jobject getMethodObject(JNIEnv *env, const char *clazz, const char *method);
+
 Size getAddressFromJavaByCallMethod(JNIEnv *env, const char *className, const char *methodName);
 
 jint getIntFromJava(JNIEnv *env, const char *className, const char *fieldName);

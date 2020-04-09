@@ -2,6 +2,7 @@
 // Created by swift on 2019/2/3.
 //
 
+#include <cstring>
 #include "../includes/utils.h"
 
 extern "C" {
@@ -17,7 +18,56 @@ Size getAddressFromJava(JNIEnv *env, const char *className, const char *fieldNam
         printf("find field error !");
         return 0;
     }
-    return env->GetStaticLongField(clazz, id);
+    return static_cast<Size>(env->GetStaticLongField(clazz, id));
+}
+
+Size callStaticMethodAddr(JNIEnv *env, const char *className, const char *method, const char *sig, ...) {
+    jclass clazz = env->FindClass(className);
+    if (clazz == NULL) {
+        printf("find class error !");
+        return 0;
+    }
+    jmethodID id = env->GetStaticMethodID(clazz, method, sig);
+    if (id == NULL) {
+        printf("find field error !");
+        return 0;
+    }
+    va_list vas;
+    va_start(vas, sig);
+    auto res = static_cast<Size>(env->CallStaticLongMethodV(clazz, id, vas));
+    env->ExceptionClear();
+    va_end(vas);
+    return res;
+}
+
+jobject callStaticMethodObject(JNIEnv *env, const char *className, const char *method, const char *sig, ...) {
+    jclass clazz = env->FindClass(className);
+    if (clazz == NULL) {
+        printf("find class error !");
+        return 0;
+    }
+    jmethodID id = env->GetStaticMethodID(clazz, method, sig);
+    if (id == NULL) {
+        printf("find field error !");
+        return 0;
+    }
+    va_list vas;
+    va_start(vas, sig);
+    auto res = env->CallStaticObjectMethodV(clazz, id, vas);
+    env->ExceptionClear();
+    va_end(vas);
+    return res;
+}
+
+jobject getMethodObject(JNIEnv *env, const char *clazz, const char *method) {
+    auto methodStr = env->NewStringUTF(method);
+    auto clazzStr = env->NewStringUTF(clazz);
+    auto res = callStaticMethodObject(env, "com/swift/sandhook/SandHook", "getJavaMethod",
+                         "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;", clazzStr, methodStr);
+    env->ExceptionClear();
+    env->DeleteLocalRef(methodStr);
+    env->DeleteLocalRef(clazzStr);
+    return res;
 }
 
 Size getAddressFromJavaByCallMethod(JNIEnv *env, const char *className, const char *methodName) {
@@ -31,7 +81,9 @@ Size getAddressFromJavaByCallMethod(JNIEnv *env, const char *className, const ch
         printf("find field error !");
         return 0;
     }
-    return env->CallStaticLongMethodA(clazz, id, nullptr);
+    auto res = env->CallStaticLongMethodA(clazz, id, nullptr);
+    env->ExceptionClear();
+    return static_cast<Size>(res);
 }
 
 jint getIntFromJava(JNIEnv *env, const char *className, const char *fieldName) {

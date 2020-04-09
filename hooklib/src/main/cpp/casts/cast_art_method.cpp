@@ -183,15 +183,15 @@ namespace SandHook {
     void CastArtMethod::init(JNIEnv *env) {
         //init ArtMethodSize
         jclass sizeTestClass = env->FindClass("com/swift/sandhook/ArtMethodSizeTest");
-        jmethodID artMethod1 = env->GetStaticMethodID(sizeTestClass, "method1", "()V");
-        jmethodID artMethod2 = env->GetStaticMethodID(sizeTestClass, "method2", "()V");
+        jobject artMethod1 = getMethodObject(env, "com.swift.sandhook.ArtMethodSizeTest", "method1");
+        jobject artMethod2 = getMethodObject(env, "com.swift.sandhook.ArtMethodSizeTest", "method2");
 
-        env->CallStaticVoidMethod(sizeTestClass, reinterpret_cast<jmethodID>(artMethod1));
+        env->CallStaticVoidMethod(sizeTestClass, env->FromReflectedMethod(artMethod1));
 
         std::atomic_thread_fence(std::memory_order_acquire);
 
-        art::mirror::ArtMethod *m1 = getArtMethod(artMethod1);
-        art::mirror::ArtMethod *m2 = getArtMethod(artMethod2);
+        art::mirror::ArtMethod *m1 = getArtMethod(env, artMethod1);
+        art::mirror::ArtMethod *m2 = getArtMethod(env, artMethod2);
 
         size = m2 - m1;
 
@@ -219,12 +219,14 @@ namespace SandHook {
         hotnessCount = new CastHotnessCount();
         hotnessCount->init(env, m1, size);
 
-        jclass neverCallTestClass = env->FindClass("com/swift/sandhook/ClassNeverCall");
+        auto neverCallTestClass = "com.swift.sandhook.ClassNeverCall";
 
-        art::mirror::ArtMethod *neverCall = getArtMethod(env->GetMethodID(
-                neverCallTestClass, "neverCall", "()V"));
-        art::mirror::ArtMethod *neverCall2 = getArtMethod(env->GetMethodID(
-                neverCallTestClass, "neverCall2", "()V"));
+        art::mirror::ArtMethod *neverCall = getArtMethod(env, getMethodObject(env,
+                                                                              neverCallTestClass,
+                                                                              "neverCall"));
+        art::mirror::ArtMethod *neverCall2 = getArtMethod(env, getMethodObject(env,
+                                                                               neverCallTestClass,
+                                                                               "neverCall2"));
 
         bool beAot = entryPointQuickCompiled->get(neverCall) != entryPointQuickCompiled->get(neverCall2);
         if (beAot) {
@@ -238,10 +240,12 @@ namespace SandHook {
         }
 
 
-        art::mirror::ArtMethod *neverCallNative = getArtMethod(env->GetMethodID(
-                neverCallTestClass, "neverCallNative", "()V"));
-        art::mirror::ArtMethod *neverCallNative2 = getArtMethod(env->GetMethodID(
-                neverCallTestClass, "neverCallNative2", "()V"));
+        art::mirror::ArtMethod *neverCallNative = getArtMethod(env, getMethodObject(env,
+                                                                                    neverCallTestClass,
+                                                                                    "neverCallNative"));
+        art::mirror::ArtMethod *neverCallNative2 = getArtMethod(env, getMethodObject(env,
+                                                                                     neverCallTestClass,
+                                                                                     "neverCallNative2"));
 
         beAot = entryPointQuickCompiled->get(neverCallNative) != entryPointQuickCompiled->get(neverCallNative2);
         if (beAot) {
@@ -257,8 +261,9 @@ namespace SandHook {
         entryPointFromJNI = new CastEntryPointFromJni();
         entryPointFromJNI->init(env, neverCallNative, size);
 
-        art::mirror::ArtMethod *neverCallStatic = getArtMethod(env->GetStaticMethodID(
-                neverCallTestClass, "neverCallStatic", "()V"));
+        art::mirror::ArtMethod *neverCallStatic = getArtMethod(env, getMethodObject(env,
+                                                                                    neverCallTestClass,
+                                                                                    "neverCallStatic"));
         staticResolveStub = entryPointQuickCompiled->get(neverCallStatic);
 
     }

@@ -332,6 +332,26 @@ public class SandHook {
         }
     }
 
+    public static Object getJavaMethod(String className, String methodName) {
+        if (className == null)
+            return null;
+        Class clazz = null;
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+        try {
+            return clazz.getDeclaredMethod(methodName);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    public static long getArtMethod(Member member) {
+        return SandHookMethodResolver.getArtMethod(member);
+    }
+
     public static boolean passApiCheck() {
         return ReflectionUtils.passApiCheck();
     }

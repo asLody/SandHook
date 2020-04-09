@@ -348,14 +348,18 @@ extern "C" {
         return (reinterpret_cast<uintptr_t>(mid) % 2) != 0;
     }
 
-    ArtMethod* getArtMethod(jmethodID jmethodId) {
-        if (SDK_INT >= ANDROID_R && isIndexId(jmethodId)) {
-            if (origin_DecodeArtMethodId == nullptr) {
-                return reinterpret_cast<ArtMethod *>(jmethodId);
+    ArtMethod* getArtMethod(JNIEnv *env, jobject method) {
+        jmethodID methodId = env->FromReflectedMethod(method);
+        if (SDK_INT >= ANDROID_R && isIndexId(methodId)) {
+            if (origin_DecodeArtMethodId == nullptr || jniIdManager == nullptr) {
+                auto res = callStaticMethodAddr(env, "com/swift/sandhook/SandHook", "getArtMethod",
+                                                "(Ljava/lang/reflect/Member;)J", method);
+                return reinterpret_cast<ArtMethod *>(res);
+            } else {
+                return origin_DecodeArtMethodId(jniIdManager, methodId);
             }
-            return origin_DecodeArtMethodId(jniIdManager, jmethodId);
         } else {
-            return reinterpret_cast<ArtMethod *>(jmethodId);
+            return reinterpret_cast<ArtMethod *>(methodId);
         }
     }
 

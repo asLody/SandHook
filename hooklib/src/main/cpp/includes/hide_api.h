@@ -53,8 +53,7 @@ extern "C" {
 
     JNIEnv *attachAndGetEvn();
 
-    ArtMethod* getArtMethod(jmethodID jmethodId);
-
+    ArtMethod* getArtMethod(JNIEnv *env, jobject method);
 }
 
 #endif //SANDHOOK_HIDE_API_H
