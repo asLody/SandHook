@@ -185,7 +185,7 @@ bool ArtMethod::deCompile() {
 }
 
 void ArtMethod::flushCache() {
-    flushCacheExt(reinterpret_cast<Size>(this), size());
+//    flushCacheExt(reinterpret_cast<Size>(this), size());
 }
 
 void ArtMethod::backup(ArtMethod *backup) {
