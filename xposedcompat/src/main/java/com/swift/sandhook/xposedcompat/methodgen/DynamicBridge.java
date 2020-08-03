@@ -72,8 +72,22 @@ public final class DynamicBridge {
                 } else {
                     hookMaker = defaultHookMaker;
                 }
+                
+                ProxyClassLoader loader = new ProxyClassLoader(hookMethod.getDeclaringClass().getClassLoader());
+                loader.setChild(DynamicBridge.class.getClassLoader());
+
                 hookMaker.start(hookMethod, additionalHookInfo,
-                        new ProxyClassLoader(DynamicBridge.class.getClassLoader(), hookMethod.getDeclaringClass().getClassLoader()), dexDir == null ? null : dexDir.getAbsolutePath());
+                        // -----------
+                        // 如果优先搜索当前类的类加载器，就会有相应方法类加载器复用
+                        // 并且有的手机魔改了libcore，例如小米MIUI12的部分机型
+                        // 造成提示XposedBridge.AdditionalHookInfo类加载器不对的问题。
+                        // 用最简单的方法解决问题，你当然可以直接动态代理AdditionalHookInfo里面的callback
+                        // 也可以合并Elements，你喜欢就行。
+                        // 但是我们解决问题，优先采用简单粗暴的方法。
+                        // QQ 647564826
+                        // hookMethod classloader must be parent
+                        loader,
+                        dexDir == null ? null : dexDir.getAbsolutePath());
                 hookedInfo.put(hookMethod, hookMaker.getCallBackupMethod());
             }
             DexLog.d("hook method <" + hookMethod.toString() + "> cost " + (System.currentTimeMillis() - timeStart) + " ms, by " + (stub != null ? "internal stub" : "dex maker"));
