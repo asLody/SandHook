@@ -2,9 +2,9 @@ package com.swift.sandhook.utils;
 
 import com.swift.sandhook.SandHookConfig;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 public class ClassStatusUtils {
@@ -43,11 +43,15 @@ public class ClassStatusUtils {
      * 5.0-8.0: kInitialized = 10 int
      * 8.1:     kInitialized = 11 int
      * 9.0:     kInitialized = 14 uint8_t
+     * 11.0+:   kInitialized = 14 uint8_t
+     *          kVisiblyInitialized = 15 uint8_t
      */
     public static boolean isInitialized(Class clazz) {
         if (fieldStatusOfClass == null)
             return true;
-        if (SandHookConfig.SDK_INT >= 28) {
+        if (SandHookConfig.SDK_INT >= 30) {
+            return getClassStatus(clazz, true) >= 14;
+        } else if (SandHookConfig.SDK_INT >= 28) {
             return getClassStatus(clazz, true) == 14;
         } else if (SandHookConfig.SDK_INT == 27) {
             return getClassStatus(clazz, false) == 11;
@@ -57,7 +61,7 @@ public class ClassStatusUtils {
     }
 
     public static boolean isStaticAndNoInited(Member hookMethod) {
-        if (hookMethod == null || hookMethod instanceof Constructor) {
+        if (!(hookMethod instanceof Method)) {
             return false;
         }
         Class declaringClass = hookMethod.getDeclaringClass();
