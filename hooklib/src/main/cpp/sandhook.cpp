@@ -410,7 +410,12 @@ JNIEXPORT bool nativeHookNoBackup(void* origin, void* hook) {
     return trampolineManager.installNativeHookTrampolineNoBackup(origin, hook) != nullptr;
 
 }
-
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_MakeInitializedClassVisibilyInitialized(JNIEnv *env, jclass clazz,
+                                                                         jlong self) {
+    MakeInitializedClassVisibilyInitialized(reinterpret_cast<void*>(self));
+}
 extern "C"
 JNIEXPORT void* findSym(const char *elf, const char *sym_name) {
     SandHook::ElfImg elfImg(elf);
@@ -497,6 +502,11 @@ static JNINativeMethod jniSandHook[] = {
                 "initForPendingHook",
                 "()Z",
                 (void *) Java_com_swift_sandhook_SandHook_initForPendingHook
+        },
+        {
+            "MakeInitializedClassVisibilyInitialized",
+                "(J)V",
+                (void*) Java_com_swift_sandhook_SandHook_MakeInitializedClassVisibilyInitialized
         }
 };
 

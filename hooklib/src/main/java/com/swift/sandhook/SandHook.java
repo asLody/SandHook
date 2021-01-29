@@ -97,6 +97,7 @@ public class SandHook {
             return;
         } else if (entity.initClass) {
             resolveStaticMethod(target);
+            MakeInitializedClassVisibilyInitialized(getThreadId());
         }
 
         resolveStaticMethod(backup);
@@ -402,6 +403,8 @@ public class SandHook {
     public static native boolean setNativeEntry(Member origin, Member hook, long nativeEntry);
 
     public static native boolean initForPendingHook();
+
+    public static native void MakeInitializedClassVisibilyInitialized(long self);
 
     @FunctionalInterface
     public interface HookModeCallBack {

@@ -54,6 +54,8 @@ extern "C" {
     JNIEnv *attachAndGetEvn();
 
     ArtMethod* getArtMethod(JNIEnv *env, jobject method);
+
+    void MakeInitializedClassVisibilyInitialized(void* self);
 }
 
 #endif //SANDHOOK_HIDE_API_H
