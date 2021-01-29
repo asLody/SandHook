@@ -57,7 +57,9 @@ extern "C" {
 
     void (*backup_fixup_static_trampolines)(void *, void *) = nullptr;
 
-    void *(*backup_mark_class_initialized)(void *, void * , uint32_t *) = nullptr;
+    void *(*backup_mark_class_initialized)(void *, void *, uint32_t *) = nullptr;
+
+    void (*backup_update_methods_code)(void *, ArtMethod *, const void *) = nullptr;
 
     void initHideApi(JNIEnv* env) {
 
@@ -325,14 +327,31 @@ extern "C" {
         return result;
     }
 
+    void replaceUpdateMethodsCode(void *thiz, ArtMethod * artMethod, const void *quick_code) {
+        if (SandHook::TrampolineManager::get().methodHooked(artMethod)) {
+            return; //skip
+        }
+        backup_update_methods_code(thiz, artMethod, quick_code);
+    }
+
     bool hookClassInit(void(*callback)(void*)) {
-        if(SDK_INT >= ANDROID_R) {
+        if (SDK_INT >= ANDROID_R) {
             void *symMarkClassInitialized = getSymCompat(art_lib_path,
                                                            "_ZN3art11ClassLinker20MarkClassInitializedEPNS_6ThreadENS_6HandleINS_6mirror5ClassEEE");
             if (symMarkClassInitialized == nullptr || hook_native == nullptr)
                 return false;
+
+            void *symUpdateMethodsCode = getSymCompat(art_lib_path,
+                                                         "_ZN3art15instrumentation15Instrumentation21UpdateMethodsCodeImplEPNS_9ArtMethodEPKv");
+            if (symUpdateMethodsCode == nullptr || hook_native == nullptr)
+                return false;
+
             backup_mark_class_initialized = reinterpret_cast<void *(*)(void *, void *, uint32_t*)>(hook_native(
                     symMarkClassInitialized, (void *) replaceMarkClassInitialized));
+
+            backup_update_methods_code = reinterpret_cast<void (*)(void *, ArtMethod *, const void*)>(hook_native(
+                    symUpdateMethodsCode, (void *) replaceUpdateMethodsCode));
+
             if (backup_mark_class_initialized) {
                 class_init_callback = callback;
                 return true;
