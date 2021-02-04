@@ -106,7 +106,7 @@ bool InlineHookArm32Android::BreakPoint(void *origin, void (*callback)(REG *)) {
     try {
         backup = relocate.Relocate(origin, change_mode ? (4 * 2 + 2) : (4 * 2), nullptr);
     } catch (ErrorCodeException e) {
-        return nullptr;
+        return false;
     }
 #define __ assembler_backup.
     Label* origin_addr_label = new Label();
@@ -240,7 +240,7 @@ bool InlineHookArm32Android::SingleBreakPoint(void *point, BreakCallback callbac
         try {
             backup = relocate.Relocate(point, code_container_inline->Size(), nullptr);
         } catch (ErrorCodeException e) {
-            return nullptr;
+            return false;
         }
     } else {
         // a32 emit directly temp

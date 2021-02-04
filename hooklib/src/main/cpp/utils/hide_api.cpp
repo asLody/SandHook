@@ -7,6 +7,7 @@
 #include "../includes/log.h"
 #include "../includes/utils.h"
 #include "../includes/trampoline_manager.h"
+#include "../includes/art_runtime.h"
 
 extern int SDK_INT;
 
@@ -56,6 +57,14 @@ extern "C" {
     void (*class_init_callback)(void*) = nullptr;
 
     void (*backup_fixup_static_trampolines)(void *, void *) = nullptr;
+
+    void *(*backup_mark_class_initialized)(void *, void *, uint32_t *) = nullptr;
+
+    void (*backup_update_methods_code)(void *, ArtMethod *, const void *) = nullptr;
+
+    void* (*make_initialized_classes_visibly_initialized_)(void*, void*, bool) = nullptr;
+
+    void* runtime_instance_ = nullptr;
 
     void initHideApi(JNIEnv* env) {
 
@@ -172,6 +181,7 @@ extern "C" {
             }
         }
 
+        runtime_instance_ = *reinterpret_cast<void**>(getSymCompat(art_lib_path, "_ZN3art7Runtime9instance_E"));
     }
 
     bool canCompile() {
@@ -315,23 +325,81 @@ extern "C" {
         }
     }
 
-    bool hookClassInit(void(*callback)(void*)) {
-        void* symFixupStaticTrampolines = getSymCompat(art_lib_path, "_ZN3art11ClassLinker22FixupStaticTrampolinesENS_6ObjPtrINS_6mirror5ClassEEE");
-
-        if (symFixupStaticTrampolines == nullptr) {
-            //huawei lon-al00 android 7.0 api level 24
-            symFixupStaticTrampolines = getSymCompat(art_lib_path,
-                                                     "_ZN3art11ClassLinker22FixupStaticTrampolinesEPNS_6mirror5ClassE");
+    void *replaceMarkClassInitialized(void * thiz, void * self, uint32_t * clazz_ptr) {
+        auto result = backup_mark_class_initialized(thiz, self, clazz_ptr);
+        if (class_init_callback) {
+            class_init_callback(reinterpret_cast<void*>(*clazz_ptr));
         }
-        if (symFixupStaticTrampolines == nullptr || hook_native == nullptr)
-            return false;
-        backup_fixup_static_trampolines = reinterpret_cast<void (*)(void *, void *)>(hook_native(
-                symFixupStaticTrampolines, (void *) replaceFixupStaticTrampolines));
-        if (backup_fixup_static_trampolines) {
-            class_init_callback = callback;
-            return true;
+        return result;
+    }
+
+    void replaceUpdateMethodsCode(void *thiz, ArtMethod * artMethod, const void *quick_code) {
+        if (SandHook::TrampolineManager::get().methodHooked(artMethod)) {
+            return; //skip
+        }
+        backup_update_methods_code(thiz, artMethod, quick_code);
+    }
+
+    void MakeInitializedClassVisibilyInitialized(void* self){
+        if(make_initialized_classes_visibly_initialized_) {
+#ifdef __LP64__
+            constexpr size_t OFFSET_classlinker = 472;
+#else
+            constexpr size_t OFFSET_classlinker = 276;
+#endif
+            void *thiz = *reinterpret_cast<void **>(
+                    reinterpret_cast<size_t>(runtime_instance_) + OFFSET_classlinker);
+            make_initialized_classes_visibly_initialized_(thiz, self, true);
+        }
+    }
+
+    bool hookClassInit(void(*callback)(void*)) {
+        if (SDK_INT >= ANDROID_R) {
+            void *symMarkClassInitialized = getSymCompat(art_lib_path,
+                                                           "_ZN3art11ClassLinker20MarkClassInitializedEPNS_6ThreadENS_6HandleINS_6mirror5ClassEEE");
+            if (symMarkClassInitialized == nullptr || hook_native == nullptr)
+                return false;
+
+            void *symUpdateMethodsCode = getSymCompat(art_lib_path,
+                                                         "_ZN3art15instrumentation15Instrumentation21UpdateMethodsCodeImplEPNS_9ArtMethodEPKv");
+            if (symUpdateMethodsCode == nullptr || hook_native == nullptr)
+                return false;
+
+            backup_mark_class_initialized = reinterpret_cast<void *(*)(void *, void *, uint32_t*)>(hook_native(
+                    symMarkClassInitialized, (void *) replaceMarkClassInitialized));
+
+            backup_update_methods_code = reinterpret_cast<void (*)(void *, ArtMethod *, const void*)>(hook_native(
+                    symUpdateMethodsCode, (void *) replaceUpdateMethodsCode));
+
+            make_initialized_classes_visibly_initialized_ = reinterpret_cast<void* (*)(void*, void*, bool)>(
+                    getSymCompat(art_lib_path, "_ZN3art11ClassLinker40MakeInitializedClassesVisiblyInitializedEPNS_6ThreadEb"));
+
+            if (backup_mark_class_initialized && backup_update_methods_code) {
+                class_init_callback = callback;
+                return true;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            void *symFixupStaticTrampolines = getSymCompat(art_lib_path,
+                                                           "_ZN3art11ClassLinker22FixupStaticTrampolinesENS_6ObjPtrINS_6mirror5ClassEEE");
+
+            if (symFixupStaticTrampolines == nullptr) {
+                //huawei lon-al00 android 7.0 api level 24
+                symFixupStaticTrampolines = getSymCompat(art_lib_path,
+                                                         "_ZN3art11ClassLinker22FixupStaticTrampolinesEPNS_6mirror5ClassE");
+            }
+            if (symFixupStaticTrampolines == nullptr || hook_native == nullptr)
+                return false;
+            backup_fixup_static_trampolines = reinterpret_cast<void (*)(void *,
+                                                                        void *)>(hook_native(
+                    symFixupStaticTrampolines, (void *) replaceFixupStaticTrampolines));
+            if (backup_fixup_static_trampolines) {
+                class_init_callback = callback;
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 
