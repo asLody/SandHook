@@ -1,6 +1,7 @@
 package com.swift.sandhook;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import static com.swift.sandhook.SandHook.artMethodClass;
@@ -53,6 +54,16 @@ public class SandHookMethodResolver {
         }
     }
 
+    public static long getArtMethod(Member member) {
+        if (artMethodField == null)
+            return 0;
+        try {
+            return (long) artMethodField.get(member);
+        } catch (IllegalAccessException e) {
+            return 0;
+        }
+    }
+
     // may 5.0
     private static void checkSupportForArtMethod() throws Exception {
         try {
@@ -69,8 +80,12 @@ public class SandHookMethodResolver {
         }
         try {
             try {
+                dexMethodIndex = (int) dexMethodIndexField.get(testArtMethod);
+            } catch (Throwable e) {
+            }
+            try {
                 fieldEntryPointFromCompiledCode = getField(artMethodClass, "entryPointFromQuickCompiledCode");
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 fieldEntryPointFromCompiledCode = getField(artMethodClass, "entryPointFromCompiledCode");
             }
             if (fieldEntryPointFromCompiledCode.getType() == int.class) {

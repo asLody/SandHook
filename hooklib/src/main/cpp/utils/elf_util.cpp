@@ -6,6 +6,7 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <assert.h>
 #include "../includes/elf_util.h"
 #include "../includes/log.h"
 

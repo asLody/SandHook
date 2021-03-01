@@ -13,6 +13,10 @@ extern bool DEBUG;
 using namespace art::mirror;
 using namespace SandHook;
 
+// Non-intrinsics: Caches whether we can use fast-path in the interpreter invokes.
+// Intrinsics: These bits are part of the intrinsic ordinal.
+static constexpr uint32_t kAccFastInterpreterToInterpreterInvoke = 0x40000000;  // method.
+
 void ArtMethod::tryDisableInline() {
     if (SDK_INT < ANDROID_O)
         return;
@@ -22,9 +26,17 @@ void ArtMethod::tryDisableInline() {
 }
 
 void ArtMethod::disableInterpreterForO() {
-    if (SDK_INT >= ANDROID_O && DEBUG) {
+    if (SDK_INT >= ANDROID_O && SDK_INT < ANDROID_R && DEBUG) {
         setNative();
     }
+}
+
+void ArtMethod::disableFastInterpreterForQ() {
+    if (SDK_INT < ANDROID_Q)
+        return;
+    uint32_t accessFlag = getAccessFlags();
+    accessFlag &= ~kAccFastInterpreterToInterpreterInvoke;
+    setAccessFlags(accessFlag);
 }
 
 void ArtMethod::disableCompilable() {
@@ -173,7 +185,7 @@ bool ArtMethod::deCompile() {
 }
 
 void ArtMethod::flushCache() {
-    flushCacheExt(reinterpret_cast<Size>(this), size());
+//    flushCacheExt(reinterpret_cast<Size>(this), size());
 }
 
 void ArtMethod::backup(ArtMethod *backup) {

@@ -1,5 +1,7 @@
 package com.swift.sandhook.blacklist;
 
+import com.swift.sandhook.SandHookConfig;
+
 import java.lang.reflect.Member;
 import java.util.HashSet;
 import java.util.Set;
@@ -36,6 +38,9 @@ public class HookBlackList {
     }
 
     public final static boolean canNotHookByStub(Member origin) {
+        if (SandHookConfig.SDK_INT >= 29 && Thread.class.equals(origin.getDeclaringClass())) {
+            return true;
+        }
         String name = origin.getDeclaringClass().getName() + "." + origin.getName();
         return methodUseInHookStub.contains(name);
     }

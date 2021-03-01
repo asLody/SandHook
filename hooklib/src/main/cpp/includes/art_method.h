@@ -51,6 +51,7 @@ public:
     void disableCompilable();
     void tryDisableInline();
     void disableInterpreterForO();
+    void disableFastInterpreterForQ();
     void setPrivate();
     void setStatic();
     void setNative();

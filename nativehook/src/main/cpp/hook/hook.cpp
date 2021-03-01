@@ -54,8 +54,12 @@ bool InlineHook::InitForSingleInstHook() {
             if (sig != SIGILL) {
                 return InlineHook::instance->sigaction_backup(sig, new_sa, old_sa);
             } else {
-                *old_sa = InlineHook::instance->old_sig_act;
-                InlineHook::instance->old_sig_act = *new_sa;
+                if (old_sa) {
+                    *old_sa = InlineHook::instance->old_sig_act;
+                }
+                if (new_sa) {
+                    InlineHook::instance->old_sig_act = *new_sa;
+                }
                 return 0;
             }
         };

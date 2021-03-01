@@ -97,6 +97,7 @@ public class SandHook {
             return;
         } else if (entity.initClass) {
             resolveStaticMethod(target);
+            MakeInitializedClassVisibilyInitialized(getThreadId());
         }
 
         resolveStaticMethod(backup);
@@ -229,9 +230,10 @@ public class SandHook {
     }
 
     public static Object getObject(long address) {
-        long threadSelf = getThreadId();
-        if (address == 0 || threadSelf == 0)
+        if (address == 0) {
             return null;
+        }
+        long threadSelf = getThreadId();
         return getObjectNative(threadSelf, address);
     }
 
@@ -331,6 +333,26 @@ public class SandHook {
         }
     }
 
+    public static Object getJavaMethod(String className, String methodName) {
+        if (className == null)
+            return null;
+        Class clazz = null;
+        try {
+            clazz = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            return null;
+        }
+        try {
+            return clazz.getDeclaredMethod(methodName);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    public static long getArtMethod(Member member) {
+        return SandHookMethodResolver.getArtMethod(member);
+    }
+
     public static boolean passApiCheck() {
         return ReflectionUtils.passApiCheck();
     }
@@ -381,6 +403,8 @@ public class SandHook {
     public static native boolean setNativeEntry(Member origin, Member hook, long nativeEntry);
 
     public static native boolean initForPendingHook();
+
+    public static native void MakeInitializedClassVisibilyInitialized(long self);
 
     @FunctionalInterface
     public interface HookModeCallBack {

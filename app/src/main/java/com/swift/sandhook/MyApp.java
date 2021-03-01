@@ -18,12 +18,11 @@ import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.xposedcompat.XposedCompat;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 
 public class MyApp extends Application {
 
-    //if you want test Android Q, please Set true, because SDK_INT of Android Q is still 28
-    public final static boolean testAndroidQ = false;
     //for test pending hook case
     public volatile static boolean initedTest = false;
 
@@ -31,11 +30,11 @@ public class MyApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-
         SandHookConfig.DEBUG = BuildConfig.DEBUG;
 
-        if (testAndroidQ) {
-            SandHookConfig.SDK_INT = 29;
+        if (Build.VERSION.SDK_INT == 29 && getPreviewSDKInt() > 0) {
+            // Android R preview
+            SandHookConfig.SDK_INT = 30;
         }
 
         SandHook.disableVMInline();
@@ -60,7 +59,6 @@ public class MyApp extends Application {
 
         //for xposed compat(no need xposed comapt new)
         XposedCompat.cacheDir = getCacheDir();
-
 
         //for load xp module(sandvxp)
         XposedCompat.context = this;
@@ -109,5 +107,28 @@ public class MyApp extends Application {
                 super.afterHookedMethod(param);
             }
         });
+
+        XposedBridge.hookAllConstructors(Thread.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                super.beforeHookedMethod(param);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+            }
+        });
+    }
+
+    public static int getPreviewSDKInt() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            try {
+                return Build.VERSION.PREVIEW_SDK_INT;
+            } catch (Throwable e) {
+                // ignore
+            }
+        }
+        return 0;
     }
 }

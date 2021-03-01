@@ -31,7 +31,9 @@
 #include <elf.h>
 #include <android/log.h>
 #include <dlfcn.h>
+#include <string>
 #include "../includes/arch.h"
+#include "../includes/log.h"
 
 #define TAG_NAME    "nougat_dlfcn"
 
@@ -77,14 +79,30 @@ int fake_dlclose(void *handle) {
     return 0;
 }
 
+char *rtrim(char *str)
+{
+    if (str == NULL || *str == '\0')
+    {
+        return str;
+    }
+    int len = static_cast<int>(strlen(str));
+    char *p = str + len - 1;
+    while (p >= str && isspace(*p))
+    {
+        *p = '\0'; --p;
+    }
+    return str;
+}
+
 /* flags are ignored */
-void *fake_dlopen_with_path(const char *libpath, int flags) {
+void *fake_dlopen_with_path(char *libpath, int flags) {
     FILE *maps;
     char buff[256];
     struct ctx *ctx = 0;
     off_t load_addr, size;
     int k, fd = -1, found = 0;
     char *shoff;
+    char* p;
     Elf_Ehdr *elf = (Elf_Ehdr *) MAP_FAILED;
 
 #define fatal(fmt, args...) do { log_err(fmt,##args); goto err_exit; } while(0)
@@ -110,6 +128,16 @@ void *fake_dlopen_with_path(const char *libpath, int flags) {
     log_info("%s loaded in Android at 0x%08lx", libpath, load_addr);
 
     /* Now, mmap the same library once again */
+
+    if (SDK_INT >= ANDROID_Q) {
+        p = std::strtok(buff, " ");
+        while (p) {
+            p = std::strtok(NULL, " ");
+            if (p) {
+                libpath = rtrim(p);
+            }
+        }
+    }
 
     fd = open(libpath, O_RDONLY);
     if (fd < 0) fatal("failed to open %s", libpath);
@@ -189,7 +217,7 @@ static const char* const kOdmLibDir        = "/odm/lib/";
 static const char* const kVendorLibDir     = "/vendor/lib/";
 #endif
 
-void *fake_dlopen(const char *filename, int flags) {
+void *fake_dlopen(char *filename, int flags) {
     if (strlen(filename) > 0 && filename[0] == '/') {
         return fake_dlopen_with_path(filename, flags);
     } else {
@@ -250,7 +278,7 @@ const char *fake_dlerror() {
 
 void *getSymCompat(const char *filename, const char *name) {
     if (SDK_INT >= ANDROID_N) {
-        void* handle = fake_dlopen(filename, RTLD_NOW);
+        void* handle = fake_dlopen(const_cast<char *>(filename), RTLD_NOW);
         if (handle) {
             void* ret = fake_dlsym(handle, name);
             fake_dlclose(handle);

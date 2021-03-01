@@ -11,20 +11,29 @@
 #include "../includes/arch.h"
 #include <unistd.h>
 #include <sys/mman.h>
+#include <type_traits>
+
+#define RoundUpToPtrSize(x) (x + BYTE_POINT - 1 - ((x + BYTE_POINT - 1) & (BYTE_POINT - 1)))
 
 extern "C" {
 
-    Size getAddressFromJava(JNIEnv *env, const char *className, const char *fieldName);
+Size getAddressFromJava(JNIEnv *env, const char *className, const char *fieldName);
 
-    Size getAddressFromJavaByCallMethod(JNIEnv *env, const char *className, const char *methodName);
+Size callStaticMethodAddr(JNIEnv *env, const char *className, const char *method, const char *sig, ...);
 
-    jint getIntFromJava(JNIEnv *env, const char *className, const char *fieldName);
+jobject callStaticMethodObject(JNIEnv *env, const char *className, const char *method, const char *sig, ...);
 
-    bool getBooleanFromJava(JNIEnv *env, const char *className, const char *fieldName);
+jobject getMethodObject(JNIEnv *env, const char *clazz, const char *method);
 
-    bool munprotect(size_t addr, size_t len);
+Size getAddressFromJavaByCallMethod(JNIEnv *env, const char *className, const char *methodName);
 
-    bool flushCacheExt(Size addr, Size len);
+jint getIntFromJava(JNIEnv *env, const char *className, const char *fieldName);
+
+bool getBooleanFromJava(JNIEnv *env, const char *className, const char *fieldName);
+
+bool munprotect(size_t addr, size_t len);
+
+bool flushCacheExt(Size addr, Size len);
 
 }
 
