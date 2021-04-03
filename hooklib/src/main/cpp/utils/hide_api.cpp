@@ -58,6 +58,8 @@ extern "C" {
 
     void (*backup_fixup_static_trampolines)(void *, void *) = nullptr;
 
+    void (*backup_fixup_static_trampolines_with_thread)(void *, void *, void*) = nullptr;
+
     void *(*backup_mark_class_initialized)(void *, void *, uint32_t *) = nullptr;
 
     void (*backup_update_methods_code)(void *, ArtMethod *, const void *) = nullptr;
@@ -324,6 +326,12 @@ extern "C" {
             class_init_callback(clazz_ptr);
         }
     }
+    void replaceFixupStaticTrampolinesWithThread(void *thiz, void* self, void *clazz_ptr) {
+        backup_fixup_static_trampolines_with_thread(thiz, self, clazz_ptr);
+        if (class_init_callback) {
+            class_init_callback(clazz_ptr);
+        }
+    }
 
     void *replaceMarkClassInitialized(void * thiz, void * self, uint32_t * clazz_ptr) {
         auto result = backup_mark_class_initialized(thiz, self, clazz_ptr);
@@ -374,7 +382,17 @@ extern "C" {
             make_initialized_classes_visibly_initialized_ = reinterpret_cast<void* (*)(void*, void*, bool)>(
                     getSymCompat(art_lib_path, "_ZN3art11ClassLinker40MakeInitializedClassesVisiblyInitializedEPNS_6ThreadEb"));
 
-            if (backup_mark_class_initialized && backup_update_methods_code) {
+            if (void *symFixupStaticTrampolines = getSymCompat(art_lib_path,
+                                                           "_ZN3art11ClassLinker22FixupStaticTrampolinesENS_6ObjPtrINS_6mirror5ClassEEE"))
+                backup_fixup_static_trampolines = reinterpret_cast<void (*)(void *, void *)>(hook_native(
+                    symFixupStaticTrampolines, (void *) replaceFixupStaticTrampolines));
+
+            if (void *symFixupStaticTrampolinesWithThread = getSymCompat(art_lib_path,
+                                                           "_ZN3art11ClassLinker22FixupStaticTrampolinesEPNS_6ThreadENS_6ObjPtrINS_6mirror5ClassEEE"))
+                backup_fixup_static_trampolines_with_thread = reinterpret_cast<void (*)(void *,void *, void*)>(hook_native(
+                    symFixupStaticTrampolinesWithThread, (void *) replaceFixupStaticTrampolinesWithThread));
+
+            if (backup_mark_class_initialized && backup_update_methods_code && (backup_fixup_static_trampolines_with_thread || backup_fixup_static_trampolines)) {
                 class_init_callback = callback;
                 return true;
             } else {
