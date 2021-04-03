@@ -49,10 +49,8 @@ public class ClassStatusUtils {
     public static boolean isInitialized(Class clazz) {
         if (fieldStatusOfClass == null)
             return true;
-        if (SandHookConfig.SDK_INT >= 30) {
+        if (SandHookConfig.SDK_INT >= 28) {
             return getClassStatus(clazz, true) >= 14;
-        } else if (SandHookConfig.SDK_INT >= 28) {
-            return getClassStatus(clazz, true) == 14;
         } else if (SandHookConfig.SDK_INT == 27) {
             return getClassStatus(clazz, false) == 11;
         } else {
