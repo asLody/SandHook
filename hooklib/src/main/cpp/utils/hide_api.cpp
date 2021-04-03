@@ -46,6 +46,10 @@ extern "C" {
         return origin_ShouldUseInterpreterEntrypoint(artMethod, quick_code);
     }
 
+    int replace_hidden_api(){
+        return 0;
+    }
+
     // paths
     const char* art_lib_path;
     const char* jit_lib_path;
@@ -180,6 +184,24 @@ extern "C" {
                                                                                   const void *)>(hook_native(
                         shouldUseInterpreterEntrypoint,
                         reinterpret_cast<void *>(replace_ShouldUseInterpreterEntrypoint)));
+            }
+        }
+
+        if (SDK_INT >= ANDROID_Q && hook_native) {
+            if (void* hidden_api = getSymCompat(art_lib_path, "_ZN3art9hiddenapi6detail28ShouldDenyAccessToMemberImplINS_9ArtMethodEEEbPT_NS0_7ApiListENS0_12AccessMethodE")) {
+                hook_native(hidden_api, reinterpret_cast<void*>(replace_hidden_api));
+            }
+            if (void* hidden_api = getSymCompat(art_lib_path, "_ZN3art9hiddenapi6detail28ShouldDenyAccessToMemberImplINS_8ArtFieldEEEbPT_NS0_7ApiListENS0_12AccessMethodE")) {
+                hook_native(hidden_api, reinterpret_cast<void*>(replace_hidden_api));
+            }
+        }
+
+        if (SDK_INT == ANDROID_P && hook_native) {
+            if (void* hidden_api = getSymCompat(art_lib_path, "_ZN3art9hiddenapi6detail19GetMemberActionImplINS_9ArtMethodEEENS0_6ActionEPT_NS_20HiddenApiAccessFlags7ApiListES4_NS0_12AccessMethodE")) {
+                hook_native(hidden_api, reinterpret_cast<void*>(replace_hidden_api));
+            }
+            if (void* hidden_api = getSymCompat(art_lib_path, "_ZN3art9hiddenapi6detail19GetMemberActionImplINS_8ArtFieldEEENS0_6ActionEPT_NS_20HiddenApiAccessFlags7ApiListES4_NS0_12AccessMethodE")) {
+                hook_native(hidden_api, reinterpret_cast<void*>(replace_hidden_api));
             }
         }
 
