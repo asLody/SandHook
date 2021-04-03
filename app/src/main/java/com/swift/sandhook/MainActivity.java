@@ -1,10 +1,10 @@
 package com.swift.sandhook;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,8 +17,6 @@ import com.swift.sandhook.test.PendingHookTest;
 import com.swift.sandhook.test.TestClass;
 
 import java.lang.reflect.Field;
-
-import de.robv.android.xposed.XposedHelpers;
 
 public class MainActivity extends AppCompatActivity {
 
