@@ -1,5 +1,7 @@
 package com.swift.sandhook;
 
+import android.util.Log;
+
 import com.swift.sandhook.wrapper.HookErrorException;
 import com.swift.sandhook.wrapper.HookWrapper;
 
@@ -19,11 +21,12 @@ public class PendingHookHandler {
         //init native hook
         if (SandHookConfig.delayHook) {
             canUsePendingHook = SandHook.initForPendingHook();
+            Log.d("SandHook", "can pending hook: " + canUsePendingHook);
         }
     }
 
     public static boolean canWork() {
-        return canUsePendingHook && SandHook.canGetObject() && !SandHookConfig.DEBUG;
+        return canUsePendingHook && SandHook.canGetObject();
     }
 
     public static synchronized void addPendingHook(HookWrapper.HookEntity hookEntity) {
@@ -33,6 +36,7 @@ public class PendingHookHandler {
             pendingHooks.put(hookEntity.target.getDeclaringClass(), entities);
         }
         entities.add(hookEntity);
+        SandHook.addPendingHookNative(hookEntity.target);
     }
 
     public static void onClassInit(long clazz_ptr) {

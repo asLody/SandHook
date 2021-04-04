@@ -85,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         MyApp.initedTest = true;
         try {
             PendingHookTest.test();
+            PendingHookTest.test();
         } catch (Throwable e) {
 
         }

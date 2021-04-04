@@ -421,6 +421,12 @@ JNIEXPORT void* findSym(const char *elf, const char *sym_name) {
     SandHook::ElfImg elfImg(elf);
     return reinterpret_cast<void *>(elfImg.getSymbAddress(sym_name));
 }
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_swift_sandhook_SandHook_addPendingHookNative(JNIEnv *env, jclass clazz,
+                                                                jobject target) {
+    addPendingHookNative(getArtMethod(env, target));
+}
 
 static JNINativeMethod jniSandHook[] = {
         {
@@ -507,6 +513,11 @@ static JNINativeMethod jniSandHook[] = {
             "MakeInitializedClassVisibilyInitialized",
                 "(J)V",
                 (void*) Java_com_swift_sandhook_SandHook_MakeInitializedClassVisibilyInitialized
+        },
+        {
+            "addPendingHookNative",
+                    "(Ljava/lang/reflect/Member;)V",
+                    (void*) Java_com_swift_sandhook_SandHook_addPendingHookNative
         }
 };
 
