@@ -93,6 +93,7 @@ public class SandHook {
 
 
         if (SandHookConfig.delayHook && PendingHookHandler.canWork() && ClassStatusUtils.isStaticAndNoInited(entity.target)) {
+            HookLog.d("Recording pending hook for " + target);
             PendingHookHandler.addPendingHook(entity);
             return;
         } else if (entity.initClass) {
@@ -405,6 +406,8 @@ public class SandHook {
     public static native boolean initForPendingHook();
 
     public static native void MakeInitializedClassVisibilyInitialized(long self);
+
+    public static native void addPendingHookNative(Member target);
 
     @FunctionalInterface
     public interface HookModeCallBack {

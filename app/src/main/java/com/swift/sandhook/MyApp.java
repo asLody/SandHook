@@ -41,7 +41,7 @@ public class MyApp extends Application {
         SandHook.tryDisableProfile(getPackageName());
         SandHook.disableDex2oatInline(false);
 
-        if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.P) {
+        if (SandHookConfig.SDK_INT >= Build.VERSION_CODES.P && SandHookConfig.SDK_INT < Build.VERSION_CODES.R) {
             SandHook.passApiCheck();
         }
 
@@ -69,13 +69,13 @@ public class MyApp extends Application {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
-                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
+                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.toString());
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+                Log.e("XposedCompat", "afterHookedMethod: " + param.method.toString());
             }
         });
 
@@ -85,13 +85,13 @@ public class MyApp extends Application {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
                 param.args[1] = 2;
-                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.getName());
+                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.toString());
             }
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 super.afterHookedMethod(param);
-                Log.e("XposedCompat", "afterHookedMethod: " + param.method.getName());
+                Log.e("XposedCompat", "afterHookedMethod: " + param.method.toString());
             }
         });
 
@@ -99,6 +99,7 @@ public class MyApp extends Application {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 super.beforeHookedMethod(param);
+                Log.e("XposedCompat", "beforeHookedMethod: " + param.method.toString());
                 param.returnEarly = true;
             }
 

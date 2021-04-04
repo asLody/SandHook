@@ -8,6 +8,8 @@
 #include "../includes/utils.h"
 #include "../includes/trampoline_manager.h"
 #include "../includes/art_runtime.h"
+#include <unordered_set>
+#include <mutex>
 
 extern int SDK_INT;
 
@@ -38,9 +40,21 @@ extern "C" {
         return origin_DecodeArtMethodId(thiz, jmethodId);
     }
 
+    std::unordered_set<ArtMethod*> pending_methods;
+    std::mutex pending_mutex;
+    void addPendingHookNative(ArtMethod *method) {
+        std::unique_lock<std::mutex> lk(pending_mutex);
+        pending_methods.insert(method);
+    }
+
+    bool isPending(ArtMethod* method) {
+        std::unique_lock<std::mutex> lk(pending_mutex);
+        return pending_methods.erase(method);
+    }
+
     bool (*origin_ShouldUseInterpreterEntrypoint)(ArtMethod *artMethod, const void* quick_code) = nullptr;
     bool replace_ShouldUseInterpreterEntrypoint(ArtMethod *artMethod, const void* quick_code) {
-        if (SandHook::TrampolineManager::get().methodHooked(artMethod) && quick_code != nullptr) {
+        if ((SandHook::TrampolineManager::get().methodHooked(artMethod) || isPending(artMethod)) && quick_code != nullptr) {
             return false;
         }
         return origin_ShouldUseInterpreterEntrypoint(artMethod, quick_code);
