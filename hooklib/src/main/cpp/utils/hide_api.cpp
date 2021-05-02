@@ -170,7 +170,7 @@ extern "C" {
                                                    void *)>(getSymCompat(art_lib_path, add_weak_ref_sym));
 
         if (SDK_INT >= ANDROID_Q) {
-            origin_jit_update_options = reinterpret_cast<void (**)(void *)>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_update_options_E"));
+            origin_jit_update_options = reinterpret_cast<void (**)(void *)>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit19jit_update_options_E"));
         }
 
         if (SDK_INT > ANDROID_N) {
