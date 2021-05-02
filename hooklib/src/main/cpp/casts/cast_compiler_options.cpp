@@ -15,7 +15,7 @@ namespace SandHook {
         Size calOffset(JNIEnv *jniEnv, art::CompilerOptions *p) override {
             if (SDK_INT < ANDROID_N)
                 return getParentSize() + 1;
-            if (SDK_INT >= ANDROID_Q) {
+            if (SDK_INT >= ANDROID_R) {
                 return BYTE_POINT + 3 * sizeof(size_t);
             }
             if (SDK_INT >= ANDROID_O) {

@@ -110,7 +110,11 @@ extern "C" {
 
         //init compile
         if (SDK_INT >= ANDROID_N) {
-            globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
+            if (SDK_INT >= ANDROID_R) {
+                globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit13jit_compiler_E"));
+            } else {
+                globalJitCompileHandlerAddr = reinterpret_cast<art::jit::JitCompiler **>(getSymCompat(art_lib_path, "_ZN3art3jit3Jit20jit_compiler_handle_E"));
+            }
             if (SDK_INT >= ANDROID_Q) {
                 jitCompileMethodQ = reinterpret_cast<bool (*)(void *, void *, void *, bool,
                                                          bool)>(getSymCompat(jit_lib_path, "jit_compile_method"));
