@@ -2,11 +2,21 @@ package com.swift.sandhook.xposedcompat.classloaders;
 
 public class ProxyClassLoader extends ClassLoader {
 
-    private final ClassLoader mClassLoader;
+    private ClassLoader mClassLoader;
 
     public ProxyClassLoader(ClassLoader parentCL, ClassLoader appCL) {
         super(parentCL);
         mClassLoader = appCL;
+    }
+
+    public ProxyClassLoader(ClassLoader parent)
+    {
+        super(parent);
+    }
+
+    public void setChild(ClassLoader child)
+    {
+        mClassLoader = child;
     }
 
     @Override
@@ -21,7 +31,7 @@ public class ProxyClassLoader extends ClassLoader {
         if (clazz == null) {
             clazz = super.loadClass(name, resolve);
             if (clazz == null) {
-                throw new ClassNotFoundException();
+                throw new ClassNotFoundException("class not found in this scope "+name);
             }
         }
 
