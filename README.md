@@ -11,9 +11,7 @@
 
 [中文 Blog](https://blog.csdn.net/ganyao939543405/article/details/86661040)  
 
-QQ Group：756071167  
-
-与 VirtualApp 相关的商业合作请联系 QQ939543405
+与 VirtualApp 相关的商业合作请联系微信：10890
 
 # arch support 
 
