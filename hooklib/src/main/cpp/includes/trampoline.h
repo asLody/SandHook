@@ -116,6 +116,8 @@ namespace SandHook {
 
         Trampoline() = default;
 
+        virtual ~Trampoline() = default;
+
         virtual void init() {
             codeLen = codeLength();
             tempCode = templateCode();

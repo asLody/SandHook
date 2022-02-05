@@ -150,10 +150,13 @@ namespace SandHook {
     class CastDexMethodIndex : public IMember<art::mirror::ArtMethod, uint32_t> {
     protected:
         Size calOffset(JNIEnv *jniEnv, art::mirror::ArtMethod *p) override {
-            if (SDK_INT >= ANDROID_P) {
+            if (SDK_INT >= ANDROID_S) {
                 return CastArtMethod::accessFlag->getOffset()
-                + CastArtMethod::accessFlag->size()
-                + sizeof(uint32_t);
+                       + CastArtMethod::accessFlag->size();
+            } else if (SDK_INT >= ANDROID_P) {
+                return CastArtMethod::accessFlag->getOffset()
+                       + CastArtMethod::accessFlag->size()
+                       + sizeof(uint32_t);
             }
             int offset = 0;
             jint index = getIntFromJava(jniEnv, "com/swift/sandhook/SandHookMethodResolver",

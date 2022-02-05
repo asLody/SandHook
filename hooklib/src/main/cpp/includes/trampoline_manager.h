@@ -27,6 +27,24 @@ namespace SandHook {
 
         HookTrampoline() = default;
 
+        ~ HookTrampoline() {
+            if (replacement) {
+                delete replacement;
+            }
+            if (inlineJump) {
+                delete inlineJump;
+            }
+            if (inlineSecondory) {
+                delete inlineSecondory;
+            }
+            if (callOrigin) {
+                delete callOrigin;
+            }
+            if (hookNative) {
+                delete hookNative;
+            }
+        };
+
         Trampoline* replacement = nullptr;
         Trampoline* inlineJump = nullptr;
         Trampoline* inlineSecondory = nullptr;

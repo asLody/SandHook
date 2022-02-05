@@ -94,7 +94,8 @@ bool doHookWithReplacement(JNIEnv* env,
     originMethod->disableInterpreterForO();
     originMethod->disableFastInterpreterForQ();
 
-    SandHook::HookTrampoline* hookTrampoline = trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod);
+    std::unique_ptr<SandHook::HookTrampoline> hookTrampoline(
+            trampolineManager.installReplacementTrampoline(originMethod, hookMethod, backupMethod));
     if (hookTrampoline != nullptr) {
         originMethod->setQuickCodeEntry(hookTrampoline->replacement->getCode());
         void* entryPointFormInterpreter = hookMethod->getInterpreterCodeEntry();
@@ -414,7 +415,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_swift_sandhook_SandHook_MakeInitializedClassVisibilyInitialized(JNIEnv *env, jclass clazz,
                                                                          jlong self) {
-    MakeInitializedClassVisibilyInitialized(reinterpret_cast<void*>(self));
+    MakeInitializedClassVisibilyInitialized(env, reinterpret_cast<void*>(self));
 }
 extern "C"
 JNIEXPORT void* findSym(const char *elf, const char *sym_name) {

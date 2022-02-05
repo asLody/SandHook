@@ -8,6 +8,7 @@
 #include "../includes/utils.h"
 #include "../includes/trampoline_manager.h"
 #include "../includes/art_runtime.h"
+#include "../includes/offset.h"
 
 extern int SDK_INT;
 
@@ -340,13 +341,15 @@ extern "C" {
         backup_update_methods_code(thiz, artMethod, quick_code);
     }
 
-    void MakeInitializedClassVisibilyInitialized(void* self){
-        if(make_initialized_classes_visibly_initialized_) {
-#ifdef __LP64__
-            constexpr size_t OFFSET_classlinker = 472;
-#else
-            constexpr size_t OFFSET_classlinker = 276;
-#endif
+    void MakeInitializedClassVisibilyInitialized(JNIEnv *env, void* self){
+        if(make_initialized_classes_visibly_initialized_ && SDK_INT >= ANDROID_R) {
+            JavaVM *jvm_ = nullptr;
+            env->GetJavaVM(&jvm_);
+
+            int jvm_offset_in_runtime = SandHook::Offset::findOffset(runtime_instance_, 1000, 4, (void *)jvm_);
+            int offset = 3;
+            if (SDK_INT >= 32) offset = 4;  // https://android-review.googlesource.com/c/platform/art/+/1838062
+            int OFFSET_classlinker = jvm_offset_in_runtime - offset * sizeof(void *);
             void *thiz = *reinterpret_cast<void **>(
                     reinterpret_cast<size_t>(runtime_instance_) + OFFSET_classlinker);
             make_initialized_classes_visibly_initialized_(thiz, self, true);
