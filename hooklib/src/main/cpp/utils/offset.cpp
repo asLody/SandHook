@@ -13,7 +13,7 @@ namespace SandHook {
             return -1;
         }
 
-        for (int i = 0; i <= len; i += step) {
+        for (size_t i = 0; i <= len; i += step) {
             T current_value = *reinterpret_cast<T *>((size_t) start + i);
             if (value == current_value) {
                 return i;
@@ -29,7 +29,7 @@ namespace SandHook {
             return -1;
         }
 
-        for (int i = 0; i <= len; i += step) {
+        for (size_t i = 0; i <= len; i += step) {
             T current_value = *reinterpret_cast<T *>((size_t) start + i);
             if (func(i, current_value)) {
                 return i;
@@ -45,7 +45,7 @@ namespace SandHook {
             return -1;
         }
 
-        for (int i = 0; i <= len; i += step) {
+        for (size_t i = 0; i <= len; i += step) {
             T v1 = *reinterpret_cast<T *>((size_t) start1 + i);
             T v2 = *reinterpret_cast<T *>((size_t) start2 + i);
             if (func(v1, v2)) {
