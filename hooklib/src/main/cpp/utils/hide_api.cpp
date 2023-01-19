@@ -342,10 +342,19 @@ extern "C" {
 
     void MakeInitializedClassVisibilyInitialized(void* self){
         if(make_initialized_classes_visibly_initialized_) {
+            size_t OFFSET_classlinker;
 #ifdef __LP64__
-            constexpr size_t OFFSET_classlinker = 472;
+            if (SDK_INT >= ANDROID_S) {
+                OFFSET_classlinker = 496;
+            } else {
+                OFFSET_classlinker = 472;
+            }
 #else
-            constexpr size_t OFFSET_classlinker = 276;
+            if (SDK_INT >= ANDROID_S) {
+                OFFSET_classlinker = 288;
+            } else {
+                OFFSET_classlinker = 276;
+            }
 #endif
             void *thiz = *reinterpret_cast<void **>(
                     reinterpret_cast<size_t>(runtime_instance_) + OFFSET_classlinker);
